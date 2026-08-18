@@ -1,0 +1,63 @@
+{
+  "cvd_policy": "0.1",
+  "canonical": "https://open.example.org/.well-known/cvd.json",
+  "expires": "2027-01-31T23:59:59Z",
+  "updated": "2026-02-01",
+  "organization": {
+    "name": "Example Open Infrastructure e. V.",
+    "country": "DE",
+    "role": "both",
+    "url": "https://open.example.org"
+  },
+  "contact": {
+    "channels": [
+      { "type": "email", "value": "security@open.example.org", "preferred": true }
+    ],
+    "languages": ["en", "de"],
+    "encryption": [
+      { "type": "pgp", "value": "https://open.example.org/.well-known/pgp-key.txt" }
+    ],
+    "response_target": { "acknowledge_within_hours": 72, "update_interval_days": 7 }
+  },
+  "research": {
+    "posture": "open",
+    "statement": "We operate our systems ourselves and handle incoming reports with our own staff. Testing the systems listed below is welcome within the rules given here."
+  },
+  "scope": {
+    "precedence": "out_overrides_in",
+    "web": [
+      { "pattern": "*.open.example.org", "state": "in" },
+      { "pattern": "status.open.example.org", "state": "out", "reason": "third_party" }
+    ],
+    "products": [
+      { "name": "example-gateway", "purl": "pkg:github/example/gateway", "versions": ">=1.4.0" }
+    ]
+  },
+  "testing": {
+    "default": "prohibited",
+    "rules": [
+      { "activity": "manual_testing", "state": "allowed" },
+      {
+        "activity": "automated_scanning",
+        "state": "allowed",
+        "conditions": { "max_requests_per_second": 10, "user_agent_contains": "cvd-research" }
+      },
+      { "activity": "fuzzing", "state": "allowed", "conditions": { "max_requests_per_second": 10 } },
+      { "activity": "dos", "state": "prohibited" },
+      { "activity": "social_engineering", "state": "prohibited" },
+      { "activity": "physical", "state": "prohibited" },
+      { "activity": "data_exfiltration", "state": "prohibited" }
+    ]
+  },
+  "report_requirements": {
+    "required_fields": ["affected_asset", "description", "reproduction_steps"],
+    "proof_of_exploitation": "prohibited",
+    "formats": ["text", "markdown"]
+  },
+  "disclosure": {
+    "model": "full_after_deadline",
+    "deadline_days": 90,
+    "advisory_url": "https://open.example.org/security/advisories",
+    "credit": "offered"
+  }
+}

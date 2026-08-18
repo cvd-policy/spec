@@ -1,0 +1,106 @@
+{
+  "cvd_policy": "0.1",
+  "canonical": "https://iot.example.com/.well-known/cvd.json",
+  "expires": "2027-07-01T00:00:00Z",
+  "updated": "2026-07-01",
+  "profiles": ["cra-0.1"],
+  "organization": {
+    "name": "Example Devices GmbH",
+    "country": "DE",
+    "role": "both",
+    "url": "https://iot.example.com"
+  },
+  "contact": {
+    "channels": [
+      { "type": "email", "value": "psirt@iot.example.com", "preferred": true },
+      { "type": "form", "value": "https://iot.example.com/psirt/report" },
+      { "type": "service", "value": "https://intake.example-provider.tld/example-devices" }
+    ],
+    "languages": ["en", "de", "fr"],
+    "encryption": [
+      { "type": "pgp", "value": "https://iot.example.com/.well-known/pgp-key.txt", "fingerprint": "1111 2222 3333 4444 5555  6666 7777 8888 9999 AAAA" },
+      { "type": "smime", "value": "https://iot.example.com/psirt/smime.crt" }
+    ],
+    "response_target": { "acknowledge_within_hours": 24, "update_interval_days": 7 }
+  },
+  "research": {
+    "posture": "limited",
+    "statement": "Testing is permitted on devices you own and on our reference environment. Installations operated by others are excluded."
+  },
+  "scope": {
+    "precedence": "explicit_order",
+    "web": [
+      { "pattern": "*.iot.example.com", "state": "out", "reason": "not_operated" },
+      { "pattern": "lab.iot.example.com", "state": "in" }
+    ],
+    "products": [
+      {
+        "name": "ED-100 Sensor Gateway",
+        "purl": "pkg:generic/example-devices/ed100",
+        "versions": ">=3.0.0 <5.0.0",
+        "supported_until": "2032-06-30",
+        "sbom": "https://iot.example.com/sbom/ed100.cdx.json",
+        "state": "in"
+      },
+      {
+        "name": "ED-50 Legacy Bridge",
+        "purl": "pkg:generic/example-devices/ed50",
+        "versions": "<3.0.0",
+        "supported_until": "2024-12-31",
+        "state": "out"
+      }
+    ]
+  },
+  "testing": {
+    "default": "prohibited",
+    "rules": [
+      {
+        "activity": "manual_testing",
+        "state": "allowed",
+        "conditions": { "targets": ["lab.iot.example.com", "pkg:generic/example-devices/ed100"] }
+      },
+      {
+        "activity": "fuzzing",
+        "state": "allowed",
+        "note": "Own devices only, not through the cloud connection.",
+        "conditions": { "targets": ["pkg:generic/example-devices/ed100"] }
+      },
+      {
+        "activity": "automated_scanning",
+        "state": "allowed",
+        "conditions": {
+          "max_requests_per_second": 2,
+          "user_agent_contains": "cvd-research",
+          "targets": ["lab.iot.example.com"],
+          "window": { "timezone": "Europe/Berlin", "days": ["mon", "tue", "wed", "thu", "fri"], "from": "08:00", "to": "18:00" }
+        }
+      },
+      { "activity": "dos", "state": "prohibited" },
+      { "activity": "social_engineering", "state": "prohibited" },
+      { "activity": "physical", "state": "prohibited" },
+      { "activity": "third_party_pivot", "state": "prohibited" },
+      { "activity": "supply_chain", "state": "prohibited" }
+    ]
+  },
+  "report_requirements": {
+    "required_fields": [
+      "affected_asset",
+      "description",
+      "reproduction_steps",
+      "impact",
+      "discovery_date",
+      "reporter_contact"
+    ],
+    "proof_of_exploitation": "optional",
+    "formats": ["markdown", "csaf", "vex"],
+    "max_attachment_mb": 50,
+    "template": "https://iot.example.com/psirt/report-template.md"
+  },
+  "disclosure": {
+    "model": "coordinated",
+    "deadline_days": 90,
+    "advisory_url": "https://iot.example.com/psirt/advisories",
+    "credit": "offered"
+  },
+  "x_psirt_team_size": 6
+}

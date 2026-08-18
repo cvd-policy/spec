@@ -1,0 +1,42 @@
+{
+  "cvd_policy": "0.1",
+  "canonical": "https://example.com/.well-known/cvd.json",
+  "expires": "2027-06-30T23:59:59Z",
+  "updated": "2026-06-30",
+  "organization": {
+    "name": "Example Ltd.",
+    "country": "de",
+    "role": "operator"
+  },
+  "contact": {
+    "channels": [
+      {
+        "type": "email",
+        "value": "security@example.com",
+        "preferred": true
+      }
+    ],
+    "languages": [
+      "en",
+      "de"
+    ]
+  },
+  "research": {
+    "posture": "report_only"
+  },
+  "scope": {
+    "precedence": "out_overrides_in",
+    "web": [
+      {
+        "pattern": "example.com",
+        "state": "in"
+      }
+    ]
+  },
+  "report_requirements": {
+    "required_fields": [
+      "affected_asset",
+      "description"
+    ]
+  }
+}

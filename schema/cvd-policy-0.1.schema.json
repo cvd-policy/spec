@@ -1,0 +1,273 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cvd-policy.eu/schema/0.1/cvd-policy.schema.json",
+  "title": "CVD Policy Format 0.1",
+  "description": "Machine-readable statement of how an organisation handles vulnerability reports.",
+  "type": "object",
+  "required": [
+    "cvd_policy",
+    "canonical",
+    "expires",
+    "organization",
+    "contact",
+    "research",
+    "scope",
+    "report_requirements"
+  ],
+  "additionalProperties": true,
+
+  "properties": {
+    "cvd_policy": { "const": "0.1" },
+
+    "canonical": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https://"
+    },
+
+    "expires": { "type": "string", "format": "date-time" },
+    "updated": { "type": "string", "format": "date" },
+
+    "profiles": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+
+    "organization": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "country": { "type": "string", "pattern": "^[A-Z]{2}$" },
+        "role": { "enum": ["manufacturer", "operator", "both", "other"] },
+        "url": { "type": "string", "format": "uri", "pattern": "^https://" }
+      },
+      "additionalProperties": true
+    },
+
+    "contact": {
+      "type": "object",
+      "required": ["channels"],
+      "properties": {
+        "channels": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["type", "value"],
+            "properties": {
+              "type": { "enum": ["email", "form", "service", "postal"] },
+              "value": { "type": "string", "minLength": 1 },
+              "preferred": { "type": "boolean" }
+            },
+            "additionalProperties": true
+          }
+        },
+        "languages": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[a-z]{2}(-[A-Z]{2})?$" }
+        },
+        "encryption": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["type", "value"],
+            "properties": {
+              "type": { "enum": ["pgp", "smime", "other"] },
+              "value": { "type": "string", "format": "uri" },
+              "fingerprint": { "type": "string" }
+            },
+            "additionalProperties": true
+          }
+        },
+        "response_target": {
+          "type": "object",
+          "properties": {
+            "acknowledge_within_hours": { "type": "number", "exclusiveMinimum": 0 },
+            "update_interval_days": { "type": "number", "exclusiveMinimum": 0 }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+
+    "research": {
+      "type": "object",
+      "required": ["posture"],
+      "properties": {
+        "posture": {
+          "enum": ["open", "limited", "report_only", "prohibited"]
+        },
+        "statement": { "type": "string", "maxLength": 1000 }
+      },
+      "additionalProperties": true
+    },
+
+    "scope": {
+      "type": "object",
+      "required": ["precedence"],
+      "properties": {
+        "precedence": { "enum": ["out_overrides_in", "explicit_order"] },
+        "web": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["pattern", "state"],
+            "properties": {
+              "pattern": { "type": "string", "minLength": 1 },
+              "state": { "enum": ["in", "out"] },
+              "reason": {
+                "enum": ["third_party", "legacy", "not_operated", "other"]
+              },
+              "note": { "type": "string" }
+            },
+            "additionalProperties": true
+          }
+        },
+        "products": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "purl": { "type": "string" },
+              "versions": { "type": "string" },
+              "supported_until": { "type": "string", "format": "date" },
+              "sbom": { "type": "string", "format": "uri" },
+              "state": { "enum": ["in", "out"] }
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+
+    "testing": {
+      "type": "object",
+      "required": ["default"],
+      "properties": {
+        "default": { "enum": ["prohibited", "allowed"] },
+        "rules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["activity", "state"],
+            "properties": {
+              "activity": { "type": "string", "minLength": 1 },
+              "state": { "enum": ["allowed", "prohibited"] },
+              "note": { "type": "string" },
+              "conditions": {
+                "type": "object",
+                "properties": {
+                  "max_requests_per_second": { "type": "number", "exclusiveMinimum": 0 },
+                  "user_agent_contains": { "type": "string" },
+                  "targets": { "type": "array", "items": { "type": "string" } },
+                  "window": {
+                    "type": "object",
+                    "properties": {
+                      "timezone": { "type": "string" },
+                      "days": {
+                        "type": "array",
+                        "items": {
+                          "enum": ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+                        }
+                      },
+                      "from": { "type": "string", "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$" },
+                      "to": { "type": "string", "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$" }
+                    },
+                    "additionalProperties": true
+                  },
+                  "account_request": { "type": "string" }
+                },
+                "additionalProperties": true
+              }
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+
+    "report_requirements": {
+      "type": "object",
+      "required": ["required_fields"],
+      "properties": {
+        "required_fields": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "affected_asset",
+              "description",
+              "reproduction_steps",
+              "impact",
+              "discovery_date",
+              "reporter_contact",
+              "proposed_fix"
+            ]
+          }
+        },
+        "proof_of_exploitation": { "enum": ["required", "optional", "prohibited"] },
+        "formats": {
+          "type": "array",
+          "items": { "enum": ["text", "markdown", "pdf", "csaf", "cvrf", "vex"] }
+        },
+        "max_attachment_mb": { "type": "number", "exclusiveMinimum": 0 },
+        "template": { "type": "string", "format": "uri" }
+      },
+      "additionalProperties": true
+    },
+
+    "disclosure": {
+      "type": "object",
+      "required": ["model"],
+      "properties": {
+        "model": {
+          "enum": ["coordinated", "full_after_deadline", "vendor_only", "no_disclosure"]
+        },
+        "deadline_days": { "type": "integer", "exclusiveMinimum": 0 },
+        "advisory_url": { "type": "string", "format": "uri", "pattern": "^https://" },
+        "credit": { "enum": ["offered", "on_request", "none"] }
+      },
+      "additionalProperties": true
+    }
+  },
+
+  "allOf": [
+    {
+      "if": {
+        "required": ["research"],
+        "properties": {
+          "research": {
+            "required": ["posture"],
+            "properties": { "posture": { "enum": ["open", "limited"] } }
+          }
+        }
+      },
+      "then": { "required": ["testing"] }
+    },
+    {
+      "if": {
+        "required": ["research"],
+        "properties": {
+          "research": {
+            "required": ["posture"],
+            "properties": {
+              "posture": { "enum": ["prohibited", "report_only"] }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "testing": {
+            "properties": { "rules": { "maxItems": 0 } }
+          }
+        }
+      }
+    }
+  ]
+}

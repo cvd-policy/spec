@@ -1,0 +1,16 @@
+{
+  "name": "cvd-policy-spec",
+  "version": "0.1.0",
+  "private": true,
+  "description": "CVD Policy Format — specification, JSON Schema, examples and test corpus.",
+  "license": "CC0-1.0",
+  "type": "module",
+  "scripts": {
+    "build-corpus": "node scripts/build-corpus.mjs",
+    "test": "node scripts/validate-corpus.mjs"
+  },
+  "devDependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1"
+  }
+}

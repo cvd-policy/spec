@@ -1,0 +1,66 @@
+{
+  "cvd_policy": "0.1",
+  "canonical": "https://example.com/.well-known/cvd.json",
+  "expires": "2027-06-30T23:59:59Z",
+  "updated": "2026-06-30",
+  "organization": {
+    "name": "Example Ltd.",
+    "country": "DE",
+    "role": "operator"
+  },
+  "contact": {
+    "channels": [
+      {
+        "type": "email",
+        "value": "psirt@example.com"
+      },
+      {
+        "type": "form",
+        "value": "https://example.com/report"
+      },
+      {
+        "type": "service",
+        "value": "https://intake.example-provider.tld/example-ltd"
+      },
+      {
+        "type": "postal",
+        "value": "Example Ltd., 1 Example Road, Exampleton"
+      }
+    ],
+    "languages": [
+      "en",
+      "de"
+    ],
+    "response_target": {
+      "acknowledge_within_hours": 48,
+      "update_interval_days": 14
+    }
+  },
+  "research": {
+    "posture": "report_only"
+  },
+  "scope": {
+    "precedence": "out_overrides_in",
+    "web": [
+      {
+        "pattern": "example.com",
+        "state": "in"
+      }
+    ]
+  },
+  "report_requirements": {
+    "required_fields": [
+      "affected_asset",
+      "description"
+    ]
+  },
+  "profiles": [
+    "cra-0.1"
+  ],
+  "disclosure": {
+    "model": "coordinated",
+    "deadline_days": 90,
+    "advisory_url": "https://example.com/advisories",
+    "credit": "offered"
+  }
+}

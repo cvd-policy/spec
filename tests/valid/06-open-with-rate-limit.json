@@ -1,0 +1,65 @@
+{
+  "cvd_policy": "0.1",
+  "canonical": "https://example.com/.well-known/cvd.json",
+  "expires": "2027-06-30T23:59:59Z",
+  "updated": "2026-06-30",
+  "organization": {
+    "name": "Example Ltd.",
+    "country": "DE",
+    "role": "operator"
+  },
+  "contact": {
+    "channels": [
+      {
+        "type": "email",
+        "value": "security@example.com",
+        "preferred": true
+      }
+    ],
+    "languages": [
+      "en",
+      "de"
+    ],
+    "encryption": [
+      {
+        "type": "pgp",
+        "value": "https://example.com/pgp-key.txt"
+      }
+    ]
+  },
+  "research": {
+    "posture": "open"
+  },
+  "scope": {
+    "precedence": "out_overrides_in",
+    "web": [
+      {
+        "pattern": "example.com",
+        "state": "in"
+      }
+    ]
+  },
+  "report_requirements": {
+    "required_fields": [
+      "affected_asset",
+      "description"
+    ]
+  },
+  "testing": {
+    "default": "prohibited",
+    "rules": [
+      {
+        "activity": "manual_testing",
+        "state": "allowed"
+      },
+      {
+        "activity": "automated_scanning",
+        "state": "allowed",
+        "conditions": {
+          "max_requests_per_second": 5,
+          "user_agent_contains": "cvd-research"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  corpus:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Schema accepts every valid document and rejects every invalid one
+        run: npm test
+
+      - name: The committed corpus matches the generator
+        run: |
+          npm run build-corpus
+          git diff --exit-code tests/

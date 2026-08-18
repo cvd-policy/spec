@@ -1,0 +1,34 @@
+{
+  "cvd_policy": "0.1",
+  "canonical": "https://hospital.example.com/.well-known/cvd.json",
+  "expires": "2027-05-01T00:00:00Z",
+  "updated": "2026-05-01",
+  "organization": {
+    "name": "Example Hospital",
+    "country": "DE",
+    "role": "operator"
+  },
+  "contact": {
+    "channels": [
+      { "type": "postal", "value": "Example Hospital, IT Security, 1 Example Road, Exampleton", "preferred": true }
+    ],
+    "languages": ["en", "de"]
+  },
+  "research": {
+    "posture": "prohibited",
+    "statement": "Our systems process patient data and are part of critical care. Testing of any kind is ruled out. We accept notes about vulnerabilities by post only."
+  },
+  "scope": {
+    "precedence": "out_overrides_in",
+    "web": [{ "pattern": "*.hospital.example.com", "state": "out", "reason": "other" }]
+  },
+  "report_requirements": {
+    "required_fields": ["affected_asset", "description", "reporter_contact"],
+    "proof_of_exploitation": "prohibited",
+    "formats": ["text"]
+  },
+  "disclosure": {
+    "model": "vendor_only",
+    "credit": "none"
+  }
+}

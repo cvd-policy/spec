@@ -1,0 +1,130 @@
+{
+  "01-missing-cvd-policy.json": {
+    "code": "REQUIRED_MISSING",
+    "schema": true
+  },
+  "02-unsupported-version.json": {
+    "code": "VERSION_UNSUPPORTED",
+    "schema": true
+  },
+  "03-canonical-not-https.json": {
+    "code": "CANONICAL_NOT_HTTPS",
+    "schema": true
+  },
+  "04-canonical-missing.json": {
+    "code": "REQUIRED_MISSING",
+    "schema": true
+  },
+  "05-canonical-not-a-uri.json": {
+    "code": "CANONICAL_NOT_HTTPS",
+    "schema": true
+  },
+  "06-expires-missing.json": {
+    "code": "REQUIRED_MISSING",
+    "schema": true
+  },
+  "07-expires-past.json": {
+    "code": "EXPIRES_PAST",
+    "schema": false
+  },
+  "08-expires-not-datetime.json": {
+    "code": "FORMAT_INVALID",
+    "schema": true
+  },
+  "09-posture-unknown.json": {
+    "code": "POSTURE_UNKNOWN",
+    "schema": true
+  },
+  "10-research-missing.json": {
+    "code": "REQUIRED_MISSING",
+    "schema": true
+  },
+  "11-posture-missing.json": {
+    "code": "REQUIRED_MISSING",
+    "schema": true
+  },
+  "12-testing-rules-on-prohibited.json": {
+    "code": "POSTURE_CONTRADICTION",
+    "schema": true
+  },
+  "13-testing-rules-on-report-only.json": {
+    "code": "POSTURE_CONTRADICTION",
+    "schema": true
+  },
+  "14-testing-missing-on-open.json": {
+    "code": "TESTING_REQUIRED",
+    "schema": true
+  },
+  "15-testing-missing-default.json": {
+    "code": "REQUIRED_MISSING",
+    "schema": true
+  },
+  "16-testing-default-invalid.json": {
+    "code": "ENUM_INVALID",
+    "schema": true
+  },
+  "17-rule-state-invalid.json": {
+    "code": "ENUM_INVALID",
+    "schema": true
+  },
+  "18-rule-activity-missing.json": {
+    "code": "REQUIRED_MISSING",
+    "schema": true
+  },
+  "19-scope-missing-precedence.json": {
+    "code": "REQUIRED_MISSING",
+    "schema": true
+  },
+  "20-scope-precedence-invalid.json": {
+    "code": "ENUM_INVALID",
+    "schema": true
+  },
+  "21-scope-web-state-invalid.json": {
+    "code": "ENUM_INVALID",
+    "schema": true
+  },
+  "22-scope-web-missing-pattern.json": {
+    "code": "REQUIRED_MISSING",
+    "schema": true
+  },
+  "23-scope-reason-invalid.json": {
+    "code": "ENUM_INVALID",
+    "schema": true
+  },
+  "24-contact-channels-empty.json": {
+    "code": "MIN_ITEMS",
+    "schema": true
+  },
+  "25-contact-channel-type-invalid.json": {
+    "code": "ENUM_INVALID",
+    "schema": true
+  },
+  "26-contact-missing.json": {
+    "code": "REQUIRED_MISSING",
+    "schema": true
+  },
+  "27-organization-missing-name.json": {
+    "code": "REQUIRED_MISSING",
+    "schema": true
+  },
+  "28-report-requirements-missing.json": {
+    "code": "REQUIRED_MISSING",
+    "schema": true
+  },
+  "29-required-field-unknown.json": {
+    "code": "ENUM_INVALID",
+    "schema": true
+  },
+  "30-disclosure-model-invalid.json": {
+    "code": "ENUM_INVALID",
+    "schema": true
+  },
+  "31-not-an-object.json": {
+    "code": "TYPE_INVALID",
+    "schema": true
+  },
+  "32-country-lowercase.json": {
+    "code": "PATTERN_INVALID",
+    "schema": true
+  }
+}

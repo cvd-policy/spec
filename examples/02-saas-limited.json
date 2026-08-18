@@ -1,0 +1,73 @@
+{
+  "cvd_policy": "0.1",
+  "canonical": "https://saas.example.com/.well-known/cvd.json",
+  "expires": "2027-03-31T23:59:59Z",
+  "updated": "2026-04-01",
+  "organization": {
+    "name": "Example Cloud Services B.V.",
+    "country": "NL",
+    "role": "operator",
+    "url": "https://saas.example.com"
+  },
+  "contact": {
+    "channels": [
+      { "type": "form", "value": "https://saas.example.com/security/report", "preferred": true },
+      { "type": "email", "value": "security@saas.example.com" }
+    ],
+    "languages": ["en", "nl"],
+    "response_target": { "acknowledge_within_hours": 24 }
+  },
+  "research": {
+    "posture": "limited",
+    "statement": "Testing is permitted against our staging environment only, using a test account you create yourself. Production tenants hold customer data and are excluded."
+  },
+  "scope": {
+    "precedence": "out_overrides_in",
+    "web": [
+      { "pattern": "staging.saas.example.com", "state": "in" },
+      { "pattern": "*.tenants.saas.example.com", "state": "out", "reason": "not_operated", "note": "Customer tenants" }
+    ]
+  },
+  "testing": {
+    "default": "prohibited",
+    "rules": [
+      {
+        "activity": "manual_testing",
+        "state": "allowed",
+        "conditions": {
+          "targets": ["staging.saas.example.com"],
+          "account_request": "https://saas.example.com/security/test-account"
+        }
+      },
+      {
+        "activity": "automated_scanning",
+        "state": "allowed",
+        "note": "Please mark your traffic so we can tell it apart.",
+        "conditions": {
+          "max_requests_per_second": 3,
+          "user_agent_contains": "cvd-research",
+          "targets": ["staging.saas.example.com"],
+          "window": {
+            "timezone": "Europe/Amsterdam",
+            "days": ["mon", "tue", "wed", "thu", "fri"],
+            "from": "09:00",
+            "to": "17:00"
+          }
+        }
+      },
+      { "activity": "dos", "state": "prohibited" },
+      { "activity": "social_engineering", "state": "prohibited" }
+    ]
+  },
+  "report_requirements": {
+    "required_fields": ["affected_asset", "description", "reproduction_steps", "impact", "reporter_contact"],
+    "proof_of_exploitation": "optional",
+    "formats": ["markdown"],
+    "max_attachment_mb": 10
+  },
+  "disclosure": {
+    "model": "coordinated",
+    "deadline_days": 90,
+    "credit": "on_request"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "cvd_policy": "0.1",
+  "canonical": "https://example.com/.well-known/cvd.json",
+  "expires": "2027-06-30T23:59:59Z",
+  "organization": {
+    "name": "Example Ltd."
+  },
+  "contact": {
+    "channels": [
+      {
+        "type": "email",
+        "value": "security@example.com"
+      }
+    ]
+  },
+  "research": {
+    "posture": "report_only"
+  },
+  "scope": {
+    "precedence": "out_overrides_in",
+    "web": [
+      {
+        "pattern": "example.com",
+        "state": "in"
+      }
+    ]
+  },
+  "report_requirements": {
+    "required_fields": []
+  }
+}
