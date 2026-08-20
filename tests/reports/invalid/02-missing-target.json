@@ -1,0 +1,5 @@
+{
+  "report": "0.1",
+  "title": "Stored cross-site scripting in the ticket view",
+  "description": "The ticket subject is rendered without escaping, so markup submitted by one user runs in the browser of any agent opening the ticket."
+}

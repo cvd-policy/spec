@@ -1,0 +1,57 @@
+{
+  "cvd_policy": "0.2",
+  "canonical": "https://example.de/.well-known/cvd.json",
+  "expires": "2027-08-18T00:00:00Z",
+  "updated": "2026-08-18",
+  "organization": {
+    "name": "Example Werkzeugbau GmbH",
+    "country": "DE",
+    "role": "manufacturer",
+    "url": "https://example.de"
+  },
+  "contact": {
+    "channels": [
+      { "type": "form", "value": "https://intake.provider.example/t/7f3a2c", "preferred": true },
+      { "type": "email", "value": "security@example.de" }
+    ],
+    "languages": ["de", "en"],
+    "response_target": { "acknowledge_within_hours": 24, "update_interval_days": 14 }
+  },
+  "research": {
+    "posture": "report_only",
+    "statement": "We do not invite testing of installations at our customers' sites. Reports about our machines and their control software are welcome, and an intake service handles them on our behalf.",
+    "x_note": "The intake below is machine-readable; the form above is the same route for people."
+  },
+  "scope": {
+    "precedence": "out_overrides_in",
+    "web": [{ "pattern": "example.de", "state": "in" }],
+    "products": [
+      {
+        "name": "WB-200 Control Unit",
+        "purl": "pkg:generic/example/wb200",
+        "versions": ">=3.0.0",
+        "supported_until": "2031-12-31"
+      }
+    ]
+  },
+  "report_requirements": {
+    "required_fields": ["affected_asset", "description"],
+    "proof_of_exploitation": "prohibited",
+    "formats": ["markdown"],
+    "max_attachment_mb": 20,
+    "intake": {
+      "url": "https://intake.provider.example/t/7f3a2c/submit",
+      "schema": "https://intake.provider.example/t/7f3a2c/schema.json",
+      "profile": "report-0.1",
+      "anonymous": true,
+      "max_bytes": 5242880,
+      "attachments": "after_contact"
+    }
+  },
+  "disclosure": {
+    "model": "coordinated",
+    "deadline_days": 90,
+    "advisory_url": "https://example.de/security/advisories",
+    "credit": "on_request"
+  }
+}

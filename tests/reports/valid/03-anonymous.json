@@ -1,0 +1,37 @@
+{
+  "report": "0.1",
+  "title": "Stored cross-site scripting in the ticket view",
+  "target": "support.example.com",
+  "description": "The ticket subject is rendered without escaping, so markup submitted by one user runs in the browser of any agent opening the ticket.",
+  "reproduction": "1. Open https://support.example.com/tickets/new\n2. Enter <img src=x onerror=alert(1)> as the subject\n3. Submit, then open the ticket as an agent.",
+  "impact": "Any agent viewing the ticket runs attacker-controlled script in the context of the support tool, which can read the session cookie.",
+  "product": "Example Support Desk",
+  "version": "4.2.1",
+  "endpoint": "https://support.example.com/tickets/{id}",
+  "preconditions": [
+    "none"
+  ],
+  "weakness": {
+    "cwe": [
+      "CWE-79"
+    ],
+    "note": "Reporter's own assessment, not verified."
+  },
+  "identifiers": {
+    "cve": [],
+    "advisory": []
+  },
+  "expected_behaviour": "The subject is displayed as text.",
+  "actual_behaviour": "The subject is parsed as HTML.",
+  "references": [
+    "https://owasp.org/www-community/attacks/xss/"
+  ],
+  "exploitation": {
+    "state": "unknown"
+  },
+  "coordination": {
+    "vendor_contacted": false,
+    "publication": "none_planned"
+  },
+  "submitted_at": "2026-08-18T09:15:00Z"
+}

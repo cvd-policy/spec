@@ -20,7 +20,7 @@ jobs:
       - name: Schema accepts every valid document and rejects every invalid one
         run: npm test
 
-      - name: The committed corpus matches the generator
+      - name: The committed schema and corpus match their generators
         run: |
-          npm run build-corpus
-          git diff --exit-code tests/
+          npm run build
+          git diff --exit-code schema/ tests/ examples/reports/

@@ -123,6 +123,26 @@
     "code": "TYPE_INVALID",
     "schema": true
   },
+  "33-v02-intake-not-https.json": {
+    "code": "INTAKE_NOT_HTTPS",
+    "schema": true
+  },
+  "34-v02-intake-missing-url.json": {
+    "code": "REQUIRED_MISSING",
+    "schema": true
+  },
+  "35-v02-intake-schema-not-https.json": {
+    "code": "INTAKE_NOT_HTTPS",
+    "schema": true
+  },
+  "36-v02-intake-attachments-invalid.json": {
+    "code": "ENUM_INVALID",
+    "schema": true
+  },
+  "37-v02-intake-credentials.json": {
+    "code": "INTAKE_HAS_CREDENTIALS",
+    "schema": false
+  },
   "32-country-lowercase.json": {
     "code": "PATTERN_INVALID",
     "schema": true

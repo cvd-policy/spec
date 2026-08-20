@@ -1,6 +1,7 @@
 # CVD Policy Format 0.1
 
 **Status:** Draft
+**Version:** 0.2
 **Date:** 2026-08-18
 **License:** CC0-1.0
 **Canonical version:** https://cvd-policy.eu/spec
@@ -289,6 +290,59 @@ themselves, so that a reader cannot mistake the intent.
 value `prohibited` means that evidence going beyond demonstrating reachability
 (such as exfiltrated data) is unwanted.
 
+#### `intake` (since 0.2)
+
+An organisation that can receive a structured report says so here. Everything in
+`intake` is optional; a document without it is complete.
+
+```json
+{
+  "intake": {
+    "url": "https://example.com/report/submit",
+    "schema": "https://example.com/report/schema.json",
+    "profile": "report-0.1",
+    "anonymous": true,
+    "max_bytes": 5242880,
+    "attachments": "after_contact"
+  }
+}
+```
+
+| Field | Meaning |
+| ----- | ------- |
+| `url` | Endpoint that accepts a report. Required within `intake`, `https` only |
+| `schema` | JSON Schema the endpoint accepts, `https` only |
+| `profile` | Named report profile the schema builds on, e.g. `report-0.1` |
+| `anonymous` | Whether a report without reporter details is accepted |
+| `max_bytes` | Largest accepted submission |
+| `attachments` | `accepted`, `after_contact` or `not_accepted` |
+
+`url` and `schema` MUST be absolute `https` URIs and MUST NOT contain userinfo.
+The document MUST NOT carry credentials of any kind: an endpoint that needs a
+secret to accept reports does not belong in a public file.
+
+The endpoint MAY sit on a domain other than the publisher's. That is a
+delegation, decided by whoever publishes the document, exactly like a `service`
+contact channel — and it is the normal case for an organisation whose intake is
+run by a provider.
+
+`intake` describes an additional, machine-readable route. It does not replace
+`contact`: a person MUST still be able to report through a channel listed there.
+
+##### Rules for consumers
+
+```text
+- Consumers MUST NOT submit a report without a person confirming that submission.
+- Consumers MUST show the receiving host before anything is sent.
+- Consumers MUST NOT attach files or proof-of-concept material automatically.
+- Consumers MUST treat a failed submission as a failure to report, and fall back
+  to a channel from "contact".
+```
+
+The first rule is the important one. A report contains the details of an unfixed
+vulnerability. Deciding where that goes is a judgement a person makes, not a step
+a tool performs on their behalf.
+
 ### 4.9 `disclosure`
 
 ```json
@@ -370,7 +424,21 @@ subdomain, not the organisation. It also permits central hosting — one documen
 served wherever, pointed at from each host's `security.txt` — and hosting by a
 third party on an organisation's behalf.
 
-### 5.3 Error tolerance
+### 5.3 Versions
+
+`cvd_policy` names the version a document was written for. A consumer
+implementing this version MUST also accept `0.1` documents and evaluate them by
+the rules of 0.1 — which differ only in that `report_requirements.intake` is not
+defined there.
+
+A published version never changes. `0.1` documents stay valid and stay readable;
+nothing in 0.2 obliges anyone to reissue a document.
+
+Because unknown fields are ignored (section 5), a 0.1 document MAY already carry
+an `intake` block. A consumer that knows only 0.1 skips it; one that knows 0.2
+MAY use it. Publishers SHOULD set `cvd_policy` to `0.2` when they rely on it.
+
+### 5.4 Error tolerance
 
 A document that violates the schema SHOULD be treated as absent. A consumer MAY
 use parts of a faulty document for display to humans, but MUST make clear that
@@ -405,6 +473,33 @@ A consumer that does not know a profile MUST still evaluate the document per thi
 specification. A profile MUST NOT change the meaning of any field defined here.
 
 Vendor-specific fields SHOULD begin with `x_`.
+
+### 7.1 Published profiles
+
+| Profile | Purpose | Location |
+| ------- | ------- | -------- |
+| `report-0.1` | Shape of an incoming vulnerability report | `schema/profiles/report-0.1.schema.json` |
+
+`report-0.1` describes what a report contains, not what a policy contains. A
+document points at it through `report_requirements.intake.profile`; the endpoint
+named there accepts documents matching that profile.
+
+Three fields are required — title, target and description. Everything else is
+optional, including steps to reproduce and impact, because those are not always
+available and a missing field must never stop someone from reporting. The
+profile follows ISO/IEC 29147 and the reporting guidance of CISA, CERT/CC and
+FIRST on that point.
+
+Two details in the profile are deliberate:
+
+- **Exploitation has three states**, `yes`, `no` and `unknown`. A missing tick
+  in a form is not a denial, and recording it as one produces false confidence.
+  Evidence is required when the state is `yes`, and remains a statement by the
+  reporter rather than a confirmed finding.
+- **Consent is three separate decisions**: giving contact details, allowing them
+  to be passed to the affected organisation, and being named publicly. None may
+  be inferred from another, and none defaults to true. A report without any of
+  them MUST be accepted.
 
 ---
 
@@ -460,6 +555,9 @@ Complete documents live under `examples/`:
 | `03-open-research.json`                | Open invitation with rate limiting            |
 | `04-prohibited.json`                   | Testing ruled out                             |
 | `05-full-cra-profile.json`             | All fields, profile `cra-0.1`                 |
+| `06-machine-readable-intake.json`      | 0.2, structured intake run by a provider      |
+
+Reports matching the `report-0.1` profile live under `examples/reports/`.
 
 Minimal example:
 

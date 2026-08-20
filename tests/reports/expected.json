@@ -1,0 +1,32 @@
+{
+  "01-missing-title.json": {
+    "code": "REQUIRED_MISSING"
+  },
+  "02-missing-target.json": {
+    "code": "REQUIRED_MISSING"
+  },
+  "03-missing-description.json": {
+    "code": "REQUIRED_MISSING"
+  },
+  "04-empty-title.json": {
+    "code": "STRING_EMPTY"
+  },
+  "05-exploited-without-evidence.json": {
+    "code": "REQUIRED_MISSING"
+  },
+  "06-exploitation-boolean.json": {
+    "code": "ENUM_INVALID"
+  },
+  "07-cwe-malformed.json": {
+    "code": "PATTERN_INVALID"
+  },
+  "08-cve-malformed.json": {
+    "code": "PATTERN_INVALID"
+  },
+  "09-precondition-unknown.json": {
+    "code": "ENUM_INVALID"
+  },
+  "10-wrong-profile-version.json": {
+    "code": "VERSION_UNSUPPORTED"
+  }
+}

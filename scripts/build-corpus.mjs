@@ -178,6 +178,44 @@ const valid = {
   "13-no-updated-field": patch((d) => {
     delete d.updated;
   }),
+
+  // A 0.1 document carrying a 0.2 field: consumers ignore what they do not
+  // know, so this stays valid rather than being rejected.
+  "14-unknown-intake-on-0-1": patch((d) => {
+    d.report_requirements.intake = { url: "https://example.com/report" };
+  }),
+
+  "15-v02-minimal": patch((d) => {
+    d.cvd_policy = "0.2";
+  }),
+
+  "16-v02-intake-minimal": patch((d) => {
+    d.cvd_policy = "0.2";
+    d.report_requirements.intake = { url: "https://example.com/report/submit" };
+  }),
+
+  "17-v02-intake-full": patch((d) => {
+    d.cvd_policy = "0.2";
+    d.report_requirements.intake = {
+      url: "https://example.com/report/submit",
+      schema: "https://example.com/report/schema.json",
+      profile: "report-0.1",
+      anonymous: true,
+      max_bytes: 5_242_880,
+      attachments: "after_contact",
+    };
+  }),
+
+  // The endpoint may sit on a provider's domain: the publisher chose it, the
+  // same way a `service` contact channel is chosen.
+  "18-v02-intake-delegated": patch((d) => {
+    d.cvd_policy = "0.2";
+    d.report_requirements.intake = {
+      url: "https://intake.provider.example/t/7f3a2c/submit",
+      profile: "report-0.1",
+      anonymous: true,
+    };
+  }),
 };
 
 // -------------------------------------------------------------- invalid ----
@@ -186,7 +224,7 @@ const valid = {
 
 const invalid = {
   "01-missing-cvd-policy": { doc: patch((d) => delete d.cvd_policy), code: "REQUIRED_MISSING", schema: true },
-  "02-unsupported-version": { doc: patch((d) => (d.cvd_policy = "0.2")), code: "VERSION_UNSUPPORTED", schema: true },
+  "02-unsupported-version": { doc: patch((d) => (d.cvd_policy = "0.3")), code: "VERSION_UNSUPPORTED", schema: true },
   "03-canonical-not-https": {
     doc: patch((d) => (d.canonical = "http://example.com/.well-known/cvd.json")),
     code: "CANONICAL_NOT_HTTPS",
@@ -313,6 +351,52 @@ const invalid = {
     schema: true,
   },
   "31-not-an-object": { doc: [], code: "TYPE_INVALID", schema: true },
+  "33-v02-intake-not-https": {
+    doc: patch((d) => {
+      d.cvd_policy = "0.2";
+      d.report_requirements.intake = { url: "http://example.com/report/submit" };
+    }),
+    code: "INTAKE_NOT_HTTPS",
+    schema: true,
+  },
+  "34-v02-intake-missing-url": {
+    doc: patch((d) => {
+      d.cvd_policy = "0.2";
+      d.report_requirements.intake = { profile: "report-0.1" };
+    }),
+    code: "REQUIRED_MISSING",
+    schema: true,
+  },
+  "35-v02-intake-schema-not-https": {
+    doc: patch((d) => {
+      d.cvd_policy = "0.2";
+      d.report_requirements.intake = {
+        url: "https://example.com/report/submit",
+        schema: "http://example.com/report/schema.json",
+      };
+    }),
+    code: "INTAKE_NOT_HTTPS",
+    schema: true,
+  },
+  "36-v02-intake-attachments-invalid": {
+    doc: patch((d) => {
+      d.cvd_policy = "0.2";
+      d.report_requirements.intake = {
+        url: "https://example.com/report/submit",
+        attachments: "sometimes",
+      };
+    }),
+    code: "ENUM_INVALID",
+    schema: true,
+  },
+  "37-v02-intake-credentials": {
+    doc: patch((d) => {
+      d.cvd_policy = "0.2";
+      d.report_requirements.intake = { url: "https://user:pw@example.com/report/submit" };
+    }),
+    code: "INTAKE_HAS_CREDENTIALS",
+    schema: false,
+  },
   "32-country-lowercase": {
     doc: patch((d) => (d.organization.country = "de")),
     code: "PATTERN_INVALID",
@@ -332,6 +416,125 @@ for (const [name, entry] of Object.entries(invalid)) {
 
 writeFileSync(join(root, "tests", "expected.json"), JSON.stringify(expected, null, 2) + "\n");
 
+// ------------------------------------------------- reports (profile) ----
+// Fixtures for the report profile, which describes what an incoming report
+// looks like. Same idea as above: one broken rule per invalid file.
+
+const reportsValidDir = join(root, "tests", "reports", "valid");
+const reportsInvalidDir = join(root, "tests", "reports", "invalid");
+const reportExamplesDir = join(root, "examples", "reports");
+
+for (const dir of [reportsValidDir, reportsInvalidDir, reportExamplesDir]) {
+  rmSync(dir, { recursive: true, force: true });
+  mkdirSync(dir, { recursive: true });
+}
+
+const minimalReport = () => ({
+  report: "0.1",
+  title: "Stored cross-site scripting in the ticket view",
+  target: "support.example.com",
+  description:
+    "The ticket subject is rendered without escaping, so markup submitted by one user runs in the browser of any agent opening the ticket.",
+});
+
+const fullReport = () => ({
+  ...minimalReport(),
+  reproduction: [
+    "1. Open https://support.example.com/tickets/new",
+    "2. Enter <img src=x onerror=alert(1)> as the subject",
+    "3. Submit, then open the ticket as an agent.",
+  ].join("\n"),
+  impact:
+    "Any agent viewing the ticket runs attacker-controlled script in the context of the support tool, which can read the session cookie.",
+  product: "Example Support Desk",
+  version: "4.2.1",
+  endpoint: "https://support.example.com/tickets/{id}",
+  preconditions: ["none"],
+  weakness: { cwe: ["CWE-79"], note: "Reporter's own assessment, not verified." },
+  identifiers: { cve: [], advisory: [] },
+  expected_behaviour: "The subject is displayed as text.",
+  actual_behaviour: "The subject is parsed as HTML.",
+  references: ["https://owasp.org/www-community/attacks/xss/"],
+  exploitation: { state: "unknown" },
+  coordination: {
+    vendor_contacted: false,
+    publication: "none_planned",
+  },
+  reporter: {
+    name: "A. Researcher",
+    contact: "researcher@example.org",
+    languages: ["en", "de"],
+    consent: {
+      share_contact_with_affected_party: true,
+      public_credit: false,
+    },
+  },
+  submitted_at: "2026-08-18T09:15:00Z",
+});
+
+const reportsValid = {
+  "01-minimal": minimalReport(),
+  "02-full": fullReport(),
+  "03-anonymous": (() => {
+    const r = fullReport();
+    delete r.reporter;
+    return r;
+  })(),
+  "04-exploited-with-evidence": {
+    ...minimalReport(),
+    exploitation: {
+      state: "yes",
+      evidence: "Requests matching the payload appear in public scan data since 2026-08-01.",
+      observed_at: "2026-08-01T00:00:00Z",
+    },
+  },
+  "05-no-reproduction-or-impact": minimalReport(),
+  "06-unknown-fields-tolerated": { ...minimalReport(), x_internal_queue: "psirt" },
+};
+
+const reportsInvalid = {
+  "01-missing-title": { doc: (() => { const r = minimalReport(); delete r.title; return r; })(), code: "REQUIRED_MISSING" },
+  "02-missing-target": { doc: (() => { const r = minimalReport(); delete r.target; return r; })(), code: "REQUIRED_MISSING" },
+  "03-missing-description": { doc: (() => { const r = minimalReport(); delete r.description; return r; })(), code: "REQUIRED_MISSING" },
+  "04-empty-title": { doc: { ...minimalReport(), title: "" }, code: "STRING_EMPTY" },
+  "05-exploited-without-evidence": {
+    doc: { ...minimalReport(), exploitation: { state: "yes" } },
+    code: "REQUIRED_MISSING",
+  },
+  "06-exploitation-boolean": {
+    doc: { ...minimalReport(), exploitation: { state: true } },
+    code: "ENUM_INVALID",
+  },
+  "07-cwe-malformed": {
+    doc: { ...minimalReport(), weakness: { cwe: ["79"] } },
+    code: "PATTERN_INVALID",
+  },
+  "08-cve-malformed": {
+    doc: { ...minimalReport(), identifiers: { cve: ["CVE-79"] } },
+    code: "PATTERN_INVALID",
+  },
+  "09-precondition-unknown": {
+    doc: { ...minimalReport(), preconditions: ["moon_phase"] },
+    code: "ENUM_INVALID",
+  },
+  "10-wrong-profile-version": { doc: { ...minimalReport(), report: "0.9" }, code: "VERSION_UNSUPPORTED" },
+};
+
+for (const [name, doc] of Object.entries(reportsValid)) {
+  writeFileSync(join(reportsValidDir, `${name}.json`), JSON.stringify(doc, null, 2) + "\n");
+}
+
+const reportExpected = {};
+for (const [name, entry] of Object.entries(reportsInvalid)) {
+  writeFileSync(join(reportsInvalidDir, `${name}.json`), JSON.stringify(entry.doc, null, 2) + "\n");
+  reportExpected[`${name}.json`] = { code: entry.code };
+}
+writeFileSync(join(root, "tests", "reports", "expected.json"), JSON.stringify(reportExpected, null, 2) + "\n");
+
+writeFileSync(join(reportExamplesDir, "01-minimal.json"), JSON.stringify(minimalReport(), null, 2) + "\n");
+writeFileSync(join(reportExamplesDir, "02-full.json"), JSON.stringify(fullReport(), null, 2) + "\n");
+
 console.log(
-  `Corpus written: ${Object.keys(valid).length} valid, ${Object.keys(invalid).length} invalid files.`,
+  `Corpus written: ${Object.keys(valid).length} valid, ${Object.keys(invalid).length} invalid files, ` +
+    `${Object.keys(reportsValid).length} valid and ${Object.keys(reportsInvalid).length} invalid reports.`,
 );

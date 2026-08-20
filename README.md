@@ -1,20 +1,24 @@
 # CVD Policy Format — specification
 
-Normative text, JSON Schema, examples and test corpus for version 0.1.
+Normative text, JSON Schema, examples and test corpus. Current version: **0.2**.
+Version 0.1 stays published and valid — a released version never changes.
 
 **Licence: CC0-1.0.** Copy it, quote it, host it, change it. No attribution
 required.
 
 ```text
-SPEC.md                          Normative text (English governs)
-SPEC.de.md                       German translation
-schema/cvd-policy-0.1.schema.json
-examples/                        Five complete documents
-tests/valid/                     Documents that must validate
-tests/invalid/                   Documents that must be rejected
-tests/expected.json              Expected error code per invalid file
-scripts/build-corpus.mjs         Regenerates the corpus
-scripts/validate-corpus.mjs      CI check against the schema alone
+SPEC.md                              Normative text (English governs)
+SPEC.de.md                           German translation
+schema/cvd-policy-0.1.schema.json    Frozen
+schema/cvd-policy-0.2.schema.json    Generated from 0.1 plus the delta
+schema/profiles/report-0.1.schema.json   Shape of an incoming report
+examples/                            Complete documents
+examples/reports/                    Complete reports
+tests/valid/, tests/invalid/         Policy corpus, with expected error codes
+tests/reports/                       Report corpus
+scripts/build-schema.mjs             Regenerates 0.2 from 0.1
+scripts/build-corpus.mjs             Regenerates both corpora
+scripts/validate-corpus.mjs          CI check against the schemas alone
 ```
 
 ## The test corpus is the real specification
@@ -28,8 +32,8 @@ JSON Schema cannot express.
 
 ```bash
 npm install
-npm test                  # schema-level check of the whole corpus
-npm run build-corpus      # regenerate tests/ after a schema change
+npm test          # schema-level check of both corpora
+npm run build     # regenerate the 0.2 schema and the corpora
 ```
 
 Semantic rules — an elapsed `expires`, a claim about someone else's host — are

@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cvd-policy.eu/schema/profiles/report-0.1.schema.json",
+  "title": "CVD Report 0.1",
+  "description": "Baseline shape of a vulnerability report. Three fields are required; everything else helps triage but must never prevent a report. Built on ISO/IEC 29147, and the reporting guidance of CISA, CERT/CC and FIRST.",
+  "type": "object",
+  "required": ["report", "title", "target", "description"],
+  "additionalProperties": true,
+
+  "properties": {
+    "report": { "const": "0.1" },
+
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Short technical summary."
+    },
+    "target": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Product, system or service the finding concerns."
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The security problem that was observed."
+    },
+
+    "reproduction": {
+      "type": "string",
+      "description": "Steps or proof of concept. Recommended, not required: it is not always available."
+    },
+    "impact": {
+      "type": "string",
+      "description": "What an attacker could achieve. Recommended, not required."
+    },
+
+    "product": { "type": "string" },
+    "version": {
+      "type": "string",
+      "description": "Version, build or firmware. `unknown` is a valid answer."
+    },
+    "endpoint": {
+      "type": "string",
+      "description": "Where it was found: URL, route, hostname or function."
+    },
+    "preconditions": {
+      "type": "array",
+      "description": "What an attacker needs before the finding can be used.",
+      "items": {
+        "enum": [
+          "none",
+          "authentication",
+          "privileged_role",
+          "network_access",
+          "local_access",
+          "physical_access",
+          "user_interaction",
+          "specific_configuration"
+        ]
+      }
+    },
+
+    "weakness": {
+      "type": "object",
+      "description": "The reporter's own assessment. Never a verified classification.",
+      "properties": {
+        "cwe": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^CWE-[0-9]+$" }
+        },
+        "note": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "identifiers": {
+      "type": "object",
+      "description": "Existing identifiers, kept apart from the reporter's own assessment.",
+      "properties": {
+        "cve": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^CVE-[0-9]{4}-[0-9]{4,}$" }
+        },
+        "advisory": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": true
+    },
+
+    "expected_behaviour": { "type": "string" },
+    "actual_behaviour": { "type": "string" },
+    "references": { "type": "array", "items": { "type": "string" } },
+
+    "exploitation": {
+      "type": "object",
+      "description": "Whether the finding is known to be exploited. Three states on purpose: an absent tick must not read as `no`.",
+      "required": ["state"],
+      "properties": {
+        "state": { "enum": ["yes", "no", "unknown"] },
+        "evidence": {
+          "type": "string",
+          "description": "Required when state is `yes`. Remains a reporter statement, not a confirmed finding."
+        },
+        "observed_at": { "type": "string", "format": "date-time" }
+      },
+      "additionalProperties": true,
+      "allOf": [
+        {
+          "if": { "properties": { "state": { "const": "yes" } }, "required": ["state"] },
+          "then": { "required": ["evidence"] }
+        }
+      ]
+    },
+
+    "coordination": {
+      "type": "object",
+      "description": "Everything already done elsewhere. Optional throughout.",
+      "properties": {
+        "vendor_contacted": { "type": "boolean" },
+        "first_contact_date": { "type": "string", "format": "date" },
+        "communication_summary": { "type": "string" },
+        "publication": {
+          "enum": ["none_planned", "planned", "published"]
+        },
+        "publication_date": { "type": "string", "format": "date" },
+        "other_vendors_affected": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": true
+    },
+
+    "reporter": {
+      "type": "object",
+      "description": "Entirely optional. A report without this object must be accepted.",
+      "properties": {
+        "name": { "type": "string" },
+        "contact": { "type": "string" },
+        "languages": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[a-z]{2}(-[A-Z]{2})?$" }
+        },
+        "consent": {
+          "type": "object",
+          "description": "Three separate decisions. None may be inferred from another, and none defaults to true.",
+          "properties": {
+            "share_contact_with_affected_party": { "type": "boolean" },
+            "public_credit": { "type": "boolean" },
+            "credit_name": { "type": "string" }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+
+    "attachments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["filename"],
+        "properties": {
+          "filename": { "type": "string", "minLength": 1 },
+          "media_type": { "type": "string" },
+          "size_bytes": { "type": "integer", "exclusiveMinimum": 0 },
+          "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+        },
+        "additionalProperties": true
+      }
+    },
+
+    "submitted_at": { "type": "string", "format": "date-time" }
+  }
+}

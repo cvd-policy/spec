@@ -1,6 +1,7 @@
 # CVD Policy Format 0.1
 
 **Status:** Entwurf
+**Version:** 0.2
 **Datum:** 2026-08-18
 **Lizenz:** CC0-1.0
 **Kanonische Fassung:** https://cvd-policy.eu/spec
@@ -297,6 +298,61 @@ missversteht.
 Wert `prohibited` bedeutet, dass ein Beleg über den Nachweis der Erreichbarkeit
 hinaus (etwa ausgeleitete Daten) unerwünscht ist.
 
+#### `intake` (ab 0.2)
+
+Wer strukturierte Meldungen entgegennehmen kann, trägt das hier ein. Alle
+Angaben in `intake` sind freiwillig; ein Dokument ohne diesen Block ist
+vollständig.
+
+```json
+{
+  "intake": {
+    "url": "https://example.com/report/submit",
+    "schema": "https://example.com/report/schema.json",
+    "profile": "report-0.1",
+    "anonymous": true,
+    "max_bytes": 5242880,
+    "attachments": "after_contact"
+  }
+}
+```
+
+| Feld | Bedeutung |
+| ---- | --------- |
+| `url` | Endpunkt, der Meldungen annimmt. Innerhalb von `intake` Pflicht, nur `https` |
+| `schema` | JSON Schema, das der Endpunkt akzeptiert, nur `https` |
+| `profile` | Benanntes Meldeprofil als Grundlage, etwa `report-0.1` |
+| `anonymous` | Ob eine Meldung ohne Angaben zur Person angenommen wird |
+| `max_bytes` | Größte akzeptierte Übermittlung |
+| `attachments` | `accepted`, `after_contact` oder `not_accepted` |
+
+`url` und `schema` MÜSSEN absolute `https`-URIs ohne Benutzerangaben sein. Das
+Dokument DARF keinerlei Zugangsdaten enthalten: Ein Endpunkt, der ein Geheimnis
+braucht, gehört nicht in eine öffentliche Datei.
+
+Der Endpunkt DARF auf einer fremden Domain liegen. Darüber entscheidet, wer das
+Dokument veröffentlicht — genau wie beim Kontaktkanal `service`. Für eine Organisation, deren Meldestelle ein Dienstleister betreibt,
+ist es der Normalfall.
+
+`intake` beschreibt einen zusätzlichen, maschinenlesbaren Weg. Er ersetzt
+`contact` nicht: Ein Mensch MUSS weiterhin über einen dort genannten Kanal melden
+können.
+
+##### Regeln für Konsumenten
+
+```text
+- Konsumenten DÜRFEN eine Meldung NICHT absenden, ohne dass ein Mensch das
+  bestätigt.
+- Konsumenten MÜSSEN den empfangenden Host anzeigen, bevor etwas gesendet wird.
+- Konsumenten DÜRFEN Dateien und Exploit-Material NICHT automatisch anhängen.
+- Schlägt die Übermittlung fehl, MÜSSEN Konsumenten das als gescheiterte Meldung
+  behandeln und auf einen Kanal aus "contact" zurückfallen.
+```
+
+Die erste Regel ist die entscheidende. In einer Meldung stehen die Einzelheiten
+einer offenen Schwachstelle. Wohin sie gehen, entscheidet ein Mensch — das ist
+kein Schritt, den ein Werkzeug stellvertretend erledigt.
+
 ### 4.9 `disclosure`
 
 ```json
@@ -382,7 +438,22 @@ Policy deckt diese Subdomain ab, nicht die Organisation. Zugleich bleiben beide
 berechtigten Fälle möglich: ein zentral abgelegtes Dokument, auf das jede
 `security.txt` verweist, und die Ablage durch einen Dienstleister.
 
-### 5.3 Fehlertoleranz
+### 5.3 Versionen
+
+`cvd_policy` nennt die Version, für die ein Dokument geschrieben wurde. Wer diese
+Version umsetzt, MUSS auch `0.1`-Dokumente annehmen und nach den Regeln von 0.1
+auswerten. Diese unterscheiden sich allein darin, dass es dort
+`report_requirements.intake` nicht gibt.
+
+Eine veröffentlichte Version ändert sich nie. `0.1`-Dokumente bleiben gültig und
+lesbar; aus 0.2 folgt für niemanden die Pflicht, ein Dokument neu auszustellen.
+
+Da unbekannte Felder ignoriert werden (Abschnitt 5), KANN ein 0.1-Dokument
+bereits einen `intake`-Block enthalten. Wer nur 0.1 kennt, überspringt ihn; wer
+0.2 kennt, DARF ihn nutzen. Veröffentlichende Organisationen SOLLTEN
+`cvd_policy` auf `0.2` setzen, sobald sie sich darauf verlassen.
+
+### 5.4 Fehlertoleranz
 
 Ein Dokument, das gegen das Schema verstößt, SOLLTE als nicht vorhanden
 behandelt werden. Ein Konsument DARF Teile eines fehlerhaften Dokuments für die
@@ -420,6 +491,32 @@ dieser Spezifikation auswerten. Ein Profil DARF NICHT die Bedeutung eines in
 dieser Spezifikation definierten Feldes ändern.
 
 Herstellerspezifische Felder SOLLTEN mit `x_` beginnen.
+
+### 7.1 Veröffentlichte Profile
+
+| Profil | Zweck | Ort |
+| ------ | ----- | --- |
+| `report-0.1` | Aufbau einer eingehenden Meldung | `schema/profiles/report-0.1.schema.json` |
+
+`report-0.1` beschreibt den Inhalt einer Meldung, nicht den einer Policy. Ein
+Dokument verweist über `report_requirements.intake.profile` darauf;
+der dort genannte Endpunkt nimmt Meldungen nach diesem Profil an.
+
+Pflicht sind drei Felder: Titel, betroffenes Ziel und Beschreibung. Alles andere
+ist freiwillig, auch Reproduktion und Auswirkung — beides liegt nicht immer vor,
+und ein fehlendes Feld darf niemanden davon abhalten, überhaupt zu melden. Darin folgt das
+Profil der ISO/IEC 29147 sowie den Empfehlungen von CISA, CERT/CC und FIRST.
+
+Zwei Festlegungen im Profil sind bewusst so gewählt:
+
+- **Ausnutzung kennt drei Zustände**: `yes`, `no` und `unknown`. Ein nicht
+  gesetztes Häkchen ist keine Verneinung; wer es als solche speichert, erzeugt
+  falsche Sicherheit. Bei `yes` ist ein Beleg Pflicht, und er bleibt eine Angabe
+  der meldenden Person, keine bestätigte Feststellung.
+- **Einwilligung besteht aus drei getrennten Entscheidungen**: Kontaktdaten
+  angeben, deren Weitergabe an die betroffene Organisation erlauben, öffentlich
+  genannt werden. Keine folgt aus einer anderen, keine ist vorbelegt. Eine
+  Meldung ohne all das MUSS angenommen werden.
 
 ---
 
@@ -478,6 +575,9 @@ Vollständige Dokumente liegen unter `examples/`:
 | `03-open-research.json`                | Offene Einladung mit Ratenbegrenzung          |
 | `04-prohibited.json`                   | Tests ausgeschlossen                          |
 | `05-full-cra-profile.json`             | Alle Felder, Profil `cra-0.1`                 |
+| `06-machine-readable-intake.json`      | 0.2, Meldestelle bei einem Dienstleister      |
+
+Meldungen nach dem Profil `report-0.1` liegen unter `examples/reports/`.
 
 Minimalbeispiel:
 
