@@ -1,8 +1,8 @@
-# CVD Policy Format 0.1
+# CVD Policy Format
 
 **Status:** Draft
 **Version:** 0.2
-**Date:** 2026-08-18
+**Date:** 2026-08-21
 **License:** CC0-1.0
 **Canonical version:** https://cvd-policy.eu/spec
 **Translations:** [Deutsch](SPEC.de.md)
