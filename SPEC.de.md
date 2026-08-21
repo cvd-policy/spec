@@ -16,7 +16,7 @@
 Wer Meldungen über Sicherheitslücken entgegennimmt, kann seine Bedingungen
 heute nicht maschinenlesbar ausdrücken. Die `security.txt` (RFC 9116) nennt einen
 Kontakt und verweist im Feld `Policy:` auf eine beliebige HTML-Seite. Was dort
-steht, kann ein Werkzeug nicht auswerten.
+steht, kann ein Tool nicht auswerten.
 
 Das CVD Policy Format schließt genau diese Lücke: ein JSON-Dokument, das
 beschreibt, *ob* Sicherheitsforschung erwünscht ist, *woran*, *unter welchen
@@ -118,12 +118,15 @@ Alle übrigen Felder sind optional.
 
 ### 4.2 `cvd_policy`, `canonical`, `expires`, `updated`
 
-| Feld         | Typ                | Pflicht | Bedeutung                                     |
-| ------------ | ------------------ | ------- | --------------------------------------------- |
-| `cvd_policy` | `"0.1"`            | ja      | Version dieses Formats                        |
-| `canonical`  | URI, `https://`    | ja      | Ort, an dem das Dokument gelten soll          |
-| `expires`    | date-time (RFC 3339) | ja    | Zeitpunkt, ab dem das Dokument ungültig ist   |
-| `updated`    | date (RFC 3339)    | nein    | Tag der letzten inhaltlichen Änderung         |
+| Feld         | Typ                  | Pflicht | Bedeutung                                     |
+| ------------ | -------------------- | ------- | --------------------------------------------- |
+| `cvd_policy` | `"0.1"` oder `"0.2"` | ja      | Version, für die das Dokument geschrieben ist |
+| `canonical`  | URI, `https://`      | ja      | Ort, an dem das Dokument gelten soll          |
+| `expires`    | date-time (RFC 3339) | ja      | Zeitpunkt, ab dem das Dokument ungültig ist   |
+| `updated`    | date (RFC 3339)      | nein    | Tag der letzten inhaltlichen Änderung         |
+
+Jede veröffentlichte Version hat ihr eigenes Schema, und ein Dokument wird gegen
+das Schema geprüft, das es angibt. Abschnitt 5.3 beschreibt das Nebeneinander.
 
 `expires` MUSS in der Zukunft liegen. Ein Zeitraum von höchstens zwölf Monaten
 wird empfohlen: Ein Dokument, das einmal im Jahr geprüft wird, veraltet seltener,
@@ -351,7 +354,7 @@ können.
 
 Die erste Regel ist die entscheidende. In einer Meldung stehen die Einzelheiten
 einer offenen Schwachstelle. Wohin sie gehen, entscheidet ein Mensch — das ist
-kein Schritt, den ein Werkzeug stellvertretend erledigt.
+kein Schritt, den ein Tool stellvertretend erledigt.
 
 ### 4.9 `disclosure`
 
@@ -381,7 +384,7 @@ Die folgenden sechs Sätze sind die Kernaussagen dieser Spezifikation.
   behandeln.
 - "out" hat Vorrang vor "in", sofern "precedence" nichts anderes festlegt.
 - Bedingungen in "conditions" sind normativ und MÜSSEN von automatisierten
-  Werkzeugen durchgesetzt werden, nicht nur angezeigt.
+  Tools durchgesetzt werden, nicht nur angezeigt.
 - Dieses Dokument erzeugt keinen Rechtsschutz. Es dokumentiert eine Erklärung
   der veröffentlichenden Organisation.
 ```
@@ -464,12 +467,17 @@ Dokument ungültig ist, und DARF daraus keine Erlaubnis ableiten.
 
 ## 6 Integrität und Signatur
 
-Version 0.1 definiert kein Signaturverfahren. Die Integrität beruht auf TLS und
-auf der Kontrolle über den Ort, an dem das Dokument liegt.
+Keine veröffentlichte Version definiert ein Signaturverfahren. Die Integrität
+beruht auf TLS und auf der Kontrolle über den Ort, an dem das Dokument liegt.
 
 Ein späteres Verfahren SOLLTE als abtrennbare Signatur neben dem Dokument liegen
 (`cvd.json.sig`), damit das Dokument selbst reines JSON bleibt. Konsumenten von
-0.1 ignorieren ein unbekanntes Feld `signature` folgenlos — Abschnitt 5.
+0.1 und 0.2 ignorieren ein unbekanntes Feld `signature` folgenlos — Abschnitt 5.
+
+Eine `security.txt` kann nach RFC 9116 selbst im Klartext signiert sein. Wird das
+Feld `CVD-Policy` in eine solche Datei aufgenommen, zerstört das ihre Signatur —
+ein Feld zu ergänzen und die Signatur zu behalten, ist nicht möglich. Wer die
+Datei ändert, muss sie erneut signieren.
 
 ---
 

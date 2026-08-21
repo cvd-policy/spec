@@ -1,5 +1,24 @@
 # Changelog
 
+## Errata
+
+Corrections to the prose of a released version. A published version never
+changes; where the text and the schema disagreed, the schema governed all along,
+so nothing anyone published needs reissuing.
+
+- **0.2, section 4.2** — the field table gave the type of `cvd_policy` as
+  `"0.1"`, which had been true of the 0.1 text it was copied from. The 0.2
+  schema pins `"0.2"` and section 5.3 sets out how the versions coexist; only
+  the table was wrong. It now reads `"0.1"` or `"0.2"`, in both languages.
+- **0.2, section 6** — the text still said "version 0.1 defines no signature
+  mechanism", written before 0.2 existed and equally true of it. It now says
+  that no published version defines one. The section also notes what a
+  publisher meets in practice: a `security.txt` may be clear-signed, and adding
+  `CVD-Policy` to such a file breaks that signature.
+- **German translation, wording only** — "Werkzeug" now reads "Tool", which is
+  what German-speaking developers call one. The English text governs and did not
+  change; neither did any requirement.
+
 ## 0.2 — released
 
 Adds one optional field. Every 0.1 document stays valid, and consumers of 0.2

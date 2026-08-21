@@ -117,10 +117,13 @@ All other fields are optional.
 
 | Field        | Type                   | Required | Meaning                                  |
 | ------------ | ---------------------- | -------- | ---------------------------------------- |
-| `cvd_policy` | `"0.1"`                | yes      | Version of this format                   |
+| `cvd_policy` | `"0.1"` or `"0.2"`     | yes      | Version this document is written for     |
 | `canonical`  | URI, `https://`        | yes      | Location at which the document applies   |
 | `expires`    | date-time (RFC 3339)   | yes      | Point in time after which it is invalid  |
 | `updated`    | date (RFC 3339)        | no       | Day of the last substantive change       |
+
+Each published version has its own schema, and a document is validated against
+the one it declares. Section 5.3 says how the two coexist.
 
 `expires` MUST lie in the future. A period of at most twelve months is
 recommended: a document reviewed once a year is less likely to be out of date
@@ -448,12 +451,16 @@ the document is invalid, and MUST NOT derive any permission from it.
 
 ## 6 Integrity and signature
 
-Version 0.1 defines no signature mechanism. Integrity rests on TLS and on control
-over the location the document is served from.
+No published version defines a signature mechanism. Integrity rests on TLS and on
+control over the location the document is served from.
 
 A later mechanism SHOULD sit beside the document as a detached signature
 (`cvd.json.sig`) so that the document itself stays plain JSON. Consumers of 0.1
-ignore an unknown `signature` field without consequence — see section 5.
+and 0.2 ignore an unknown `signature` field without consequence — see section 5.
+
+A `security.txt` may itself be clear-signed under RFC 9116. Note that adding the
+`CVD-Policy` field to such a file breaks that signature: there is no way to add a
+field and keep it. Whoever changes the file has to sign it again.
 
 ---
 
