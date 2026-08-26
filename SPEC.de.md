@@ -564,11 +564,37 @@ Link-Local- oder Metadata-Adressen zugreifen.
 
 Diese Fassung beantragt nichts. Vorgesehen sind:
 
+- Registrierung des Well-Known-URI `cvd.json` im Register „Well-Known URIs“ zu
+  RFC 8615
 - Registrierung des `security.txt`-Feldes `CVD-Policy` im Well-Known-Feldregister
   zu RFC 9116
 - Registrierung des Media-Type `application/cvd-policy+json`
 
-Ein Antrag ist erst sinnvoll, wenn reale Nutzung nachweisbar ist.
+Der erste Punkt ist eine Pflicht, keine Höflichkeit. Nach RFC 8615 MUSS eine
+Anwendung, die einen Well-Known-URI einführt, ihn registrieren, und Abschnitt 3.2
+dieses Dokuments führt einen ein. Solange die Registrierung aussteht, belegt jede
+Organisation, die dieser Spezifikation folgt, einen Namen in einem Namensraum,
+über den ein Register wacht. Es geht dabei nichts kaputt — kein Consumer ist
+betroffen, kein standardkonformer Client verhält sich anders —, aber die Pflicht
+besteht, und sie wird hier festgehalten statt verschwiegen.
+
+Das Register verlangt „Specification Required“, keinen Standards-Track-RFC.
+Dieses offen unter CC0 veröffentlichte Dokument genügt dem, und eine
+Registrierung kann zunächst vorläufig erfolgen. `cvd.json` soll daher registriert
+werden, ohne auf Verbreitung zu warten; die beiden übrigen Einträge sind erst
+sinnvoll, wenn reale Nutzung nachweisbar ist.
+
+RFC 8615 rät davon ab, allgemeine Begriffe zu besetzen, und bittet um genaue
+Namen. `cvd` ist eine Abkürzung, die auch außerhalb dieses Felds Bedeutungen hat;
+die zuständigen Fachleute könnten einen längeren Namen vorziehen. Eine
+veröffentlichte Version dieses Formats ändert ihren Pfad nie, ein solcher Name
+gehörte also zu einer späteren Version.
+
+Die menschenlesbare Seite, die manche Organisationen neben dem Dokument
+ausliefern, ist bewusst kein Well-Known-URI. Kein Consumer sucht sie — erreicht
+wird sie ausschließlich über das Feld `Policy` aus RFC 9116, das eine absolute URL
+trägt —, sie braucht also keinen registrierten Namen und liegt auf einem
+gewöhnlichen Pfad.
 
 ---
 

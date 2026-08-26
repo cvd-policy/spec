@@ -543,11 +543,35 @@ reach private, loopback, link-local or metadata addresses.
 
 This revision requests nothing. Intended are:
 
+- registration of the well-known URI `cvd.json` in the "Well-Known URIs"
+  registry of RFC 8615
 - registration of the `security.txt` field `CVD-Policy` in the well-known field
   registry of RFC 9116
 - registration of the media type `application/cvd-policy+json`
 
-A request is only meaningful once real-world use can be demonstrated.
+The first of these is an obligation, not a courtesy. RFC 8615 says that
+applications minting a well-known URI MUST register it, and section 3.2 of this
+document mints one. Until the registration is made, a publisher following this
+specification occupies a name in a namespace that is governed by a registry.
+Nothing breaks — no consumer is affected and no standards-compliant client
+behaves differently — but the obligation is open, and it is recorded here rather
+than left unsaid.
+
+The registry's policy is Specification Required, not a Standards Track RFC. This
+document, published openly under CC0, meets that bar, and a registration may be
+provisional before it is permanent. The intent is therefore to register `cvd.json`
+without waiting for adoption; the two entries below remain more meaningful once
+real-world use can be demonstrated.
+
+Note that RFC 8615 discourages squatting on generic terms and asks for precise
+names. `cvd` is an abbreviation with meanings outside this field, and the
+designated experts may prefer a longer name. A published version of this format
+never changes its path, so any such name would belong to a later version.
+
+The human-readable policy page some publishers serve alongside the document is
+deliberately not a well-known URI. No consumer discovers it — it is reached only
+through the `Policy` field of RFC 9116, which carries an absolute URL — so it
+needs no registered name and takes an ordinary path.
 
 ---
 

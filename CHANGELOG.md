@@ -18,6 +18,14 @@ so nothing anyone published needs reissuing.
 - **German translation, wording only** — "Werkzeug" now reads "Tool", which is
   what German-speaking developers call one. The English text governs and did not
   change; neither did any requirement.
+- **0.2, section 9** — the IANA list named the `security.txt` field and the media
+  type but not the well-known URI, although section 3.2 mints one and RFC 8615
+  says an application that mints a well-known URI MUST register it. The
+  obligation was open and unrecorded. Section 9 now names it first, and states
+  that the registry asks for Specification Required rather than a Standards Track
+  RFC — a bar this document already meets — so the registration need not wait for
+  adoption. Nothing about where a publisher puts the file changed: section 3.2
+  still reads `/.well-known/cvd.json`, and no published document needs reissuing.
 
 ## 0.2 — released
 
