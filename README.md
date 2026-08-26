@@ -9,6 +9,7 @@ required.
 ```text
 SPEC.md                              Normative text (English governs)
 SPEC.de.md                           German translation
+GOVERNANCE.md                        Who decides, and what happens if we stop
 schema/cvd-policy-0.1.schema.json    Frozen
 schema/cvd-policy-0.2.schema.json    Generated from 0.1 plus the delta
 schema/profiles/report-0.1.schema.json   Shape of an incoming report
