@@ -317,6 +317,39 @@
     ]
   },
   {
+    "id": "posture-report-only-no-matching-rule",
+    "base": "limited-web-testing.json",
+    "set": {
+      "/research/posture": "report_only",
+      "/testing/rules/0/state": "prohibited",
+      "/testing/rules/0/activity": "manual_testing"
+    },
+    "query": {
+      "activity": "automated_scanning",
+      "target": "https://example.com/",
+      "plan": {
+        "requestsPerSecond": 1,
+        "concurrentRequests": 1,
+        "userAgent": "tool security-research/1"
+      }
+    },
+    "authority": {
+      "established": true,
+      "discoveryHost": "example.com",
+      "securityTxtUri": "https://example.com/.well-known/security.txt",
+      "cvdPolicyUri": "https://example.com/cvd-policy.json",
+      "securityTxtExpires": "2027-02-28T08:00:00Z"
+    },
+    "now": "2026-08-29T10:00:00Z",
+    "expected": {
+      "status": "publisher-stated-prohibited",
+      "reasonCode": "testing_rule_prohibited"
+    },
+    "requirements": [
+      "EVAL-003"
+    ]
+  },
+  {
     "id": "rule-prohibited",
     "base": "limited-web-testing.json",
     "set": {

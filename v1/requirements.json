@@ -54,6 +54,7 @@
     "security-txt:missing-field"
   ],
   "DISC-004": [
+    "security-txt:contact-invalid",
     "security-txt:contact-missing",
     "security-txt:expired",
     "security-txt:expires-duplicate",
@@ -157,7 +158,8 @@
     "assertion:nonpositive-fail-closed"
   ],
   "EVAL-003": [
-    "assertion:evaluation-order"
+    "assertion:evaluation-order",
+    "evaluation:posture-report-only-no-matching-rule"
   ],
   "EVAL-004": [
     "evaluation:multiple-permits-one-satisfied",

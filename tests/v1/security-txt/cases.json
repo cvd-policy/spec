@@ -175,6 +175,23 @@
     ]
   },
   {
+    "id": "contact-invalid",
+    "text": "Contact: not-a-uri\nCVD-Policy: https://example.com/policy.json\nExpires: 2027-02-28T08:00:00Z\n",
+    "context": {
+      "requestedUri": "https://example.com/.well-known/security.txt",
+      "finalUri": "https://example.com/.well-known/security.txt",
+      "redirectChain": [],
+      "retrievedAt": "2026-08-29T10:00:00Z"
+    },
+    "expected": {
+      "established": false,
+      "code": "security_txt_contact_invalid"
+    },
+    "requirements": [
+      "DISC-004"
+    ]
+  },
+  {
     "id": "expires-missing",
     "text": "Contact: mailto:security@example.com\nCVD-Policy: https://example.com/policy.json\n",
     "context": {
