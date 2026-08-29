@@ -1,0 +1,81 @@
+{
+  "_id": "@cvd-policy/cli@0.4.0",
+  "_rev": "5-96ae4c56de985340a7f1d88ff70a15ae",
+  "name": "@cvd-policy/cli",
+  "dist-tags": {
+    "latest": "0.4.0"
+  },
+  "versions": [
+    "0.1.0",
+    "0.2.0",
+    "0.3.0",
+    "0.3.1",
+    "0.4.0"
+  ],
+  "time": {
+    "created": "2026-08-18T15:00:48.355Z",
+    "modified": "2026-08-26T16:23:06.281Z",
+    "0.1.0": "2026-08-18T15:00:48.878Z",
+    "0.2.0": "2026-08-20T22:22:25.683Z",
+    "0.3.0": "2026-08-21T16:15:42.003Z",
+    "0.3.1": "2026-08-21T16:48:38.888Z",
+    "0.4.0": "2026-08-26T16:23:06.138Z"
+  },
+  "bugs": {
+    "url": "https://github.com/cvd-policy/web/issues"
+  },
+  "license": "Apache-2.0",
+  "homepage": "https://cvd-policy.eu",
+  "keywords": [
+    "security",
+    "vulnerability-disclosure",
+    "cvd",
+    "security-txt",
+    "cvd-policy"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cvd-policy/web.git",
+    "directory": "packages/cli"
+  },
+  "description": "Command line tool for the CVD Policy Format: validate, check and explain policy documents.",
+  "maintainers": [
+    "skalvartechnologies <info@skalvar.de>"
+  ],
+  "readmeFilename": "",
+  "_contentLength": 8558,
+  "version": "0.4.0",
+  "type": "module",
+  "bin": {
+    "cvd-policy": "bin/cvd-policy.js"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "@cvd-policy/core": "0.4.0"
+  },
+  "gitHead": "eca80c738498e87d4fadd5f65f87b020b1522bff",
+  "_nodeVersion": "24.11.1",
+  "_npmVersion": "11.2.0",
+  "dist": {
+    "integrity": "sha512-I/x4n2V/Qpd/8DmaUZjD5fVxpqCbs084Gbd664cRAdi9rQcQqNchmpPqCysm3AdiVgzbxPLFRLISLvBEhBy1yw==",
+    "shasum": "63a9a914d27989478d0fdc56108972dff964d31e",
+    "tarball": "https://registry.npmjs.org/@cvd-policy/cli/-/cli-0.4.0.tgz",
+    "fileCount": 6,
+    "unpackedSize": 23501,
+    "signatures": [
+      {
+        "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+        "sig": "MEUCICv/F6FA7mCR3u416Xcy5ooS75bSf5YjFCz5qS2UUY3OAiEArJubEt4YsnFW6/zE6ar654iWKAC7CijRn8Uggr6qkBA="
+      }
+    ]
+  },
+  "_npmUser": "skalvartechnologies <info@skalvar.de>",
+  "directories": {},
+  "_npmOperationalInternal": {
+    "host": "s3://npm-registry-packages-npm-production",
+    "tmp": "tmp/cli_0.4.0_1787761385969_0.21956048900594127"
+  },
+  "_hasShrinkwrap": false
+}

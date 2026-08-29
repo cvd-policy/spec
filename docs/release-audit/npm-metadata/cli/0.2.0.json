@@ -1,0 +1,81 @@
+{
+  "_id": "@cvd-policy/cli@0.2.0",
+  "_rev": "5-96ae4c56de985340a7f1d88ff70a15ae",
+  "name": "@cvd-policy/cli",
+  "dist-tags": {
+    "latest": "0.4.0"
+  },
+  "versions": [
+    "0.1.0",
+    "0.2.0",
+    "0.3.0",
+    "0.3.1",
+    "0.4.0"
+  ],
+  "time": {
+    "created": "2026-08-18T15:00:48.355Z",
+    "modified": "2026-08-26T16:23:06.281Z",
+    "0.1.0": "2026-08-18T15:00:48.878Z",
+    "0.2.0": "2026-08-20T22:22:25.683Z",
+    "0.3.0": "2026-08-21T16:15:42.003Z",
+    "0.3.1": "2026-08-21T16:48:38.888Z",
+    "0.4.0": "2026-08-26T16:23:06.138Z"
+  },
+  "bugs": {
+    "url": "https://github.com/cvd-policy/web/issues"
+  },
+  "license": "Apache-2.0",
+  "homepage": "https://cvd-policy.eu",
+  "keywords": [
+    "security",
+    "vulnerability-disclosure",
+    "cvd",
+    "security-txt",
+    "cvd-policy"
+  ],
+  "repository": {
+    "url": "git+https://github.com/cvd-policy/web.git",
+    "type": "git",
+    "directory": "packages/cli"
+  },
+  "description": "Command line tool for the CVD Policy Format: validate, check and explain policy documents.",
+  "maintainers": [
+    "skalvartechnologies <info@skalvar.de>"
+  ],
+  "readmeFilename": "",
+  "_contentLength": 8558,
+  "version": "0.2.0",
+  "bin": {
+    "cvd-policy": "bin/cvd-policy.js"
+  },
+  "dist": {
+    "shasum": "0d9e6ebe78b022e5e6ea4ee4587caa4bf1aeadd7",
+    "tarball": "https://registry.npmjs.org/@cvd-policy/cli/-/cli-0.2.0.tgz",
+    "fileCount": 6,
+    "integrity": "sha512-7Cc8q+8PgHwlezZo7+EMTCRrQwEZb8ZQ94o9OyYsM+ryg3ZhGETZen80SQL+ELxmnpFHbn9KUCrH8P2LEr0Zfg==",
+    "signatures": [
+      {
+        "sig": "MEQCIDGyJ1DrKzvS/xIyDsiL3CyRJXZmmQ+7IvBfmOq6R46VAiAW2WBaDGPFi5hV1gBs1ulHGG5jwL8+BR7MkXT01yXW3A==",
+        "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+      }
+    ],
+    "unpackedSize": 21134
+  },
+  "type": "module",
+  "gitHead": "9db0a51328a1428f577047b13fa6637c711e8522",
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "_npmUser": "skalvartechnologies <info@skalvar.de>",
+  "_npmVersion": "11.2.0",
+  "directories": {},
+  "_nodeVersion": "24.11.1",
+  "dependencies": {
+    "@cvd-policy/core": "0.2.0"
+  },
+  "_hasShrinkwrap": false,
+  "_npmOperationalInternal": {
+    "tmp": "tmp/cli_0.2.0_1787264545528_0.08086058006831798",
+    "host": "s3://npm-registry-packages-npm-production"
+  }
+}
