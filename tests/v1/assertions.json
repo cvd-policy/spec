@@ -1,0 +1,79 @@
+[
+  {
+    "id": "format-package-separation",
+    "type": "spec_contains",
+    "value": "keep package versions separate from the document format version",
+    "requirements": ["DOC-002"]
+  },
+  {
+    "id": "schema-no-defaults",
+    "type": "schema_forbids_keyword",
+    "value": "default",
+    "requirements": ["DOC-006"]
+  },
+  {
+    "id": "strict-core-objects",
+    "type": "schema_core_objects_strict",
+    "requirements": ["DOC-007"]
+  },
+  {
+    "id": "report-request-safety",
+    "type": "spec_contains",
+    "value": "MUST NOT be interpreted to request access to third-party data",
+    "requirements": ["REP-002"]
+  },
+  {
+    "id": "critical-permission-extensions",
+    "type": "spec_contains",
+    "value": "changes permission, prohibition, or conditions MUST be listed as critical",
+    "requirements": ["EXT-004"]
+  },
+  {
+    "id": "signed-file-no-rewrite",
+    "type": "spec_contains",
+    "value": "MUST NOT rewrite it automatically",
+    "requirements": ["DISC-007"]
+  },
+  {
+    "id": "media-type-policy",
+    "type": "spec_contains",
+    "value": "MUST accept `application/cvd-policy+json`",
+    "requirements": ["FETCH-001"]
+  },
+  {
+    "id": "result-not-boolean",
+    "type": "spec_contains",
+    "value": "MUST NOT be a Boolean named `allowed`, `authorized`, or `safe`",
+    "requirements": ["EVAL-001"]
+  },
+  {
+    "id": "nonpositive-fail-closed",
+    "type": "spec_contains",
+    "value": "MUST treat every status other than `publisher-stated-permitted`",
+    "requirements": ["EVAL-002"]
+  },
+  {
+    "id": "evaluation-order",
+    "type": "spec_contains",
+    "value": "An evaluator MUST perform these steps in order",
+    "requirements": ["EVAL-003"]
+  },
+  {
+    "id": "machine-readable-errors",
+    "type": "spec_contains",
+    "value": "MUST return stable machine-readable codes and JSON Pointer paths",
+    "requirements": ["ERR-001"]
+  },
+  {
+    "id": "security-fail-closed",
+    "type": "spec_contains",
+    "value": "MUST fail closed",
+    "requirements": ["SEC-001"]
+  },
+  {
+    "id": "privacy-no-transmission",
+    "type": "spec_contains",
+    "value": "MUST NOT transmit policy text",
+    "requirements": ["PRIV-001"]
+  }
+]

@@ -1,0 +1,255 @@
+{
+  "version-string.json": {
+    "code": "policy_version_unsupported",
+    "schema": true,
+    "requirements": [
+      "DOC-001"
+    ]
+  },
+  "version-0.2.json": {
+    "code": "policy_version_unsupported",
+    "schema": true,
+    "requirements": [
+      "DOC-001"
+    ]
+  },
+  "required-missing.json": {
+    "code": "policy_schema_invalid",
+    "schema": true,
+    "requirements": [
+      "DOC-008"
+    ]
+  },
+  "unknown-top-level.json": {
+    "code": "policy_schema_invalid",
+    "schema": true,
+    "requirements": [
+      "DOC-007"
+    ]
+  },
+  "unknown-condition.json": {
+    "code": "policy_schema_invalid",
+    "schema": true,
+    "requirements": [
+      "COND-001"
+    ]
+  },
+  "timestamp-invalid.json": {
+    "code": "policy_schema_invalid",
+    "schema": true,
+    "requirements": [
+      "DOC-003"
+    ]
+  },
+  "time-order.json": {
+    "code": "policy_time_order_invalid",
+    "schema": false,
+    "requirements": [
+      "DOC-009"
+    ]
+  },
+  "expired.json": {
+    "code": "policy_expired",
+    "schema": false,
+    "requirements": [
+      "DOC-010"
+    ]
+  },
+  "contact-empty.json": {
+    "code": "policy_schema_invalid",
+    "schema": true,
+    "requirements": [
+      "DOC-013"
+    ]
+  },
+  "contact-duplicate.json": {
+    "code": "policy_schema_invalid",
+    "schema": true,
+    "requirements": [
+      "DOC-013"
+    ]
+  },
+  "language-invalid.json": {
+    "code": "policy_language_tag_invalid",
+    "schema": false,
+    "requirements": [
+      "DOC-015"
+    ]
+  },
+  "http-web-contact.json": {
+    "code": "policy_schema_invalid",
+    "schema": true,
+    "requirements": [
+      "DOC-014"
+    ]
+  },
+  "organization-userinfo.json": {
+    "code": "policy_uri_invalid",
+    "schema": false,
+    "requirements": [
+      "DOC-012"
+    ]
+  },
+  "extension-id-relative.json": {
+    "code": "policy_schema_invalid",
+    "schema": true,
+    "requirements": [
+      "EXT-001"
+    ]
+  },
+  "critical-extension-missing.json": {
+    "code": "policy_critical_extension_missing",
+    "schema": false,
+    "requirements": [
+      "EXT-001"
+    ]
+  },
+  "critical-extension-duplicate.json": {
+    "code": "policy_schema_invalid",
+    "schema": true,
+    "requirements": [
+      "EXT-001"
+    ]
+  },
+  "scope-wildcard.json": {
+    "code": "policy_schema_invalid",
+    "schema": true,
+    "requirements": [
+      "SCOP-002"
+    ]
+  },
+  "scope-host-scheme.json": {
+    "code": "policy_schema_invalid",
+    "schema": true,
+    "requirements": [
+      "SCOP-002"
+    ]
+  },
+  "scope-host-port.json": {
+    "code": "policy_scope_invalid",
+    "schema": false,
+    "requirements": [
+      "SCOP-002"
+    ]
+  },
+  "scope-ip-subdomains.json": {
+    "code": "policy_scope_invalid",
+    "schema": false,
+    "requirements": [
+      "SCOP-004"
+    ]
+  },
+  "scope-id-duplicate.json": {
+    "code": "policy_scope_id_duplicate",
+    "schema": false,
+    "requirements": [
+      "SCOP-001"
+    ]
+  },
+  "rule-id-duplicate.json": {
+    "code": "policy_scope_id_duplicate",
+    "schema": false,
+    "requirements": [
+      "SCOP-001"
+    ]
+  },
+  "target-reference-unknown.json": {
+    "code": "policy_target_reference_invalid",
+    "schema": false,
+    "requirements": [
+      "TEST-006"
+    ]
+  },
+  "target-reference-out.json": {
+    "code": "policy_target_reference_invalid",
+    "schema": false,
+    "requirements": [
+      "TEST-006"
+    ]
+  },
+  "target-reference-product.json": {
+    "code": "policy_target_reference_invalid",
+    "schema": false,
+    "requirements": [
+      "SCOP-009",
+      "TEST-006"
+    ]
+  },
+  "posture-conflict-report-only.json": {
+    "code": "policy_posture_conflict",
+    "schema": false,
+    "requirements": [
+      "TEST-002"
+    ]
+  },
+  "permitted-target-missing.json": {
+    "code": "policy_schema_invalid",
+    "schema": true,
+    "requirements": [
+      "TEST-004"
+    ]
+  },
+  "state-allowed.json": {
+    "code": "policy_schema_invalid",
+    "schema": true,
+    "requirements": [
+      "TEST-003"
+    ]
+  },
+  "testing-default.json": {
+    "code": "policy_schema_invalid",
+    "schema": true,
+    "requirements": [
+      "DOC-008"
+    ]
+  },
+  "explicit-order.json": {
+    "code": "policy_schema_invalid",
+    "schema": true,
+    "requirements": [
+      "SCOP-008"
+    ]
+  },
+  "automated-rate-missing.json": {
+    "code": "policy_schema_invalid",
+    "schema": true,
+    "requirements": [
+      "COND-002"
+    ]
+  },
+  "automated-concurrency-missing.json": {
+    "code": "policy_schema_invalid",
+    "schema": true,
+    "requirements": [
+      "COND-002"
+    ]
+  },
+  "credential-test-accounts-missing.json": {
+    "code": "policy_schema_invalid",
+    "schema": true,
+    "requirements": [
+      "COND-003"
+    ]
+  },
+  "credential-test-accounts-false.json": {
+    "code": "policy_schema_invalid",
+    "schema": true,
+    "requirements": [
+      "COND-003"
+    ]
+  },
+  "activity-typo.json": {
+    "code": "policy_schema_invalid",
+    "schema": true,
+    "requirements": [
+      "TEST-003"
+    ]
+  },
+  "activity-relative-extension.json": {
+    "code": "policy_schema_invalid",
+    "schema": true,
+    "requirements": [
+      "TEST-003"
+    ]
+  }
+}

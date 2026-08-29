@@ -1,0 +1,66 @@
+{
+  "duplicate-top-level.raw.json": {
+    "code": "policy_duplicate_member",
+    "requirements": [
+      "DOC-003",
+      "DOC-004",
+      "DOC-005"
+    ]
+  },
+  "duplicate-state.raw.json": {
+    "code": "policy_duplicate_member",
+    "requirements": [
+      "DOC-003",
+      "DOC-004",
+      "DOC-005"
+    ]
+  },
+  "duplicate-expires.raw.json": {
+    "code": "policy_duplicate_member",
+    "requirements": [
+      "DOC-003",
+      "DOC-004",
+      "DOC-005"
+    ]
+  },
+  "duplicate-condition.raw.json": {
+    "code": "policy_duplicate_member",
+    "requirements": [
+      "DOC-003",
+      "DOC-004",
+      "DOC-005"
+    ]
+  },
+  "trailing-comma.raw.json": {
+    "code": "policy_parse_error",
+    "requirements": [
+      "DOC-003",
+      "DOC-004",
+      "DOC-005"
+    ]
+  },
+  "comment.raw.json": {
+    "code": "policy_parse_error",
+    "requirements": [
+      "DOC-003",
+      "DOC-004",
+      "DOC-005"
+    ]
+  },
+  "multiple-documents.raw.json": {
+    "code": "policy_parse_error",
+    "requirements": [
+      "DOC-003",
+      "DOC-004",
+      "DOC-005"
+    ]
+  },
+  "non-json-number.raw.json": {
+    "code": "policy_parse_error",
+    "requirements": [
+      "DOC-003",
+      "DOC-004",
+      "DOC-005"
+    ]
+  }
+}

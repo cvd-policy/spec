@@ -7,7 +7,10 @@
   "type": "module",
   "scripts": {
     "build-corpus": "node scripts/build-corpus.mjs",
+    "build:v1": "node scripts/build-v1-corpus.mjs && node scripts/build-v1-requirements.mjs",
     "test": "node scripts/validate-corpus.mjs",
+    "test:v1": "node scripts/validate-v1-corpus.mjs && node scripts/check-v1-requirements.mjs",
+    "check": "npm test && npm run test:v1",
     "build-schema": "node scripts/build-schema.mjs",
     "build": "node scripts/build-schema.mjs && node scripts/build-corpus.mjs"
   },
