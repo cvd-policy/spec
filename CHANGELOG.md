@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — Version 1 pre-standard candidate
+
+- Adds an isolated V1 specification, schema, examples, corpus, security.txt and
+  evaluation vectors, plus a complete normative requirement-to-test map.
+- Leaves published 0.1 and 0.2 artifacts unchanged. V1 is not an
+  Internet-Draft, release, tag, or migration of existing documents.
+
 ## Errata
 
 Corrections to the prose of a released version. A published version never

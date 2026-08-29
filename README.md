@@ -1,7 +1,10 @@
 # CVD Policy Format — specification
 
-Normative text, JSON Schema, examples and test corpus. Current version: **0.2**.
-Version 0.1 stays published and valid — a released version never changes.
+Normative text, JSON Schema, examples and test corpus. Published versions:
+**0.1** and **0.2**. Both stay valid — a released version never changes.
+
+`v1/` is a separate **pre-standard candidate**, not a replacement or migration
+of the published 0.x line. It has no package-version relationship to npm 1.x.
 
 **Licence: CC0-1.0.** Copy it, quote it, host it, change it. No attribution
 required.
@@ -20,6 +23,10 @@ tests/reports/                       Report corpus
 scripts/build-schema.mjs             Regenerates 0.2 from 0.1
 scripts/build-corpus.mjs             Regenerates both corpora
 scripts/validate-corpus.mjs          CI check against the schemas alone
+v1/SPEC.md                            Isolated V1 candidate (English governs)
+schema/cvd-policy-1.schema.json       V1 candidate schema
+tests/v1/                             V1 candidate corpus and vectors
+v1/requirements.json                 Normative requirement-to-test map
 ```
 
 ## The test corpus is the real specification
@@ -33,8 +40,10 @@ JSON Schema cannot express.
 
 ```bash
 npm install
-npm test          # schema-level check of both corpora
-npm run build     # regenerate the 0.2 schema and the corpora
+npm test          # published 0.x corpus
+npm run test:v1   # isolated V1 schema, corpus, vectors and requirement map
+npm run build     # regenerate the 0.2 schema and published corpora
+npm run build:v1  # regenerate only V1 corpus metadata
 ```
 
 Semantic rules — an elapsed `expires`, a claim about someone else's host — are

@@ -4,7 +4,7 @@
 **Version:** 0.2
 **Datum:** 2026-08-21
 **Lizenz:** CC0-1.0
-**Kanonische Fassung:** https://cvd-policy.eu/spec
+**Kanonische Fassung:** <https://cvd-policy.eu/spec>
 **Übersetzungen:** [English (maßgeblich)](SPEC.md)
 
 > Maßgeblich ist die englische Fassung. Diese Übersetzung dient dem Verständnis.
