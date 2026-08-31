@@ -4,8 +4,11 @@
 
 - Adds an isolated V1 specification, schema, examples, corpus, security.txt and
   evaluation vectors, plus a complete normative requirement-to-test map.
-- Leaves published 0.1 and 0.2 artifacts unchanged. V1 is not an
-  Internet-Draft, release, tag, or migration of existing documents.
+- Adds the unsubmitted individual Draft 00 authoring source, version-pinned
+  RFCXML/text/HTML build, 61-ID traceability map, and submission-readiness
+  report. The Draft does not change V1 semantics.
+- Leaves published 0.1 and 0.2 artifacts unchanged. Draft 00 is not a release,
+  tag, publication, submission, or migration of existing documents.
 
 ## Errata
 

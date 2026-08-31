@@ -27,6 +27,9 @@ v1/SPEC.md                            Isolated V1 candidate (English governs)
 schema/cvd-policy-1.schema.json       V1 candidate schema
 tests/v1/                             V1 candidate corpus and vectors
 v1/requirements.json                 Normative requirement-to-test map
+draft/draft-behring-cvd-policy.md     Canonical individual Internet-Draft source
+draft/REQUIREMENTS-MAPPING.md         V1 requirement-to-Draft traceability
+draft/READINESS.md                    Submission-readiness decision
 ```
 
 ## The test corpus is the real specification
@@ -44,6 +47,7 @@ npm test          # published 0.x corpus
 npm run test:v1   # isolated V1 schema, corpus, vectors and requirement map
 npm run build     # regenerate the 0.2 schema and published corpora
 npm run build:v1  # regenerate only V1 corpus metadata
+npm run check:draft # render and verify Draft, Spec, and pinned Core reference
 ```
 
 Semantic rules — an elapsed `expires`, a claim about someone else's host — are
@@ -51,5 +55,6 @@ checked by the reference library, which lives in **cvd-policy/web** together
 with the command line tool and the website. That repository runs this corpus in
 its own CI, so a change here that breaks an implementation is caught there.
 
-This repository has no dependency on the other one, and never will: the
-specification has to stand on its own.
+The specification and Draft do not require the Web worktree at runtime. The
+Draft's integration check archives the pinned committed Core reference into a
+temporary directory so local Web changes cannot affect the result.
