@@ -95,7 +95,7 @@ extensions
 
 [DOC-009] `expires` MUST represent an instant strictly later than `last_updated`.
 
-[DOC-010] An expired policy MUST produce `invalid-policy` with reason code `policy_expired` and MUST NOT produce testing permission.
+[DOC-010] An expired policy MUST produce the normative status `invalid-policy` and MUST NOT produce testing permission. A detailed expiry diagnostic is informative and implementation-specific.
 
 Evaluation accepts an injected `now`. A lifetime of approximately one year is a non-normative operational recommendation, not a validation limit.
 
@@ -127,9 +127,9 @@ Organization metadata does not establish authority.
 }
 ```
 
-[DOC-013] `contact.channels` MUST contain at least one `mailto:`, `tel:`, or HTTPS URI and MUST NOT contain an identical duplicate.
+[DOC-013] `contact.channels` MUST be non-empty. Every entry MUST be an absolute URI using only the `mailto`, `tel`, or `https` scheme, and the array MUST NOT contain an identical duplicate.
 
-[DOC-014] Web contact URIs MUST use HTTPS and HTTPS URIs MUST NOT contain userinfo.
+[DOC-014] HTTPS contact URIs MUST NOT contain userinfo or a fragment.
 
 Channel order expresses preference. Language order does not.
 
@@ -320,13 +320,13 @@ interface SecurityTxtRetrievalContext {
 }
 ```
 
-[DISC-004] Authority evidence MUST NOT be created unless the file is parseable, contains at least one valid `Contact`, exactly one valid unexpired `Expires`, and exactly one valid `CVD-Policy`.
+[DISC-004] Authority evidence MUST NOT be created unless the file is parseable, contains at least one valid `Contact`, exactly one syntactically valid `Expires` whose timestamp is later than `retrievedAt`, and exactly one valid `CVD-Policy`. A malformed `Expires` and a valid but expired `Expires` are distinct diagnostic conditions, but neither establishes authority.
 
 [DISC-005] Retrieval context URIs and every redirect hop MUST use HTTPS and redirect processing MUST preserve the original discovery host.
 
 For a redirect whose final host differs from the requested host, at least one valid `Canonical` field in the resulting file has to equal the originally requested security.txt URI. Same-host redirects do not add that requirement.
 
-[DISC-006] A cross-host security.txt redirect without that exact original `Canonical` value MUST produce `security_txt_canonical_mismatch` and MUST NOT establish authority.
+[DISC-006] A cross-host security.txt redirect without that exact original `Canonical` value MUST NOT establish authority. Any detailed canonical-mismatch diagnostic is informative and implementation-specific.
 
 OpenPGP cleartext signatures are recognized by their RFC 9116 framing. This specification does not require core software to verify them.
 
@@ -382,9 +382,11 @@ interface EvaluationQuery {
 }
 ```
 
-`target` is an absolute HTTP(S) URL. Userinfo is rejected. Scheme and host are normalized by the URL parser; omitted ports become 80 or 443; query and fragment do not affect scope matching.
+`target` accepts only an absolute HTTP or HTTPS URL without userinfo. Product identifiers and all other URI schemes are not evaluation targets. Scheme and host are normalized by the URL parser; omitted ports become 80 or 443; query and fragment do not affect scope matching.
 
-The status is one of:
+Target syntax is validated before policy evaluation. Invalid target input produces a typed input-validation failure with machine-readable issues and no evaluation status. It MUST NOT produce `not-covered` or any other normative evaluation status.
+
+A completed policy evaluation produces exactly one of these seven normative statuses:
 
 ```text
 publisher-stated-permitted
@@ -402,11 +404,11 @@ unsupported-policy
 
 `publisher-stated-permitted` means only that the policy published through established discovery contains a matching permission statement whose machine-checkable conditions are satisfied. It is not legal advice, proof of ownership, authorization by this software, or guaranteed safe harbor.
 
-Results contain the status, stable `reasonCode`, sorted matching rule and target IDs, validation issues, and the constraints of the selected satisfied rule when applicable. If multiple permitted rules are satisfied, the lexicographically smallest rule ID supplies `constraints`; this is deterministic output selection, not semantic priority.
+A status-bearing result can contain sorted matching rule and target IDs, validation issues, implementation-specific diagnostics, and the constraints of the selected satisfied rule when applicable. Detailed diagnostic identifiers are not part of the normative interoperability contract. If multiple permitted rules are satisfied, the lexicographically smallest rule ID supplies `constraints`; this is deterministic output selection, not semantic priority.
 
 ### 8.2 Required order
 
-[EVAL-003] An evaluator MUST perform these steps in order:
+[EVAL-003] After successful target input validation and normalization, an evaluator MUST perform these steps in order:
 
 1. duplicate-aware JSON parsing;
 2. format-version check;
@@ -415,15 +417,14 @@ Results contain the status, stable `reasonCode`, sorted matching rule and target
 5. policy expiry check;
 6. unknown critical-extension check;
 7. authority-evidence check;
-8. target URL normalization;
-9. exact target/discovery-host check;
-10. reporting-scope matching;
-11. `out` exclusion;
-12. research-posture check;
-13. matching-rule collection;
-14. prohibition precedence;
-15. permitted-rule condition evaluation;
-16. stable result construction.
+8. exact target/discovery-host check;
+9. reporting-scope matching;
+10. `out` exclusion;
+11. research-posture check;
+12. matching-rule collection;
+13. prohibition precedence;
+14. permitted-rule condition evaluation;
+15. stable status-bearing result construction.
 
 ### 8.3 Status precedence
 
@@ -432,53 +433,62 @@ The first applicable outcome in evaluation order wins:
 - `invalid-policy`: parse, duplicate, schema, semantic, reference, posture conflict, target-independent policy error, or expiry failure;
 - `unsupported-policy`: unsupported format version, unknown critical extension, or requested extension activity not understood by the client;
 - `authority-not-established`: missing/invalid authority evidence or target/discovery-host mismatch;
-- `not-covered`: no matching `in` scope, matching `out`, product target, or no matching testing rule;
+- `not-covered`: a syntactically valid normalized target has no matching `in` web scope, matches an `out` web scope, or has no matching testing rule;
 - `publisher-stated-prohibited`: `report_only`, `prohibited`, or a matching prohibited rule;
 - `conditions-not-satisfied`: permitted rules match but none has all conditions satisfied;
 - `publisher-stated-permitted`: at least one permitted rule is fully satisfied and no earlier outcome applies.
 
 [EVAL-004] A positive status MUST require a valid unexpired policy, supported critical behavior, established authority, exact target/discovery host equality, matching `in` scope, no matching `out`, no matching prohibition, and one fully satisfied permitted rule.
 
-## 9. Stable reason codes
+## 9. Machine-readable errors and informative diagnostics
 
-Implementations can add diagnostics but use these codes for the listed outcomes:
+[ERR-001] Input-validation and policy-processing failures MUST be machine-readable, structurally distinguishable from status-bearing evaluation results, and identify affected locations when available. Localized prose MUST NOT be the only API contract. Implementations are not required to use identical detailed diagnostic identifiers.
 
-| Code | Meaning |
-| --- | --- |
-| `policy_parse_error` | policy text is not one JSON text |
-| `policy_duplicate_member` | duplicate JSON object member |
-| `policy_schema_invalid` | Draft 2020-12 schema failure |
-| `policy_version_unsupported` | format version is not understood |
-| `policy_expired` | policy expiry is not after injected `now` |
-| `policy_scope_id_duplicate` | document-wide ID collision |
-| `policy_target_reference_invalid` | testing target reference is missing or not an `in` web entry |
-| `policy_posture_conflict` | report-only/prohibited posture has a permitted rule |
-| `policy_condition_invalid` | semantic condition failure |
-| `policy_critical_extension_missing` | critical extension has no data |
-| `policy_critical_extension_unsupported` | critical extension is not understood |
-| `policy_activity_unsupported` | requested extension activity is not understood |
-| `security_txt_parse_error` | security.txt syntax cannot be assessed |
-| `security_txt_contact_missing` | no usable Contact field |
-| `security_txt_expires_missing` | Expires is missing |
-| `security_txt_expires_duplicate` | Expires occurs more than once |
-| `security_txt_expired` | security.txt is stale at retrieval time |
-| `security_txt_cvd_policy_missing` | CVD-Policy is missing |
-| `security_txt_cvd_policy_duplicate` | CVD-Policy occurs more than once |
-| `security_txt_cvd_policy_uri_invalid` | CVD-Policy is not an allowed URI |
-| `security_txt_canonical_mismatch` | cross-host redirect lacks the original Canonical URI |
-| `authority_evidence_missing` | no established evidence was supplied |
-| `authority_host_mismatch` | target and discovery hosts differ |
-| `target_url_invalid` | target is not an allowed absolute URL |
-| `scope_target_not_covered` | no `in` entry matches |
-| `scope_target_excluded` | an `out` entry matches |
-| `testing_rule_missing` | no matching rule exists |
-| `testing_rule_prohibited` | posture or matching rule prohibits testing |
-| `conditions_missing` | required plan input is absent |
-| `conditions_exceeded` | planned rate or concurrency exceeds a limit |
-| `conditions_user_agent_missing` | required token is absent |
-| `conditions_test_accounts_unconfirmed` | controlled test accounts were not confirmed |
+The following identifiers are informative diagnostics used by the reference implementation. They are not a normative registry and conformance does not require another implementation to emit them:
 
-[ERR-001] Implementations MUST return stable machine-readable codes and JSON Pointer paths rather than using localized prose as the API contract.
+```text
+policy_parse_error
+policy_duplicate_member
+policy_schema_invalid
+policy_version_unsupported
+policy_time_order_invalid
+policy_expired
+policy_uri_invalid
+policy_language_tag_invalid
+policy_scope_invalid
+policy_scope_id_duplicate
+policy_target_reference_invalid
+policy_posture_conflict
+policy_critical_extension_missing
+policy_critical_extension_unsupported
+policy_activity_unsupported
+security_txt_parse_error
+security_txt_contact_missing
+security_txt_contact_invalid
+security_txt_expires_missing
+security_txt_expires_duplicate
+security_txt_expires_invalid
+security_txt_expired
+security_txt_cvd_policy_missing
+security_txt_cvd_policy_duplicate
+security_txt_cvd_policy_uri_invalid
+security_txt_canonical_mismatch
+security_txt_redirect_invalid
+authority_evidence_missing
+authority_host_mismatch
+target_url_invalid
+scope_target_not_covered
+scope_target_excluded
+testing_rule_missing
+testing_rule_prohibited
+testing_rule_permitted
+conditions_missing
+conditions_exceeded
+conditions_user_agent_missing
+conditions_test_accounts_unconfirmed
+```
+
+`target_url_invalid` belongs to a typed input-validation failure and never carries a normative evaluation status. `policy_condition_invalid` is omitted because Version 1 defines no distinct cross-field condition failure beyond schema validation and the existing specific semantic diagnostics.
 
 ## 10. Security considerations
 

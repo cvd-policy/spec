@@ -58,6 +58,7 @@
     "security-txt:contact-missing",
     "security-txt:expired",
     "security-txt:expires-duplicate",
+    "security-txt:expires-invalid",
     "security-txt:expires-missing",
     "security-txt:valid-exact"
   ],
@@ -137,10 +138,14 @@
   ],
   "DOC-013": [
     "policy-invalid:contact-duplicate.json",
-    "policy-invalid:contact-empty.json"
+    "policy-invalid:contact-empty.json",
+    "policy-invalid:contact-mixed-invalid.json",
+    "policy-invalid:contact-relative.json",
+    "policy-invalid:http-web-contact.json"
   ],
   "DOC-014": [
-    "policy-invalid:http-web-contact.json"
+    "policy-invalid:contact-https-fragment.json",
+    "policy-invalid:contact-https-userinfo.json"
   ],
   "DOC-015": [
     "policy-invalid:language-invalid.json"
@@ -149,7 +154,11 @@
     "policy-valid:limited-web-testing.json"
   ],
   "ERR-001": [
-    "assertion:machine-readable-errors"
+    "assertion:machine-readable-errors",
+    "evaluation:target-product-identifier",
+    "evaluation:target-relative",
+    "evaluation:target-unsupported-scheme",
+    "evaluation:target-userinfo"
   ],
   "EVAL-001": [
     "assertion:result-not-boolean"
@@ -159,7 +168,11 @@
   ],
   "EVAL-003": [
     "assertion:evaluation-order",
-    "evaluation:posture-report-only-no-matching-rule"
+    "evaluation:posture-report-only-no-matching-rule",
+    "evaluation:target-product-identifier",
+    "evaluation:target-relative",
+    "evaluation:target-unsupported-scheme",
+    "evaluation:target-userinfo"
   ],
   "EVAL-004": [
     "evaluation:multiple-permits-one-satisfied",
@@ -232,6 +245,7 @@
     "policy-invalid:explicit-order.json"
   ],
   "SCOP-009": [
+    "evaluation:target-product-identifier",
     "policy-invalid:target-reference-product.json",
     "policy-valid:minimal-report-only.json",
     "policy-valid:product-reporting.json"

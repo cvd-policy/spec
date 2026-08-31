@@ -55,13 +55,13 @@
   {
     "id": "evaluation-order",
     "type": "spec_contains",
-    "value": "An evaluator MUST perform these steps in order",
+    "value": "an evaluator MUST perform these steps in order",
     "requirements": ["EVAL-003"]
   },
   {
     "id": "machine-readable-errors",
     "type": "spec_contains",
-    "value": "MUST return stable machine-readable codes and JSON Pointer paths",
+    "value": "MUST be machine-readable, structurally distinguishable from status-bearing evaluation results",
     "requirements": ["ERR-001"]
   },
   {

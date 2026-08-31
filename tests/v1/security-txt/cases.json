@@ -48,8 +48,7 @@
       "retrievedAt": "2026-08-29T10:00:00Z"
     },
     "expected": {
-      "established": false,
-      "code": "security_txt_cvd_policy_missing"
+      "established": false
     },
     "requirements": [
       "DISC-003"
@@ -65,8 +64,7 @@
       "retrievedAt": "2026-08-29T10:00:00Z"
     },
     "expected": {
-      "established": false,
-      "code": "security_txt_cvd_policy_duplicate"
+      "established": false
     },
     "requirements": [
       "DISC-002"
@@ -82,8 +80,7 @@
       "retrievedAt": "2026-08-29T10:00:00Z"
     },
     "expected": {
-      "established": false,
-      "code": "security_txt_cvd_policy_uri_invalid"
+      "established": false
     },
     "requirements": [
       "DISC-001"
@@ -99,8 +96,7 @@
       "retrievedAt": "2026-08-29T10:00:00Z"
     },
     "expected": {
-      "established": false,
-      "code": "security_txt_cvd_policy_uri_invalid"
+      "established": false
     },
     "requirements": [
       "DISC-001"
@@ -116,8 +112,7 @@
       "retrievedAt": "2026-08-29T10:00:00Z"
     },
     "expected": {
-      "established": false,
-      "code": "security_txt_cvd_policy_uri_invalid"
+      "established": false
     },
     "requirements": [
       "DISC-001"
@@ -133,8 +128,7 @@
       "retrievedAt": "2026-08-29T10:00:00Z"
     },
     "expected": {
-      "established": false,
-      "code": "security_txt_cvd_policy_uri_invalid"
+      "established": false
     },
     "requirements": [
       "DISC-001"
@@ -150,8 +144,7 @@
       "retrievedAt": "2026-08-29T10:00:00Z"
     },
     "expected": {
-      "established": false,
-      "code": "security_txt_expired"
+      "established": false
     },
     "requirements": [
       "DISC-004"
@@ -167,8 +160,7 @@
       "retrievedAt": "2026-08-29T10:00:00Z"
     },
     "expected": {
-      "established": false,
-      "code": "security_txt_contact_missing"
+      "established": false
     },
     "requirements": [
       "DISC-004"
@@ -184,8 +176,7 @@
       "retrievedAt": "2026-08-29T10:00:00Z"
     },
     "expected": {
-      "established": false,
-      "code": "security_txt_contact_invalid"
+      "established": false
     },
     "requirements": [
       "DISC-004"
@@ -201,8 +192,7 @@
       "retrievedAt": "2026-08-29T10:00:00Z"
     },
     "expected": {
-      "established": false,
-      "code": "security_txt_expires_missing"
+      "established": false
     },
     "requirements": [
       "DISC-004"
@@ -218,8 +208,23 @@
       "retrievedAt": "2026-08-29T10:00:00Z"
     },
     "expected": {
-      "established": false,
-      "code": "security_txt_expires_duplicate"
+      "established": false
+    },
+    "requirements": [
+      "DISC-004"
+    ]
+  },
+  {
+    "id": "expires-invalid",
+    "text": "Contact: mailto:security@example.com\nCVD-Policy: https://example.com/policy.json\nExpires: not-a-timestamp\n",
+    "context": {
+      "requestedUri": "https://example.com/.well-known/security.txt",
+      "finalUri": "https://example.com/.well-known/security.txt",
+      "redirectChain": [],
+      "retrievedAt": "2026-08-29T10:00:00Z"
+    },
+    "expected": {
+      "established": false
     },
     "requirements": [
       "DISC-004"
@@ -280,8 +285,7 @@
       "retrievedAt": "2026-08-29T10:00:00Z"
     },
     "expected": {
-      "established": false,
-      "code": "security_txt_canonical_mismatch"
+      "established": false
     },
     "requirements": [
       "DISC-006"

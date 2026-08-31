@@ -12,19 +12,29 @@ for (const dir of [invalidDir, rawDir, securityDir, evaluationDir]) {
   mkdirSync(dir, { recursive: true });
 }
 
-const read = (path) => JSON.parse(readFileSync(join(root, path), "utf8"));
+const read = (path) => {
+  try {
+    return JSON.parse(readFileSync(join(root, path), "utf8"));
+  } catch (error) {
+    throw new Error(`Cannot parse ${path}`, { cause: error });
+  }
+};
 const writeJson = (path, value) =>
   writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`);
-const clone = (value) => JSON.parse(JSON.stringify(value));
+const clone = structuredClone;
 const base = read("examples/v1/limited-web-testing.json");
 
 const expected = {};
-function invalid(name, code, schema, requirements, mutate) {
+function invalid(name, diagnostic, schema, requirements, mutate) {
   const doc = clone(base);
   mutate(doc);
   const file = `${name}.json`;
   writeJson(join(invalidDir, file), doc);
-  expected[file] = { code, schema, requirements };
+  expected[file] = {
+    status: diagnostic === "policy_version_unsupported" ? "unsupported-policy" : "invalid-policy",
+    layer: schema ? "schema" : "semantic",
+    requirements,
+  };
 }
 
 invalid("version-string", "policy_version_unsupported", true, ["DOC-001"], (d) => {
@@ -60,8 +70,20 @@ invalid("contact-duplicate", "policy_schema_invalid", true, ["DOC-013"], (d) => 
 invalid("language-invalid", "policy_language_tag_invalid", false, ["DOC-015"], (d) => {
   d.contact.preferred_languages = ["en-123456789"];
 });
-invalid("http-web-contact", "policy_schema_invalid", true, ["DOC-014"], (d) => {
+invalid("http-web-contact", "policy_schema_invalid", true, ["DOC-013"], (d) => {
   d.contact.channels = ["http://example.com/contact"];
+});
+invalid("contact-relative", "policy_schema_invalid", true, ["DOC-013"], (d) => {
+  d.contact.channels = ["/security"];
+});
+invalid("contact-mixed-invalid", "policy_schema_invalid", true, ["DOC-013"], (d) => {
+  d.contact.channels.push("/security");
+});
+invalid("contact-https-userinfo", "policy_uri_invalid", false, ["DOC-014"], (d) => {
+  d.contact.channels = ["https://user@example.com/security"];
+});
+invalid("contact-https-fragment", "policy_schema_invalid", true, ["DOC-014"], (d) => {
+  d.contact.channels = ["https://example.com/security#contact"];
 });
 invalid("organization-userinfo", "policy_uri_invalid", false, ["DOC-012"], (d) => {
   d.organization.uri = "https://user@example.com/";
@@ -158,7 +180,8 @@ for (const [file, text] of Object.entries(rawCases)) {
 }
 writeJson(join(root, "tests", "v1", "raw-expected.json"),
   Object.fromEntries(Object.keys(rawCases).map((file) => [file, {
-    code: file.startsWith("duplicate-") ? "policy_duplicate_member" : "policy_parse_error",
+    status: "invalid-policy",
+    layer: "parse",
     requirements: ["DOC-003", "DOC-004", "DOC-005"],
   }])));
 
@@ -188,13 +211,14 @@ const securityCases = [
     ["contact-missing", "CVD-Policy: https://example.com/policy.json\nExpires: 2027-02-28T08:00:00Z\n", "security_txt_contact_missing", "DISC-004"],
     ["contact-invalid", "Contact: not-a-uri\nCVD-Policy: https://example.com/policy.json\nExpires: 2027-02-28T08:00:00Z\n", "security_txt_contact_invalid", "DISC-004"],
     ["expires-missing", "Contact: mailto:security@example.com\nCVD-Policy: https://example.com/policy.json\n", "security_txt_expires_missing", "DISC-004"],
-    ["expires-duplicate", "Contact: mailto:security@example.com\nCVD-Policy: https://example.com/policy.json\nExpires: 2027-02-28T08:00:00Z\nExpires: 2027-03-01T08:00:00Z\n", "security_txt_expires_duplicate", "DISC-004"],
-  ].map(([id, text, code, requirement]) => ({
+    ["expires-duplicate", "Contact: mailto:security@example.com\nCVD-Policy: https://example.com/policy.json\nExpires: 2027-02-28T08:00:00Z\nExpires: 2027-03-01T08:00:00Z\n", "DISC-004"],
+    ["expires-invalid", "Contact: mailto:security@example.com\nCVD-Policy: https://example.com/policy.json\nExpires: not-a-timestamp\n", "DISC-004"],
+  ].map(([id, text, ...metadata]) => ({
     id,
     text,
     context: { requestedUri: "https://example.com/.well-known/security.txt", finalUri: "https://example.com/.well-known/security.txt", redirectChain: [], retrievedAt: "2026-08-29T10:00:00Z" },
-    expected: { established: false, code },
-    requirements: [requirement],
+    expected: { established: false },
+    requirements: [metadata.at(-1)],
   })),
   {
     id: "same-host-redirect",
@@ -214,7 +238,7 @@ const securityCases = [
     id: "cross-host-redirect-mismatch",
     text: "Contact: mailto:security@example.com\nCVD-Policy: https://provider.example/policy.json\nExpires: 2027-02-28T08:00:00Z\nCanonical: https://security.provider.example/file.txt\n",
     context: { requestedUri: "https://example.com/.well-known/security.txt", finalUri: "https://security.provider.example/file.txt", redirectChain: ["https://security.provider.example/file.txt"], retrievedAt: "2026-08-29T10:00:00Z" },
-    expected: { established: false, code: "security_txt_canonical_mismatch" },
+    expected: { established: false },
     requirements: ["DISC-006"],
   },
 ];
@@ -269,6 +293,33 @@ const evaluationCases = [
   ["ipv6", { "/reporting_scope/web/0/host": "2001:db8::1" }, { ...defaultQuery, target: "https://[2001:db8::1]/" }, { ...evidence, discoveryHost: "2001:db8::1", securityTxtUri: "https://[2001:db8::1]/.well-known/security.txt" }, "publisher-stated-permitted", "testing_rule_permitted", ["SCOP-004"]],
   ["open-without-matching-rule", { "/research/posture": "open" }, { ...defaultQuery, activity: "manual_testing" }, evidence, "not-covered", "testing_rule_missing", ["TEST-001"]],
 ];
-writeJson(join(evaluationDir, "cases.json"), evaluationCases.map(([id, set, query, authority, status, reasonCode, requirements]) => ({ id, base: "limited-web-testing.json", set, query, authority, now: "2026-08-29T10:00:00Z", expected: { status, reasonCode }, requirements })));
+const invalidTargetCases = [
+  ["target-relative", "/admin", ["EVAL-003", "ERR-001"]],
+  ["target-unsupported-scheme", "ftp://example.com/", ["EVAL-003", "ERR-001"]],
+  ["target-userinfo", "https://user@example.com/", ["EVAL-003", "ERR-001"]],
+  ["target-product-identifier", "pkg:npm/example", ["EVAL-003", "ERR-001", "SCOP-009"]],
+].map(([id, target, requirements]) => ({
+  id,
+  base: "limited-web-testing.json",
+  set: {},
+  query: { ...defaultQuery, target },
+  authority: evidence,
+  now: "2026-08-29T10:00:00Z",
+  expected: { inputValid: false },
+  requirements,
+}));
+writeJson(join(evaluationDir, "cases.json"), [
+  ...evaluationCases.map(([id, set, query, authority, status, _diagnostic, requirements]) => ({
+    id,
+    base: "limited-web-testing.json",
+    set,
+    query,
+    authority,
+    now: "2026-08-29T10:00:00Z",
+    expected: { status },
+    requirements,
+  })),
+  ...invalidTargetCases,
+]);
 
-console.log(`V1 corpus written: ${Object.keys(expected).length} invalid policies, ${Object.keys(rawCases).length} raw cases, ${securityCases.length} security.txt cases, ${evaluationCases.length} evaluation cases.`);
+console.log(`V1 corpus written: ${Object.keys(expected).length} invalid policies, ${Object.keys(rawCases).length} raw cases, ${securityCases.length} security.txt cases, ${evaluationCases.length + invalidTargetCases.length} evaluation cases.`);

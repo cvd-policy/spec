@@ -95,7 +95,7 @@ extensions
 
 [DOC-009] `expires` muss einen Zeitpunkt strikt nach `last_updated` darstellen.
 
-[DOC-010] Eine abgelaufene Policy muss `invalid-policy` mit `policy_expired` ergeben und darf keine Testing Permission erzeugen.
+[DOC-010] Eine abgelaufene Policy muss den normativen Status `invalid-policy` ergeben und darf keine Testing Permission erzeugen. Eine detaillierte Ablaufdiagnose ist informativ und implementierungsspezifisch.
 
 Die Auswertung akzeptiert ein injiziertes `now`. Eine Laufzeit von ungefähr einem Jahr ist nur eine nichtnormative Empfehlung.
 
@@ -127,9 +127,9 @@ Organisationsmetadaten begründen keine Authority.
 }
 ```
 
-[DOC-013] `contact.channels` muss mindestens eine `mailto:`, `tel:` oder HTTPS-URI enthalten und darf kein identisches Duplikat enthalten.
+[DOC-013] `contact.channels` darf nicht leer sein. Jeder Eintrag muss eine absolute URI sein und ausschließlich das Scheme `mailto`, `tel` oder `https` verwenden; das Array darf kein identisches Duplikat enthalten.
 
-[DOC-014] Web-Kontakt-URIs müssen HTTPS verwenden; HTTPS-URIs dürfen keine Userinfo enthalten.
+[DOC-014] HTTPS-Kontakt-URIs dürfen weder Userinfo noch ein Fragment enthalten.
 
 Kanalreihenfolge drückt Präferenz aus. Sprachreihenfolge nicht.
 
@@ -320,13 +320,13 @@ interface SecurityTxtRetrievalContext {
 }
 ```
 
-[DISC-004] Authority Evidence darf nur entstehen, wenn die Datei parsebar ist, mindestens einen gültigen `Contact`, genau ein gültiges nicht abgelaufenes `Expires` und genau ein gültiges `CVD-Policy` enthält.
+[DISC-004] Authority Evidence darf nur entstehen, wenn die Datei parsebar ist, mindestens einen gültigen `Contact`, genau ein syntaktisch gültiges `Expires` mit einem Zeitpunkt nach `retrievedAt` und genau ein gültiges `CVD-Policy` enthält. Ein syntaktisch ungültiges `Expires` und ein gültiges, aber abgelaufenes `Expires` sind verschiedene Diagnosefälle; beide begründen keine Authority.
 
 [DISC-005] Kontext-URIs und jeder Redirect-Hop müssen HTTPS verwenden; Redirect-Verarbeitung muss den ursprünglichen Discovery Host erhalten.
 
 Weicht der finale Redirect-Host vom angeforderten Host ab, muss mindestens ein gültiges `Canonical` exakt der ursprünglich angeforderten security.txt-URI entsprechen. Same-Host-Redirects benötigen dies nicht zusätzlich.
 
-[DISC-006] Ein Cross-Host-Redirect ohne diesen Canonical-Wert muss `security_txt_canonical_mismatch` ergeben und darf keine Authority begründen.
+[DISC-006] Ein Cross-Host-Redirect ohne diesen exakten ursprünglichen `Canonical`-Wert darf keine Authority begründen. Eine detaillierte Canonical-Mismatch-Diagnose ist informativ und implementierungsspezifisch.
 
 OpenPGP-Cleartext-Signaturen werden an ihrem RFC-9116-Frame erkannt. Core-Software muss sie nicht verifizieren.
 
@@ -380,9 +380,11 @@ interface EvaluationQuery {
 }
 ```
 
-`target` ist eine absolute HTTP(S)-URL. Userinfo wird abgelehnt. Scheme und Host werden durch den URL-Parser normalisiert; fehlende Ports werden zu 80 oder 443; Query und Fragment beeinflussen Scope nicht.
+`target` akzeptiert ausschließlich eine absolute HTTP- oder HTTPS-URL ohne Userinfo. Product-Identifier und alle anderen URI-Schemes sind keine Evaluation-Targets. Scheme und Host werden durch den URL-Parser normalisiert; fehlende Ports werden zu 80 oder 443; Query und Fragment beeinflussen Scope nicht.
 
-Statuswerte:
+Die Target-Syntax wird vor der Policy-Auswertung validiert. Ungültige Target-Eingaben erzeugen einen typisierten Eingabevalidierungsfehler mit maschinenlesbaren Issues und ohne Evaluation-Status. Sie dürfen weder `not-covered` noch einen anderen normativen Evaluation-Status erzeugen.
+
+Eine abgeschlossene Policy-Auswertung erzeugt genau einen dieser sieben normativen Statuswerte:
 
 ```text
 publisher-stated-permitted
@@ -400,11 +402,11 @@ unsupported-policy
 
 `publisher-stated-permitted` bedeutet nur, dass die über belegte Discovery veröffentlichte Policy eine passende Erlaubnisaussage enthält, deren maschinenprüfbare Bedingungen erfüllt sind. Es ist keine Rechtsberatung, kein Eigentumsnachweis, keine Autorisierung durch Software und kein garantierter Safe Harbor.
 
-Ergebnisse enthalten Status, stabilen `reasonCode`, sortierte passende Regel- und Target-IDs, Validierungsprobleme und gegebenenfalls Constraints der ausgewählten erfüllten Regel. Bei mehreren erfüllten Regeln liefert die lexikografisch kleinste Regel-ID die `constraints`; dies ist nur deterministische Ausgabeauswahl, keine Priorität.
+Ein statustragendes Ergebnis kann sortierte passende Regel- und Target-IDs, Validierungsprobleme, implementierungsspezifische Diagnosen und gegebenenfalls Constraints der ausgewählten erfüllten Regel enthalten. Detaillierte Diagnose-Identifier sind nicht Teil des normativen Interoperabilitätsvertrags. Bei mehreren erfüllten Regeln liefert die lexikografisch kleinste Regel-ID die `constraints`; dies ist nur deterministische Ausgabeauswahl, keine Priorität.
 
 ### 8.2 Verbindliche Reihenfolge
 
-[EVAL-003] Ein Evaluator muss diese Schritte in Reihenfolge ausführen:
+[EVAL-003] Nach erfolgreicher Validierung und Normalisierung der Target-Eingabe muss ein Evaluator diese Schritte in Reihenfolge ausführen:
 
 1. duplicate-aware JSON-Parsen;
 2. Formatversionsprüfung;
@@ -413,15 +415,14 @@ Ergebnisse enthalten Status, stabilen `reasonCode`, sortierte passende Regel- un
 5. Ablaufprüfung;
 6. Prüfung unbekannter kritischer Extensions;
 7. Authority-Evidence-Prüfung;
-8. Normalisierung der Target-URL;
-9. exakter Target-/Discovery-Hostvergleich;
-10. Reporting-Scope-Matching;
-11. `out`-Ausschluss;
-12. Research-Posture-Prüfung;
-13. Sammlung passender Regeln;
-14. Verbotspräzedenz;
-15. Bedingungsprüfung erlaubender Regeln;
-16. stabile Ergebniskonstruktion.
+8. exakter Target-/Discovery-Hostvergleich;
+9. Reporting-Scope-Matching;
+10. `out`-Ausschluss;
+11. Research-Posture-Prüfung;
+12. Sammlung passender Regeln;
+13. Verbotspräzedenz;
+14. Bedingungsprüfung erlaubender Regeln;
+15. stabile Konstruktion eines statustragenden Ergebnisses.
 
 ### 8.3 Statuspräzedenz
 
@@ -430,51 +431,62 @@ Das erste anwendbare Ergebnis in Auswertungsreihenfolge gewinnt:
 - `invalid-policy`: Parse-, Duplicate-, Schema-, Semantik-, Referenz-, Posture-, andere target-unabhängige Policy- oder Ablauffehler;
 - `unsupported-policy`: unbekannte Formatversion, kritische Extension oder angefragte Extension-Aktivität;
 - `authority-not-established`: fehlende/ungültige Evidence oder Host-Mismatch;
-- `not-covered`: kein `in`-Scope, passendes `out`, Produkttarget oder keine passende Testing-Regel;
+- `not-covered`: ein syntaktisch gültiges normalisiertes Target hat keinen passenden `in`-Web-Scope, passt auf einen `out`-Web-Scope oder hat keine passende Testing-Regel;
 - `publisher-stated-prohibited`: `report_only`, `prohibited` oder passende Verbotsregel;
 - `conditions-not-satisfied`: passende Erlaubnisregeln, aber keine erfüllt alle Bedingungen;
 - `publisher-stated-permitted`: mindestens eine vollständig erfüllte Erlaubnisregel und kein früheres Ergebnis.
 
 [EVAL-004] Ein positiver Status muss eine gültige nicht abgelaufene Policy, unterstütztes kritisches Verhalten, belegte Authority, exakte Target-/Discovery-Hostgleichheit, passenden `in`-Scope, kein `out`, kein passendes Verbot und eine vollständig erfüllte Erlaubnisregel voraussetzen.
 
-## 9. Stabile Reason Codes
+## 9. Maschinenlesbare Fehler und informative Diagnosen
 
-| Code | Bedeutung |
-| --- | --- |
-| `policy_parse_error` | Policy-Text ist nicht genau ein JSON-Text |
-| `policy_duplicate_member` | doppelter JSON-Member |
-| `policy_schema_invalid` | Draft-2020-12-Schemafehler |
-| `policy_version_unsupported` | Formatversion unbekannt |
-| `policy_expired` | Policy bei injiziertem `now` abgelaufen |
-| `policy_scope_id_duplicate` | dokumentweite ID-Kollision |
-| `policy_target_reference_invalid` | Referenz fehlt oder zeigt nicht auf `in`-Web-Scope |
-| `policy_posture_conflict` | Report-only/Prohibited enthält Erlaubnisregel |
-| `policy_condition_invalid` | semantischer Bedingungsfehler |
-| `policy_critical_extension_missing` | kritische Extension ohne Daten |
-| `policy_critical_extension_unsupported` | kritische Extension unbekannt |
-| `policy_activity_unsupported` | Extension-Aktivität unbekannt |
-| `security_txt_parse_error` | security.txt nicht bewertbar |
-| `security_txt_contact_missing` | kein nutzbares Contact |
-| `security_txt_expires_missing` | Expires fehlt |
-| `security_txt_expires_duplicate` | Expires mehrfach vorhanden |
-| `security_txt_expired` | security.txt abgelaufen |
-| `security_txt_cvd_policy_missing` | CVD-Policy fehlt |
-| `security_txt_cvd_policy_duplicate` | CVD-Policy mehrfach vorhanden |
-| `security_txt_cvd_policy_uri_invalid` | CVD-Policy-URI unzulässig |
-| `security_txt_canonical_mismatch` | Cross-Host-Redirect ohne ursprüngliches Canonical |
-| `authority_evidence_missing` | keine belegte Evidence übergeben |
-| `authority_host_mismatch` | Target und Discovery Host verschieden |
-| `target_url_invalid` | Target keine zulässige absolute URL |
-| `scope_target_not_covered` | kein passender `in`-Eintrag |
-| `scope_target_excluded` | passender `out`-Eintrag |
-| `testing_rule_missing` | keine passende Testing-Regel |
-| `testing_rule_prohibited` | Posture oder Regel verbietet Tests |
-| `conditions_missing` | erforderliche Planangabe fehlt |
-| `conditions_exceeded` | Rate oder Parallelität überschritten |
-| `conditions_user_agent_missing` | erforderlicher Token fehlt |
-| `conditions_test_accounts_unconfirmed` | Testkonten nicht bestätigt |
+[ERR-001] Eingabevalidierungs- und Policy-Verarbeitungsfehler müssen maschinenlesbar und strukturell von statustragenden Evaluation-Ergebnissen unterscheidbar sein sowie, soweit verfügbar, betroffene Stellen identifizieren. Lokalisierte Prosa darf nicht der einzige API-Vertrag sein. Implementierungen müssen nicht dieselben detaillierten Diagnose-Identifier verwenden.
 
-[ERR-001] Implementierungen müssen stabile maschinenlesbare Codes und JSON-Pointer-Pfade statt lokalisierter Prosa als API-Vertrag liefern.
+Die folgenden Identifier sind informative Diagnosen der Referenzimplementierung. Sie bilden kein normatives Register; Konformität verlangt nicht, dass andere Implementierungen sie emittieren:
+
+```text
+policy_parse_error
+policy_duplicate_member
+policy_schema_invalid
+policy_version_unsupported
+policy_time_order_invalid
+policy_expired
+policy_uri_invalid
+policy_language_tag_invalid
+policy_scope_invalid
+policy_scope_id_duplicate
+policy_target_reference_invalid
+policy_posture_conflict
+policy_critical_extension_missing
+policy_critical_extension_unsupported
+policy_activity_unsupported
+security_txt_parse_error
+security_txt_contact_missing
+security_txt_contact_invalid
+security_txt_expires_missing
+security_txt_expires_duplicate
+security_txt_expires_invalid
+security_txt_expired
+security_txt_cvd_policy_missing
+security_txt_cvd_policy_duplicate
+security_txt_cvd_policy_uri_invalid
+security_txt_canonical_mismatch
+security_txt_redirect_invalid
+authority_evidence_missing
+authority_host_mismatch
+target_url_invalid
+scope_target_not_covered
+scope_target_excluded
+testing_rule_missing
+testing_rule_prohibited
+testing_rule_permitted
+conditions_missing
+conditions_exceeded
+conditions_user_agent_missing
+conditions_test_accounts_unconfirmed
+```
+
+`target_url_invalid` gehört zu einem typisierten Eingabevalidierungsfehler und trägt niemals einen normativen Evaluation-Status. `policy_condition_invalid` entfällt, weil Version 1 keinen separaten Cross-Field-Condition-Fehler neben Schema-Validierung und den vorhandenen spezifischen semantischen Diagnosen definiert.
 
 ## 10. Sicherheitsbetrachtungen
 

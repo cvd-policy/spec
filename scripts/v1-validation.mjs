@@ -26,7 +26,11 @@ export function parseJsonText(text) {
     while (index < text.length) {
       const char = text[index++];
       if (char === '"') {
-        return JSON.parse(text.slice(start, index));
+        try {
+          return JSON.parse(text.slice(start, index));
+        } catch {
+          fail("invalid string");
+        }
       }
       if (char === "\\") {
         const escaped = text[index++];
@@ -110,7 +114,11 @@ export function parseJsonText(text) {
   value([]);
   whitespace();
   if (index !== text.length) fail("unexpected trailing data");
-  return JSON.parse(text);
+  try {
+    return JSON.parse(text);
+  } catch {
+    fail("invalid JSON");
+  }
 }
 
 const GRANDFATHERED = new Set([
@@ -132,16 +140,20 @@ export function isLanguageTag(value) {
 
 export function normalizeHost(value) {
   if (typeof value !== "string" || value === "" || /[*/?#@\s]/.test(value)) throw new TypeError("invalid host");
-  const unbracketed = value.startsWith("[") && value.endsWith("]") ? value.slice(1, -1) : value;
-  if (unbracketed.includes(":")) {
-    const url = new URL(`http://[${unbracketed}]/`);
-    return { host: url.hostname.slice(1, -1).toLowerCase(), ip: true };
+  try {
+    const unbracketed = value.startsWith("[") && value.endsWith("]") ? value.slice(1, -1) : value;
+    if (unbracketed.includes(":")) {
+      const url = new URL(`http://[${unbracketed}]/`);
+      return { host: url.hostname.slice(1, -1).toLowerCase(), ip: true };
+    }
+    const withoutDot = unbracketed.endsWith(".") ? unbracketed.slice(0, -1) : unbracketed;
+    const url = new URL(`http://${withoutDot}/`);
+    if (url.port || url.username || url.password || url.pathname !== "/") throw new TypeError("invalid host");
+    const host = url.hostname.toLowerCase();
+    return { host, ip: /^\d+(?:\.\d+){3}$/.test(host) };
+  } catch (error) {
+    throw new TypeError("invalid host", { cause: error });
   }
-  const withoutDot = unbracketed.endsWith(".") ? unbracketed.slice(0, -1) : unbracketed;
-  const url = new URL(`http://${withoutDot}/`);
-  if (url.port || url.username || url.password || url.pathname !== "/") throw new TypeError("invalid host");
-  const host = url.hostname.toLowerCase();
-  return { host, ip: /^\d+(?:\.\d+){3}$/.test(host) };
 }
 
 export function semanticIssues(doc, now = new Date("2026-08-29T10:00:00Z")) {
@@ -160,6 +172,16 @@ export function semanticIssues(doc, now = new Date("2026-08-29T10:00:00Z")) {
       if (url.protocol !== "https:" || url.username || url.password) add("policy_uri_invalid", path);
     } catch {
       add("policy_uri_invalid", path);
+    }
+  }
+  for (const [index, channel] of (doc.contact?.channels ?? []).entries()) {
+    try {
+      const url = new URL(channel);
+      if (url.protocol === "https:" && (url.username || url.password || url.hash)) {
+        add("policy_uri_invalid", `/contact/channels/${index}`);
+      }
+    } catch {
+      add("policy_uri_invalid", `/contact/channels/${index}`);
     }
   }
   for (const [index, language] of (doc.contact?.preferred_languages ?? []).entries()) {
@@ -200,7 +222,7 @@ export function semanticIssues(doc, now = new Date("2026-08-29T10:00:00Z")) {
 }
 
 export function applyPointerValues(input, values) {
-  const result = JSON.parse(JSON.stringify(input));
+  const result = structuredClone(input);
   for (const [pointer, value] of Object.entries(values ?? {})) {
     const parts = pointer.slice(1).split("/").map((part) => part.replaceAll("~1", "/").replaceAll("~0", "~"));
     let target = result;

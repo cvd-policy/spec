@@ -6,7 +6,13 @@ import addFormats from "ajv-formats";
 import { applyPointerValues, DuplicateMemberError, parseJsonText, semanticIssues } from "./v1-validation.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
+const readJson = (path) => {
+  try {
+    return JSON.parse(readFileSync(path, "utf8"));
+  } catch (error) {
+    throw new Error(`Cannot parse ${path}`, { cause: error });
+  }
+};
 const files = (dir, suffix = ".json") =>
   readdirSync(dir, { withFileTypes: true })
     .flatMap((entry) => entry.isDirectory() ? files(join(dir, entry.name), suffix) : entry.name.endsWith(suffix) ? [join(dir, entry.name)] : [])
@@ -48,11 +54,13 @@ for (const file of invalidFiles) {
   }
   const doc = readJson(file);
   const schemaValid = validateSchema(doc);
-  if (meta.schema && schemaValid) fail(`${name} passed schema, expected ${meta.code}`);
-  if (!meta.schema && !schemaValid) fail(`${name} is semantic but failed schema: ${ajv.errorsText(validateSchema.errors)}`);
-  if (!meta.schema && !semanticIssues(doc, now).some((issue) => issue.code === meta.code)) {
-    fail(`${name} did not produce semantic code ${meta.code}`);
+  if (meta.layer === "schema" && schemaValid) fail(`${name} passed schema, expected schema rejection`);
+  if (meta.layer === "semantic" && !schemaValid) fail(`${name} is semantic but failed schema: ${ajv.errorsText(validateSchema.errors)}`);
+  if (meta.layer === "semantic" && semanticIssues(doc, now).length === 0) {
+    fail(`${name} did not produce a semantic issue`);
   }
+  if (!new Set(["invalid-policy", "unsupported-policy"]).has(meta.status)) fail(`${name} has invalid normative status ${meta.status}`);
+  if (Object.hasOwn(meta, "code") || Object.hasOwn(meta, "reasonCode")) fail(`${name} normatively requires a detailed diagnostic`);
 }
 for (const name of Object.keys(expected)) {
   if (!invalidFiles.some((file) => file.endsWith(`/${name}`))) fail(`${name} is declared but missing`);
@@ -73,9 +81,10 @@ for (const file of rawFiles) {
     parseJsonText(readFileSync(file, "utf8"));
     fail(`${name} was accepted`);
   } catch (error) {
-    const code = error instanceof DuplicateMemberError ? "policy_duplicate_member" : "policy_parse_error";
-    if (code !== meta.code) fail(`${name} produced ${code}, expected ${meta.code}`);
+    if (!(error instanceof SyntaxError || error instanceof DuplicateMemberError)) fail(`${name} failed without a parse error`);
   }
+  if (meta.status !== "invalid-policy" || meta.layer !== "parse") fail(`${name} has invalid normative parse expectation`);
+  if (Object.hasOwn(meta, "code") || Object.hasOwn(meta, "reasonCode")) fail(`${name} normatively requires a detailed diagnostic`);
 }
 for (const name of Object.keys(rawExpected)) {
   if (!rawFiles.some((file) => file.endsWith(`/${name}`))) fail(`${name} is declared but missing`);
@@ -92,13 +101,40 @@ for (const group of [securityCases, evaluationCases]) {
     if (!entry.expected || !Array.isArray(entry.requirements) || entry.requirements.length === 0) fail(`${entry.id} lacks expected result or requirements`);
   }
 }
+const statuses = new Set([
+  "publisher-stated-permitted",
+  "publisher-stated-prohibited",
+  "not-covered",
+  "authority-not-established",
+  "conditions-not-satisfied",
+  "invalid-policy",
+  "unsupported-policy",
+]);
+const targetIsValid = (target) => {
+  try {
+    const url = new URL(target);
+    return (url.protocol === "http:" || url.protocol === "https:") && !url.username && !url.password;
+  } catch {
+    return false;
+  }
+};
 for (const entry of evaluationCases) {
   const base = readJson(join(root, "tests", "v1", "policy", "valid", entry.base));
   const doc = applyPointerValues(base, entry.set);
   if (!validateSchema(doc)) fail(`evaluation/${entry.id} policy fails schema: ${ajv.errorsText(validateSchema.errors)}`);
   const semantic = semanticIssues(doc, new Date(entry.now));
-  if (semantic.length && !(entry.expected.reasonCode === "policy_expired" && semantic.some((issue) => issue.code === "policy_expired"))) {
+  if (semantic.length && entry.expected.status !== "invalid-policy") {
     fail(`evaluation/${entry.id} policy has unexpected semantic issues: ${JSON.stringify(semantic)}`);
+  }
+  if (entry.expected.inputValid === false) {
+    if (targetIsValid(entry.query.target)) fail(`evaluation/${entry.id} target is valid but expected input rejection`);
+    if (Object.hasOwn(entry.expected, "status")) fail(`evaluation/${entry.id} input rejection carries a status`);
+  } else {
+    if (!targetIsValid(entry.query.target)) fail(`evaluation/${entry.id} target is invalid but expects evaluation`);
+    if (!statuses.has(entry.expected.status)) fail(`evaluation/${entry.id} has invalid normative status ${entry.expected.status}`);
+  }
+  if (Object.hasOwn(entry.expected, "code") || Object.hasOwn(entry.expected, "reasonCode")) {
+    fail(`evaluation/${entry.id} normatively requires a detailed diagnostic`);
   }
 }
 
