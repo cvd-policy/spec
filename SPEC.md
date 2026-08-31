@@ -4,7 +4,7 @@
 **Version:** 0.2
 **Date:** 2026-08-21
 **License:** CC0-1.0
-**Canonical version:** https://cvd-policy.eu/spec
+**Canonical version:** <https://cvd-policy.eu/spec>
 **Translations:** [Deutsch](SPEC.de.md)
 
 ---

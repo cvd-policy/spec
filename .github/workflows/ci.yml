@@ -5,22 +5,35 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   corpus:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: npm
 
       - run: npm ci
 
-      - name: Schema accepts every valid document and rejects every invalid one
+      - name: Legacy schemas accept every valid document and reject every invalid one
         run: npm test
 
-      - name: The committed schema and corpus match their generators
+      - name: V1 schema, corpus and requirements are consistent
+        run: npm run test:v1
+
+      - name: The committed legacy schema and corpus match their generators
         run: |
           npm run build
-          git diff --exit-code schema/ tests/ examples/reports/
+          git diff --exit-code schema/cvd-policy-0.1.schema.json schema/cvd-policy-0.2.schema.json schema/profiles/ tests/valid/ tests/invalid/ tests/reports/ examples/reports/
+
+      - name: The committed V1 corpus and requirements match their generators
+        run: |
+          npm run build:v1
+          git diff --exit-code tests/v1/ v1/requirements.json

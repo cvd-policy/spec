@@ -1,0 +1,98 @@
+{
+  "_id": "@cvd-policy/core@0.4.0",
+  "_rev": "5-745922700bea6a6c0090577be8c1ee8b",
+  "name": "@cvd-policy/core",
+  "dist-tags": {
+    "latest": "0.4.0"
+  },
+  "versions": [
+    "0.1.0",
+    "0.2.0",
+    "0.3.0",
+    "0.3.1",
+    "0.4.0"
+  ],
+  "time": {
+    "created": "2026-08-18T15:00:07.028Z",
+    "modified": "2026-08-26T16:22:34.773Z",
+    "0.1.0": "2026-08-18T15:00:07.398Z",
+    "0.2.0": "2026-08-20T22:22:03.652Z",
+    "0.3.0": "2026-08-21T16:15:21.241Z",
+    "0.3.1": "2026-08-21T16:48:17.112Z",
+    "0.4.0": "2026-08-26T16:22:34.622Z"
+  },
+  "bugs": {
+    "url": "https://github.com/cvd-policy/web/issues"
+  },
+  "license": "Apache-2.0",
+  "homepage": "https://cvd-policy.eu",
+  "keywords": [
+    "security",
+    "vulnerability-disclosure",
+    "cvd",
+    "security-txt",
+    "cvd-policy"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cvd-policy/web.git",
+    "directory": "packages/core"
+  },
+  "description": "Reference implementation of the CVD Policy Format: validation, generation, evaluation, explanation.",
+  "maintainers": [
+    "skalvartechnologies <info@skalvar.de>"
+  ],
+  "readmeFilename": "README.md",
+  "_contentLength": 15330,
+  "version": "0.4.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && node scripts/build-validators.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "pretest": "npm run build"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.1",
+    "typescript": "^5.6.3",
+    "vite": "^6.4.3",
+    "vitest": "^3.2.7"
+  },
+  "gitHead": "eca80c738498e87d4fadd5f65f87b020b1522bff",
+  "_nodeVersion": "24.11.1",
+  "_npmVersion": "11.2.0",
+  "dist": {
+    "integrity": "sha512-5/tWja0+eZ8OwnurgZqmoj3LtVpJB0PJCZHuWY0HzUJlrYBW49LYpss3CpHesTlALSXsvdbxmJ8hjo2QVUxguQ==",
+    "shasum": "6c25beb66cc29ee4eb7ae63624ce99d9b4ccd95a",
+    "tarball": "https://registry.npmjs.org/@cvd-policy/core/-/core-0.4.0.tgz",
+    "fileCount": 25,
+    "unpackedSize": 347062,
+    "signatures": [
+      {
+        "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+        "sig": "MEUCIBEZRZKFaSorlGqnuPPapbNaLcVc3TKaazi3lOhEy9L3AiEAzxDlbzNGAFn10J1fQvdiFo/7Ip+qcwQVzC/rDhvwcR0="
+      }
+    ]
+  },
+  "_npmUser": "skalvartechnologies <info@skalvar.de>",
+  "directories": {},
+  "_npmOperationalInternal": {
+    "host": "s3://npm-registry-packages-npm-production",
+    "tmp": "tmp/core_0.4.0_1787761354467_0.19944110297435924"
+  },
+  "_hasShrinkwrap": false
+}
