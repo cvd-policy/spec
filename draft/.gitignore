@@ -1,0 +1,3 @@
+.gems/
+.refcache/
+build/*.tmp

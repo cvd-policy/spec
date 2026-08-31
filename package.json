@@ -11,6 +11,7 @@
     "test": "node scripts/validate-corpus.mjs",
     "test:v1": "node scripts/validate-v1-corpus.mjs && node scripts/check-v1-requirements.mjs",
     "check": "npm test && npm run test:v1",
+    "check:draft": "make -C draft check",
     "build-schema": "node scripts/build-schema.mjs",
     "build": "node scripts/build-schema.mjs && node scripts/build-corpus.mjs"
   },

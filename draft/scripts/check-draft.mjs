@@ -1,0 +1,157 @@
+import assert from "node:assert/strict";
+import { readFile, writeFile } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import Ajv2020 from "ajv/dist/2020.js";
+import addFormats from "ajv-formats";
+import {
+  applyPointerValues,
+  parseJsonText,
+  semanticIssues,
+} from "../../scripts/v1-validation.mjs";
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const draftDir = path.join(root, "draft");
+const sourcePath = path.join(draftDir, "draft-behring-cvd-policy.md");
+const mappingPath = path.join(draftDir, "REQUIREMENTS-MAPPING.md");
+const source = await readFile(sourcePath, "utf8");
+const requirements = JSON.parse(await readFile(path.join(root, "v1/requirements.json"), "utf8"));
+const schema = JSON.parse(await readFile(path.join(root, "schema/cvd-policy-1.schema.json"), "utf8"));
+const evaluationCases = JSON.parse(await readFile(path.join(root, "tests/v1/evaluation/cases.json"), "utf8"));
+
+const ajv = new Ajv2020({ allErrors: true, strict: true, validateFormats: true });
+addFormats(ajv);
+const validate = ajv.compile(schema);
+
+const slug = (heading) => heading
+  .toLowerCase()
+  .replace(/[`*_]/g, "")
+  .replace(/[^a-z0-9 -]/g, "")
+  .trim()
+  .replace(/\s+/g, "-");
+
+const headings = [];
+for (const match of source.matchAll(/^(#{1,6}) (.+)$/gm)) {
+  headings.push({ offset: match.index, title: match[2], anchor: slug(match[2]) });
+}
+const anchors = new Set(headings.map(({ anchor }) => anchor));
+assert.equal(anchors.size, headings.length, "Draft headings must have unique generated anchors");
+
+const mapped = new Map();
+for (const match of source.matchAll(/<!-- requirements: ([^;]+); disposition: ([^ ]+) -->/g)) {
+  const heading = headings.findLast(({ offset }) => offset < match.index);
+  assert(heading, `Requirement marker has no preceding heading: ${match[0]}`);
+  assert.equal(match[2], "normative", `Unsupported requirement disposition for ${match[1]}`);
+  for (const id of match[1].trim().split(/\s+/)) {
+    assert(!mapped.has(id), `Duplicate Draft mapping for ${id}`);
+    mapped.set(id, heading);
+  }
+}
+
+const expectedIds = Object.keys(requirements).sort();
+assert.deepEqual([...mapped.keys()].sort(), expectedIds, "Draft must map exactly the 61 baseline requirements");
+assert.equal(expectedIds.length, 61, "Frozen V1 baseline must contain 61 requirements");
+
+const frontmatter = source.slice(0, source.indexOf("\n--- abstract"));
+const externalReferences = new Set([...frontmatter.matchAll(/^  ([A-Z][A-Z0-9-]+):/gm)].map((match) => match[1]));
+for (const match of source.matchAll(/\{\{([^}]+)\}\}/g)) {
+  const reference = match[1];
+  assert(anchors.has(reference) || externalReferences.has(reference), `Unknown Draft reference: ${reference}`);
+}
+
+assert.match(source, /^title: Machine-Readable Coordinated Vulnerability Disclosure Policies$/m);
+assert.match(source, /^docname: draft-behring-cvd-policy-00$/m);
+assert.match(source, /^category: std$/m);
+assert.match(source, /^author: \[\{ ins: B\. L\. Behring, name: Ben Luca Behring \}, \{ ins: M\. Berg, name: Marco Berg \}\]$/m);
+assert(!/^\s+(email|org|organization|street|city|country):/m.test(source), "Unprovided author metadata must remain omitted");
+assert.deepEqual(
+  [...source.matchAll(/\*\*TBD: ([^*]+)\*\*/g)].map((match) => match[1].replace(/\s+/g, " ").trim()).sort(),
+  ["affiliations to be supplied before submission", "email addresses to be supplied before submission"],
+  "Only the declared affiliation and email placeholders are permitted",
+);
+
+for (const heading of [
+  "Introduction",
+  "Conventions and Terminology",
+  "Problem Statement",
+  "Design Goals and Non-Goals",
+  "Discovery Using security.txt",
+  "Policy Retrieval",
+  "Authority and Delegation",
+  "CVD Policy Document",
+  "Structural and Semantic Validation",
+  "Target Normalization and Scope Matching",
+  "Testing Permission Evaluation",
+  "Processing Errors and Result Statuses",
+  "Operational Considerations",
+  "Security Considerations",
+  "Privacy Considerations",
+  "IANA Considerations",
+  "Implementation Status",
+  "Examples",
+]) {
+  assert(headings.some((item) => item.title === heading), `Missing required section: ${heading}`);
+}
+
+for (const pattern of [
+  /`testing\.default`/,
+  /`explicit_order`/,
+  /first[- ]match[- ]wins/i,
+  /\b(?:this|the) RFC\b/i,
+  /RFC[- ]compliant/i,
+  /(?:is|are) IANA[- ]registered/i,
+]) {
+  assert(!pattern.test(source), `Legacy or premature standards language found: ${pattern}`);
+}
+
+const examples = new Map();
+for (const match of source.matchAll(/<!-- policy-example: ([a-z0-9-]+) -->\s*```json\n([\s\S]*?)\n```/g)) {
+  assert(!examples.has(match[1]), `Duplicate policy example marker: ${match[1]}`);
+  const policy = parseJsonText(match[2]);
+  assert(validate(policy), `${match[1]} fails the V1 schema: ${ajv.errorsText(validate.errors)}`);
+  assert.deepEqual(semanticIssues(policy), [], `${match[1]} fails V1 semantic validation`);
+  examples.set(match[1], policy);
+}
+assert.equal(examples.size, 4, "Draft must contain the four checked policy examples");
+
+const readJson = async (relative) => JSON.parse(await readFile(path.join(root, relative), "utf8"));
+assert.deepEqual(examples.get("minimal-report-only"), await readJson("examples/v1/minimal-report-only.json"));
+assert.deepEqual(examples.get("limited-web-testing"), await readJson("examples/v1/limited-web-testing.json"));
+assert.deepEqual(examples.get("shared-policy-multiple-hosts"), await readJson("examples/v1/shared-policy-multiple-hosts/cvd-policy.json"));
+
+for (const id of [...source.matchAll(/<!-- evaluation-vector: ([a-z0-9-]+) -->/g)].map((match) => match[1])) {
+  const vector = evaluationCases.find((item) => item.id === id);
+  assert(vector, `Unknown evaluation vector cited by Draft: ${id}`);
+  const marker = source.indexOf(`<!-- evaluation-vector: ${id} -->`);
+  const context = source.slice(Math.max(0, marker - 700), marker);
+  assert(context.includes(`\`${vector.expected.status}\``), `${id} example omits expected status`);
+  assert(context.includes(`\`${vector.expected.reasonCode}\``), `${id} example omits expected reason code`);
+}
+
+const outVector = evaluationCases.find(({ id }) => id === "scope-out-wins");
+const outBase = await readJson(`tests/v1/policy/valid/${outVector.base}`);
+assert.deepEqual(examples.get("scope-out-wins"), applyPointerValues(outBase, outVector.set));
+
+const mapping = [
+  "# V1 Requirement-to-Draft Mapping",
+  "",
+  "Generated by `draft/scripts/check-draft.mjs --write-mapping` from the canonical Kramdown-RFC source and the frozen V1 requirements map. Do not edit by hand.",
+  "",
+  `All ${expectedIds.length} Version 1 requirement IDs are represented exactly once in the Draft source.`,
+  "",
+  "| Requirement | Draft section | Executable baseline checks |",
+  "| --- | --- | --- |",
+  ...expectedIds.map((id) => {
+    const heading = mapped.get(id);
+    return `| \`${id}\` | [${heading.title}](draft-behring-cvd-policy.md#${heading.anchor}) | ${requirements[id].map((item) => `\`${item}\``).join("<br>")} |`;
+  }),
+  "",
+].join("\n");
+
+if (process.argv.includes("--write-mapping")) {
+  await writeFile(mappingPath, mapping);
+} else {
+  assert.equal(await readFile(mappingPath, "utf8"), mapping, "REQUIREMENTS-MAPPING.md is stale; regenerate it with --write-mapping");
+}
+
+console.log(`Draft checks passed: ${expectedIds.length} requirements, ${examples.size} policy examples, 2 evaluation vectors.`);
