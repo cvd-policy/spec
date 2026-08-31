@@ -1,10 +1,16 @@
 #!/bin/sh
 set -eu
 
-commit=ecde38cf555fcd8964d44778f315d2cbaf547efd
+commit=dd216d99553784e307f88d4da77c1fc24b90359b
 CDPATH=
 export CDPATH
-web_repo=$(cd -- "$(dirname -- "$0")/../../../web" && pwd)
+spec_repo=$(git -C "$(dirname -- "$0")/../.." rev-parse --show-toplevel)
+common_dir=$(git -C "$spec_repo" rev-parse --git-common-dir)
+case $common_dir in
+  /*) ;;
+  *) common_dir=$spec_repo/$common_dir ;;
+esac
+web_repo=$(cd -- "$(dirname -- "$common_dir")/../web" && pwd)
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT HUP INT TERM
 

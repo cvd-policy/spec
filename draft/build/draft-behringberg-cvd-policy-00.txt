@@ -9,7 +9,7 @@ Expires: 4 March 2027                                     31 August 2026
 
 
      Machine-Readable Coordinated Vulnerability Disclosure Policies
-                      draft-behring-cvd-policy-00
+                    draft-behringberg-cvd-policy-00
 
 Abstract
 
@@ -79,7 +79,7 @@ Table of Contents
    8.  CVD Policy Document . . . . . . . . . . . . . . . . . . . . .   7
      8.1.  Version . . . . . . . . . . . . . . . . . . . . . . . . .   7
      8.2.  Timestamps  . . . . . . . . . . . . . . . . . . . . . . .   7
-     8.3.  Organization  . . . . . . . . . . . . . . . . . . . . . .   7
+     8.3.  Organization  . . . . . . . . . . . . . . . . . . . . . .   8
      8.4.  Contact . . . . . . . . . . . . . . . . . . . . . . . . .   8
      8.5.  Research Posture  . . . . . . . . . . . . . . . . . . . .   8
      8.6.  Reporting Scope . . . . . . . . . . . . . . . . . . . . .   8
@@ -89,23 +89,23 @@ Table of Contents
      8.9.  Response Targets  . . . . . . . . . . . . . . . . . . . .  11
      8.10. Disclosure Preferences  . . . . . . . . . . . . . . . . .  11
      8.11. Extensions  . . . . . . . . . . . . . . . . . . . . . . .  11
-   9.  Structural and Semantic Validation  . . . . . . . . . . . . .  11
+   9.  Structural and Semantic Validation  . . . . . . . . . . . . .  12
    10. Target Normalization and Scope Matching . . . . . . . . . . .  12
    11. Testing Permission Evaluation . . . . . . . . . . . . . . . .  13
-   12. Processing Errors and Result Statuses . . . . . . . . . . . .  14
-   13. Operational Considerations  . . . . . . . . . . . . . . . . .  17
-   14. Security Considerations . . . . . . . . . . . . . . . . . . .  18
-   15. Privacy Considerations  . . . . . . . . . . . . . . . . . . .  19
-   16. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  19
-     16.1.  security.txt Field . . . . . . . . . . . . . . . . . . .  19
-     16.2.  Media Type . . . . . . . . . . . . . . . . . . . . . . .  20
-   17. Implementation Status . . . . . . . . . . . . . . . . . . . .  21
-   18. Examples  . . . . . . . . . . . . . . . . . . . . . . . . . .  22
-     18.1.  Minimal report-only Policy . . . . . . . . . . . . . . .  22
-     18.2.  Limited automated Web testing  . . . . . . . . . . . . .  22
-     18.3.  Externally hosted Policy . . . . . . . . . . . . . . . .  23
-     18.4.  Multiple hosts sharing one Policy  . . . . . . . . . . .  23
-     18.5.  An out entry overriding an in entry  . . . . . . . . . .  23
+   12. Processing Errors and Result Statuses . . . . . . . . . . . .  15
+   13. Operational Considerations  . . . . . . . . . . . . . . . . .  16
+   14. Security Considerations . . . . . . . . . . . . . . . . . . .  16
+   15. Privacy Considerations  . . . . . . . . . . . . . . . . . . .  17
+   16. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  18
+     16.1.  security.txt Field . . . . . . . . . . . . . . . . . . .  18
+     16.2.  Media Type . . . . . . . . . . . . . . . . . . . . . . .  18
+   17. Implementation Status . . . . . . . . . . . . . . . . . . . .  19
+   18. Examples  . . . . . . . . . . . . . . . . . . . . . . . . . .  20
+     18.1.  Minimal report-only Policy . . . . . . . . . . . . . . .  20
+     18.2.  Limited automated Web testing  . . . . . . . . . . . . .  20
+     18.3.  Externally hosted Policy . . . . . . . . . . . . . . . .  21
+     18.4.  Multiple hosts sharing one Policy  . . . . . . . . . . .  21
+     18.5.  An out entry overriding an in entry  . . . . . . . . . .  22
 
 
 
@@ -114,10 +114,10 @@ Behring & Berg            Expires 4 March 2027                  [Page 2]
 Internet-Draft        Machine-Readable CVD Policies          August 2026
 
 
-   19. References  . . . . . . . . . . . . . . . . . . . . . . . . .  24
-     19.1.  Normative References . . . . . . . . . . . . . . . . . .  24
-     19.2.  Informative References . . . . . . . . . . . . . . . . .  25
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  26
+   19. References  . . . . . . . . . . . . . . . . . . . . . . . . .  22
+     19.1.  Normative References . . . . . . . . . . . . . . . . . .  22
+     19.2.  Informative References . . . . . . . . . . . . . . . . .  23
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  24
 
 1.  Introduction
 
@@ -260,18 +260,18 @@ Internet-Draft        Machine-Readable CVD Policies          August 2026
 
    Before creating Authority evidence, a client MUST successfully parse
    and assess the retrieved security.txt.  The file MUST contain at
-   least one valid Contact, exactly one valid and unexpired Expires, and
-   exactly one valid CVD-Policy.  Failure of any of these checks MUST
-   NOT establish Authority.
+   least one valid Contact, exactly one syntactically valid Expires
+   whose timestamp is later than the retrieval time, and exactly one
+   valid CVD-Policy.  A malformed Expires and a valid but expired
+   Expires are distinct diagnostic conditions.  Neither condition
+   establishes Authority.
 
-   The originally requested security.txt URI, the final URI, and every
-   redirect hop MUST use HTTPS.  Redirect processing MUST preserve the
-   original Discovery Host.  If the final host differs from the
-   originally requested host, at least one valid Canonical field in the
-   resulting file MUST exactly equal the originally requested
-   security.txt URI.  Otherwise, assessment MUST return
-   security_txt_canonical_mismatch and MUST NOT establish Authority.  A
-   same-host redirect does not add this Canonical requirement.
+
+
+
+
+
+
 
 
 
@@ -281,6 +281,16 @@ Behring & Berg            Expires 4 March 2027                  [Page 5]
 
 Internet-Draft        Machine-Readable CVD Policies          August 2026
 
+
+   The originally requested security.txt URI, the final URI, and every
+   redirect hop MUST use HTTPS.  Redirect processing MUST preserve the
+   original Discovery Host.  If the final host differs from the
+   originally requested host, at least one valid Canonical field in the
+   resulting file MUST exactly equal the originally requested
+   security.txt URI.  Otherwise, assessment MUST NOT establish
+   Authority.  A same-host redirect does not add this Canonical
+   requirement.  Detailed canonical-mismatch diagnostics are
+   implementation- specific and informative.
 
    An OpenPGP cleartext signature can protect security.txt as described
    by [RFC9116].  Software that cannot genuinely re-sign a signed file
@@ -321,6 +331,13 @@ Internet-Draft        Machine-Readable CVD Policies          August 2026
    metadata in the JSON document, or the location from which the JSON
    document was retrieved is insufficient.
 
+
+
+Behring & Berg            Expires 4 March 2027                  [Page 6]
+
+Internet-Draft        Machine-Readable CVD Policies          August 2026
+
+
    Authority evidence records the original Discovery Host, the assessed
    security.txt URI, the Policy URI, and the security.txt expiry
    instant.  The Discovery Host MUST remain the host of the originally
@@ -330,13 +347,6 @@ Internet-Draft        Machine-Readable CVD Policies          August 2026
    Before a positive testing-permission status is possible, the
    normalized Target host MUST exactly equal the normalized Discovery
    Host.
-
-
-
-Behring & Berg            Expires 4 March 2027                  [Page 6]
-
-Internet-Draft        Machine-Readable CVD Policies          August 2026
-
 
    Parent domains, subdomains, CNAME targets, shared IP addresses,
    shared certificates, organization claims, scope wildcards, policy
@@ -371,21 +381,11 @@ Internet-Draft        Machine-Readable CVD Policies          August 2026
 
    last_updated and expires are date-time strings conforming to
    [RFC3339]. expires MUST identify an instant strictly later than
-   last_updated.  An expired policy MUST produce invalid-policy with
-   reason code policy_expired and MUST NOT produce Testing Permission.
+   last_updated.  An expired policy MUST produce the normative status
+   invalid-policy and MUST NOT produce Testing Permission.  Detailed
+   expiry diagnostics are informative and implementation-specific.
    Evaluators MUST compare expiry with an explicitly supplied or
    recorded evaluation time.
-
-8.3.  Organization
-
-   organization contains the required non-empty string name and the
-   optional uri.  If present, uri MUST be an absolute HTTPS URI without
-   userinfo.  Organization metadata does not establish Authority.
-
-
-
-
-
 
 
 
@@ -394,12 +394,18 @@ Behring & Berg            Expires 4 March 2027                  [Page 7]
 Internet-Draft        Machine-Readable CVD Policies          August 2026
 
 
+8.3.  Organization
+
+   organization contains the required non-empty string name and the
+   optional uri.  If present, uri MUST be an absolute HTTPS URI without
+   userinfo.  Organization metadata does not establish Authority.
+
 8.4.  Contact
 
    contact.channels is an ordered, non-empty array of unique contact
-   URIs.  It MUST contain at least one mailto:, tel:, or HTTPS URI.  A
-   web contact URI MUST use HTTPS, and an HTTPS URI MUST NOT contain
-   userinfo.  Array order states channel preference.
+   URIs.  Every entry MUST be an absolute URI using only the mailto,
+   tel, or https scheme.  An HTTPS contact URI MUST NOT contain userinfo
+   or a fragment.  Array order states channel preference.
 
    contact.preferred_languages, when present, is an array of unique
    language tags conforming to BCP 47 [RFC5646].  Its order has no
@@ -436,12 +442,6 @@ Internet-Draft        Machine-Readable CVD Policies          August 2026
 
    *  schemes: a non-empty unique array containing http, https, or both;
 
-   *  optional ports: a non-empty unique array of integers from 1
-      through 65535;
-
-   *  path_prefix: an absolute-path prefix beginning with /; and
-
-   *  include_subdomains: a Boolean.
 
 
 
@@ -449,6 +449,13 @@ Behring & Berg            Expires 4 March 2027                  [Page 8]
 
 Internet-Draft        Machine-Readable CVD Policies          August 2026
 
+
+   *  optional ports: a non-empty unique array of integers from 1
+      through 65535;
+
+   *  path_prefix: an absolute-path prefix beginning with /; and
+
+   *  include_subdomains: a Boolean.
 
    The host value MUST NOT contain a scheme, port, path, userinfo,
    wildcard, query, or fragment.  An IP-literal entry MUST set
@@ -490,6 +497,15 @@ Internet-Draft        Machine-Readable CVD Policies          August 2026
       explicitly provided test accounts; it excludes credential
       stuffing, password spraying, and use of third-party credentials.
 
+
+
+
+
+Behring & Berg            Expires 4 March 2027                  [Page 9]
+
+Internet-Draft        Machine-Readable CVD Policies          August 2026
+
+
    An extension activity identifier MUST be an absolute URI.  An unknown
    unqualified token is structurally invalid.
 
@@ -498,13 +514,6 @@ Internet-Draft        Machine-Readable CVD Policies          August 2026
    applies to every web Target in Reporting Scope.  Every target_id MUST
    reference an existing web entry whose state is in; references to
    products, out entries, or missing IDs are invalid.
-
-
-
-Behring & Berg            Expires 4 March 2027                  [Page 9]
-
-Internet-Draft        Machine-Readable CVD Policies          August 2026
-
 
    For one activity and Target, every applicable rule is collected.  Any
    matching prohibited rule MUST override every matching permitted rule.
@@ -546,6 +555,13 @@ Internet-Draft        Machine-Readable CVD Policies          August 2026
    reproduction_steps, impact, environment, evidence,
    researcher_contact, and disclosure_preference.
 
+
+
+Behring & Berg            Expires 4 March 2027                 [Page 10]
+
+Internet-Draft        Machine-Readable CVD Policies          August 2026
+
+
    Requested fields are preferences.  A missing requested field MUST NOT
    by itself cause a report to be rejected.
 
@@ -554,13 +570,6 @@ Internet-Draft        Machine-Readable CVD Policies          August 2026
    request for access to third-party data, persistence, exfiltration,
    lateral movement, damage, availability impairment, or further
    exploitation.
-
-
-
-Behring & Berg            Expires 4 March 2027                 [Page 10]
-
-Internet-Draft        Machine-Readable CVD Policies          August 2026
-
 
    This document does not define report transmission, an intake
    endpoint, or an attachment protocol.
@@ -598,15 +607,6 @@ Internet-Draft        Machine-Readable CVD Policies          August 2026
    registries can be considered in future work if interoperable
    extensions are deployed.
 
-9.  Structural and Semantic Validation
-
-   Policy text MUST be UTF-8 JSON conforming to [RFC8259], with exactly
-   one top-level value, and that value MUST be an object.  Parsers MUST
-   reject comments, trailing commas, multiple JSON texts, non-JSON
-   numbers, and duplicate member names at every nesting level.  A parser
-   MUST NOT silently normalize duplicate names by retaining an earlier
-   or later value.
-
 
 
 
@@ -617,6 +617,15 @@ Behring & Berg            Expires 4 March 2027                 [Page 11]
 
 Internet-Draft        Machine-Readable CVD Policies          August 2026
 
+
+9.  Structural and Semantic Validation
+
+   Policy text MUST be UTF-8 JSON conforming to [RFC8259], with exactly
+   one top-level value, and that value MUST be an object.  Parsers MUST
+   reject comments, trailing commas, multiple JSON texts, non-JSON
+   numbers, and duplicate member names at every nesting level.  A parser
+   MUST NOT silently normalize duplicate names by retaining an earlier
+   or later value.
 
    Automatic discovery and evaluation MUST use a duplicate-aware text
    parser before ordinary object validation.  Duplicate safety cannot be
@@ -651,10 +660,19 @@ Internet-Draft        Machine-Readable CVD Policies          August 2026
 
 10.  Target Normalization and Scope Matching
 
-   A Target is an absolute HTTP or HTTPS URL without userinfo.  Query
-   and fragment components do not participate in scope matching.  The
-   scheme and host are normalized, an omitted port becomes 80 for HTTP
-   or 443 for HTTPS, and the URL pathname is used for path matching.
+   A Target is an absolute HTTP or HTTPS URL without userinfo.  Product
+   identifiers and URIs with any other scheme are not evaluation
+   Targets.  Query and fragment components do not participate in scope
+   matching.  The scheme and host are normalized, an omitted port
+   becomes 80 for HTTP or 443 for HTTPS, and the URL pathname is used
+   for path matching.
+
+
+
+Behring & Berg            Expires 4 March 2027                 [Page 12]
+
+Internet-Draft        Machine-Readable CVD Policies          August 2026
+
 
    DNS names MUST be converted to lowercase ASCII A-label form as
    described by [RFC5890] and [RFC5891], and one trailing dot MUST be
@@ -666,13 +684,6 @@ Internet-Draft        Machine-Readable CVD Policies          August 2026
    1.  the normalized hosts are equal, or include_subdomains is true and
        the Target is the named DNS host or a proper subdomain on a label
        boundary;
-
-
-
-Behring & Berg            Expires 4 March 2027                 [Page 12]
-
-Internet-Draft        Machine-Readable CVD Policies          August 2026
-
 
    2.  the normalized scheme appears in schemes;
 
@@ -697,14 +708,27 @@ Internet-Draft        Machine-Readable CVD Policies          August 2026
 
    An evaluator accepts policy text, a Target, one activity, the planned
    values needed by conditions, the set of understood extensions, an
-   evaluation time, and Authority evidence.  It MUST execute the
-   following order and return at the first terminal outcome:
+   evaluation time, and Authority evidence.  Before policy evaluation,
+   it MUST validate and normalize the Target input.  Invalid Target
+   input MUST produce a typed machine-readable input-validation failure
+   with no evaluation status; it MUST NOT produce not-covered or any
+   other status from this document.
+
+   After successful Target input validation, an evaluator MUST execute
+   the following order and return at the first terminal outcome:
 
    1.   Parse the policy with duplicate detection.  A failure returns
         invalid-policy.
 
    2.   Check cvd_policy.  An unsupported version returns unsupported-
         policy.
+
+
+
+Behring & Berg            Expires 4 March 2027                 [Page 13]
+
+Internet-Draft        Machine-Readable CVD Policies          August 2026
+
 
    3.   Perform structural validation.  A failure returns invalid-
         policy.
@@ -720,38 +744,28 @@ Internet-Draft        Machine-Readable CVD Policies          August 2026
    7.   Require successfully established Authority evidence.  Missing or
         invalid evidence returns authority-not-established.
 
-   8.   Normalize the Target URL.
-
-
-
-
-Behring & Berg            Expires 4 March 2027                 [Page 13]
-
-Internet-Draft        Machine-Readable CVD Policies          August 2026
-
-
-   9.   Require exact normalized Target and Discovery Host equality.  A
+   8.   Require exact normalized Target and Discovery Host equality.  A
         mismatch returns authority-not-established.
 
-   10.  Collect matching Reporting Scope entries.
+   9.   Collect matching Reporting Scope entries.
 
-   11.  If any matching entry is out, return not-covered; otherwise, if
+   10.  If any matching entry is out, return not-covered; otherwise, if
         no matching in web entry exists, return not-covered.
 
-   12.  Apply Research Posture.  report_only or prohibited returns
+   11.  Apply Research Posture.  report_only or prohibited returns
         publisher-stated-prohibited.
 
-   13.  Collect all rules for the requested activity that apply globally
+   12.  Collect all rules for the requested activity that apply globally
         or refer to a matching in target ID.
 
-   14.  If any collected rule is prohibited, return publisher-stated-
+   13.  If any collected rule is prohibited, return publisher-stated-
         prohibited.
 
-   15.  If no collected permitted rule exists, return not-covered.
+   14.  If no collected permitted rule exists, return not-covered.
         Otherwise, evaluate all conditions fail closed.  If no permitted
         rule is fully satisfied, return conditions-not-satisfied.
 
-   16.  Return publisher-stated-permitted.  If multiple permitted rules
+   15.  Return publisher-stated-permitted.  If multiple permitted rules
         are fully satisfied, the lexicographically smallest rule ID
         supplies the returned constraints; this selection does not
         create semantic priority between rules.
@@ -761,6 +775,16 @@ Internet-Draft        Machine-Readable CVD Policies          August 2026
    Host equality, at least one matching in web entry, no matching out,
    no applicable prohibition, and at least one fully satisfied permitted
    rule.
+
+
+
+
+
+
+Behring & Berg            Expires 4 March 2027                 [Page 14]
+
+Internet-Draft        Machine-Readable CVD Policies          August 2026
+
 
    The primary public result MUST NOT be a Boolean named allowed,
    authorized, or safe.  Calling software MUST treat every status other
@@ -779,16 +803,9 @@ Internet-Draft        Machine-Readable CVD Policies          August 2026
    *  publisher-stated-prohibited: posture or an applicable rule
       prohibits the activity;
 
-
-
-Behring & Berg            Expires 4 March 2027                 [Page 14]
-
-Internet-Draft        Machine-Readable CVD Policies          August 2026
-
-
-   *  not-covered: no matching in scope exists, an out entry matches,
-      the Target is a product target, or no matching testing rule
-      exists;
+   *  not-covered: a syntactically valid normalized Target has no
+      matching in web scope, matches an out web scope, or has no
+      matching testing rule;
 
    *  authority-not-established: required Authority evidence is absent,
       invalid, or bound to another host;
@@ -805,35 +822,18 @@ Internet-Draft        Machine-Readable CVD Policies          August 2026
    The ordered algorithm in Section 11 defines precedence.  Array order
    and implementation iteration order MUST NOT alter the status.
 
-   Implementations MUST return stable machine-readable reason codes and
-   JSON Pointer paths rather than localized prose as the interface
-   contract.  Implementations MAY add diagnostic codes for more specific
-   failures.  The core reason codes are:
+   Input-validation and policy-processing failures MUST be machine-
+   readable, structurally distinguishable from status-bearing evaluation
+   results, and identify affected locations when available.  Localized
+   prose MUST NOT be the only interface contract.  Implementations are
+   not required to emit identical detailed diagnostic identifiers.  Such
+   identifiers are informative and implementation-specific.
 
-    +=======================================+========================+
-    | Code                                  | Meaning                |
-    +=======================================+========================+
-    | policy_parse_error                    | policy text is not one |
-    |                                       | JSON text              |
-    +---------------------------------------+------------------------+
-    | policy_duplicate_member               | duplicate JSON object  |
-    |                                       | member                 |
-    +---------------------------------------+------------------------+
-    | policy_schema_invalid                 | structural schema      |
-    |                                       | failure                |
-    +---------------------------------------+------------------------+
-    | policy_version_unsupported            | format version is not  |
-    |                                       | understood             |
-    +---------------------------------------+------------------------+
-    | policy_expired                        | policy is expired at   |
-    |                                       | evaluation time        |
-    +---------------------------------------+------------------------+
-    | policy_scope_id_duplicate             | document-wide ID       |
-    |                                       | collision              |
-    +---------------------------------------+------------------------+
-    | policy_target_reference_invalid       | rule target is missing |
-    |                                       | or not an in web entry |
-    +---------------------------------------+------------------------+
+
+
+
+
+
 
 
 
@@ -841,91 +841,6 @@ Behring & Berg            Expires 4 March 2027                 [Page 15]
 
 Internet-Draft        Machine-Readable CVD Policies          August 2026
 
-
-    | policy_posture_conflict               | posture conflicts with |
-    |                                       | a permitted rule       |
-    +---------------------------------------+------------------------+
-    | policy_condition_invalid              | semantic condition     |
-    |                                       | failure                |
-    +---------------------------------------+------------------------+
-    | policy_critical_extension_missing     | critical extension has |
-    |                                       | no data                |
-    +---------------------------------------+------------------------+
-    | policy_critical_extension_unsupported | critical extension is  |
-    |                                       | not understood         |
-    +---------------------------------------+------------------------+
-    | policy_activity_unsupported           | requested extension    |
-    |                                       | activity is not        |
-    |                                       | understood             |
-    +---------------------------------------+------------------------+
-    | security_txt_parse_error              | security.txt cannot be |
-    |                                       | assessed               |
-    +---------------------------------------+------------------------+
-    | security_txt_contact_missing          | no usable Contact      |
-    |                                       | exists                 |
-    +---------------------------------------+------------------------+
-    | security_txt_expires_missing          | Expires is missing     |
-    +---------------------------------------+------------------------+
-    | security_txt_expires_duplicate        | Expires occurs more    |
-    |                                       | than once              |
-    +---------------------------------------+------------------------+
-    | security_txt_expired                  | security.txt is stale  |
-    +---------------------------------------+------------------------+
-    | security_txt_cvd_policy_missing       | CVD-Policy is missing  |
-    +---------------------------------------+------------------------+
-    | security_txt_cvd_policy_duplicate     | CVD-Policy occurs more |
-    |                                       | than once              |
-    +---------------------------------------+------------------------+
-    | security_txt_cvd_policy_uri_invalid   | CVD-Policy is not an   |
-    |                                       | allowed URI            |
-    +---------------------------------------+------------------------+
-    | security_txt_canonical_mismatch       | cross-host redirect    |
-    |                                       | lacks original         |
-    |                                       | Canonical              |
-    +---------------------------------------+------------------------+
-    | authority_evidence_missing            | no established         |
-    |                                       | evidence was supplied  |
-    +---------------------------------------+------------------------+
-    | authority_host_mismatch               | Target and Discovery   |
-    |                                       | Host differ            |
-    +---------------------------------------+------------------------+
-    | target_url_invalid                    | Target is not an       |
-
-
-
-Behring & Berg            Expires 4 March 2027                 [Page 16]
-
-Internet-Draft        Machine-Readable CVD Policies          August 2026
-
-
-    |                                       | allowed absolute URL   |
-    +---------------------------------------+------------------------+
-    | scope_target_not_covered              | no in entry matches    |
-    +---------------------------------------+------------------------+
-    | scope_target_excluded                 | an out entry matches   |
-    +---------------------------------------+------------------------+
-    | testing_rule_missing                  | no matching rule       |
-    |                                       | exists                 |
-    +---------------------------------------+------------------------+
-    | testing_rule_prohibited               | posture or a matching  |
-    |                                       | rule prohibits testing |
-    +---------------------------------------+------------------------+
-    | conditions_missing                    | a required plan value  |
-    |                                       | is absent              |
-    +---------------------------------------+------------------------+
-    | conditions_exceeded                   | planned rate or        |
-    |                                       | concurrency exceeds a  |
-    |                                       | limit                  |
-    +---------------------------------------+------------------------+
-    | conditions_user_agent_missing         | a required token is    |
-    |                                       | absent                 |
-    +---------------------------------------+------------------------+
-    | conditions_test_accounts_unconfirmed  | controlled test        |
-    |                                       | accounts were not      |
-    |                                       | confirmed              |
-    +---------------------------------------+------------------------+
-
-                                 Table 1
 
 13.  Operational Considerations
 
@@ -935,8 +850,8 @@ Internet-Draft        Machine-Readable CVD Policies          August 2026
    preserve old policy versions for incident records when practical.
 
    Clients should record the policy representation, retrieval context,
-   evaluation time, status, reason code, and constraints used for a
-   decision.  A policy can change during an investigation; a later
+   evaluation time, status, diagnostic details, and constraints used for
+   a decision.  A policy can change during an investigation; a later
    policy must not silently rewrite the record of an earlier evaluation.
    Clients should revalidate after cache revalidation, redirects, media-
    type changes, or expiry.
@@ -944,15 +859,6 @@ Internet-Draft        Machine-Readable CVD Policies          August 2026
    Response and disclosure targets are publisher statements.
    Operational tooling must not present them as service guarantees or as
    conditions imposed on a reporter.
-
-
-
-
-
-Behring & Berg            Expires 4 March 2027                 [Page 17]
-
-Internet-Draft        Machine-Readable CVD Policies          August 2026
-
 
 14.  Security Considerations
 
@@ -979,6 +885,19 @@ Internet-Draft        Machine-Readable CVD Policies          August 2026
    does not prove ownership, organizational control, or legal
    permission.  High-risk decisions need independent corroboration.
 
+
+
+
+
+
+
+
+
+Behring & Berg            Expires 4 March 2027                 [Page 16]
+
+Internet-Draft        Machine-Readable CVD Policies          August 2026
+
+
    Claims about third-party targets are not permission.  Exact Discovery
    Host binding prevents parent-domain, subdomain, CNAME, shared-
    address, shared- certificate, and organization-name confusion from
@@ -997,18 +916,6 @@ Internet-Draft        Machine-Readable CVD Policies          August 2026
    authorized. publisher-stated-permitted is not guaranteed safe harbor
    and does not remove the need to assess law, contracts, third-party
    rights, safety, or operational risk.
-
-
-
-
-
-
-
-
-Behring & Berg            Expires 4 March 2027                 [Page 18]
-
-Internet-Draft        Machine-Readable CVD Policies          August 2026
-
 
 15.  Privacy Considerations
 
@@ -1035,6 +942,18 @@ Internet-Draft        Machine-Readable CVD Policies          August 2026
    Contact information in policies can be personal data and should be
    processed with appropriate minimization and retention controls.
 
+
+
+
+
+
+
+
+Behring & Berg            Expires 4 March 2027                 [Page 17]
+
+Internet-Draft        Machine-Readable CVD Policies          August 2026
+
+
 16.  IANA Considerations
 
    This document requests the following registrations.  The field and
@@ -1045,26 +964,6 @@ Internet-Draft        Machine-Readable CVD Policies          August 2026
 
    IANA is requested to add this entry to the "security.txt Fields"
    registry:
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Behring & Berg            Expires 4 March 2027                 [Page 19]
-
-Internet-Draft        Machine-Readable CVD Policies          August 2026
-
 
       +===================+========================================+
       | Registration item | Value                                  |
@@ -1084,7 +983,7 @@ Internet-Draft        Machine-Readable CVD Policies          August 2026
       | Reference         | This document, Section 5               |
       +-------------------+----------------------------------------+
 
-                                 Table 2
+                                 Table 1
 
 16.2.  Media Type
 
@@ -1103,6 +1002,14 @@ Internet-Draft        Machine-Readable CVD Policies          August 2026
    Encoding considerations:  binary; representations are UTF-8 JSON as
       required by this document and [RFC8259]
 
+
+
+
+Behring & Berg            Expires 4 March 2027                 [Page 18]
+
+Internet-Draft        Machine-Readable CVD Policies          August 2026
+
+
    Security considerations:  See Section 14.
 
    Interoperability considerations:  Interoperability requirements are
@@ -1114,13 +1021,6 @@ Internet-Draft        Machine-Readable CVD Policies          August 2026
 
    Applications that use this media type:  CVD policy publishers,
       validators, discovery clients, and policy evaluators.
-
-
-
-Behring & Berg            Expires 4 March 2027                 [Page 20]
-
-Internet-Draft        Machine-Readable CVD Policies          August 2026
-
 
    Fragment identifier considerations:  No fragment-identifier semantics
       are defined.  A Policy URI carried by CVD-Policy cannot contain a
@@ -1154,29 +1054,25 @@ Internet-Draft        Machine-Readable CVD Policies          August 2026
    recommendation, certification, or statement of interoperability.
 
    The CVD Policy specification repository at commit
-   7b0c0b65e8260daa388db5e0e49045de98d51cdc contains the Version 1
+   55bd9f115c38c3704174fa9c0cb58b27afddf3da contains the Version 1
    source, Draft 2020-12 schema, examples, and conformance corpus
    [CVD-POLICY-SPEC].  Its traceability data maps all 61 normative
    requirement IDs to executable checks.
 
+
+
+Behring & Berg            Expires 4 March 2027                 [Page 19]
+
+Internet-Draft        Machine-Readable CVD Policies          August 2026
+
+
    The TypeScript reference implementation at commit
-   ecde38cf555fcd8964d44778f315d2cbaf547efd exposes an isolated @cvd-
+   dd216d99553784e307f88d4da77c1fc24b90359b exposes an isolated @cvd-
    policy/core/v1 entry point [CVD-POLICY-CORE].  The package root,
    command-line tool, and website have not been fully migrated to
    Version 1.  The implementation assesses supplied retrieval evidence
    but does not itself perform network retrieval or OpenPGP signature
    verification.
-
-
-
-
-
-
-
-Behring & Berg            Expires 4 March 2027                 [Page 21]
-
-Internet-Draft        Machine-Readable CVD Policies          August 2026
-
 
 18.  Examples
 
@@ -1218,25 +1114,23 @@ Internet-Draft        Machine-Readable CVD Policies          August 2026
    "max_concurrent_requests": 2, "required_user_agent_token": "security-
    research" } } ] }, "reporting": { "requested_fields": [
    "affected_asset", "description", "reproduction_steps", "impact" ],
+
+
+
+Behring & Berg            Expires 4 March 2027                 [Page 20]
+
+Internet-Draft        Machine-Readable CVD Policies          August 2026
+
+
    "proof_of_exploitation": "not_requested" }, "response_targets": {
    "acknowledgement_days": 2, "initial_assessment_days": 10,
    "update_interval_days": 14 }, "disclosure": { "approach":
    "coordinated", "default_days": 90 }, "critical_extensions": [],
    "extensions": {} }
 
-
-
-
-
-
-Behring & Berg            Expires 4 March 2027                 [Page 22]
-
-Internet-Draft        Machine-Readable CVD Policies          August 2026
-
-
    For the plan in corpus vector conditions-rate-exceeded, a planned
-   rate of 3 requests per second exceeds the limit of 2.  The result is
-   conditions-not-satisfied with reason conditions_exceeded.
+   rate of 3 requests per second exceeds the limit of 2.  The normative
+   result is conditions-not-satisfied.
 
 18.3.  Externally hosted Policy
 
@@ -1271,6 +1165,19 @@ Internet-Draft        Machine-Readable CVD Policies          August 2026
    Separate Authority evidence is required for each exact Discovery
    Host.  The include_subdomains member affects scope matching only.
 
+
+
+
+
+
+
+
+
+Behring & Berg            Expires 4 March 2027                 [Page 21]
+
+Internet-Draft        Machine-Readable CVD Policies          August 2026
+
+
 18.5.  An out entry overriding an in entry
 
    json { "cvd_policy": 1, "last_updated": "2026-08-29T08:00:00Z",
@@ -1282,14 +1189,6 @@ Internet-Draft        Machine-Readable CVD Policies          August 2026
    key.txt" ] }, "research": { "posture": "limited", "statement":
    "Security research is welcome only under the rules below." },
    "reporting_scope": { "web": [ { "id": "main-web", "state": "in",
-
-
-
-Behring & Berg            Expires 4 March 2027                 [Page 23]
-
-Internet-Draft        Machine-Readable CVD Policies          August 2026
-
-
    "host": "example.com", "schemes": [ "https" ], "ports": [ 443 ],
    "path_prefix": "/", "include_subdomains": false }, { "id":
    "excluded", "state": "out", "host": "example.com", "schemes": [
@@ -1307,8 +1206,8 @@ Internet-Draft        Machine-Readable CVD Policies          August 2026
    "extensions": {} }
 
    For https://example.com/, both entries match.  The out entry wins
-   regardless of array order, producing not-covered with reason
-   scope_target_excluded as specified by corpus vector scope-out-wins.
+   regardless of array order, producing the normative status not-covered
+   as specified by corpus vector scope-out-wins.
 
 19.  References
 
@@ -1328,6 +1227,13 @@ Internet-Draft        Machine-Readable CVD Policies          August 2026
               RFC 3986, DOI 10.17487/RFC3986, January 2005,
               <https://www.rfc-editor.org/rfc/rfc3986>.
 
+
+
+Behring & Berg            Expires 4 March 2027                 [Page 22]
+
+Internet-Draft        Machine-Readable CVD Policies          August 2026
+
+
    [RFC5646]  Phillips, A., Ed. and M. Davis, Ed., "Tags for Identifying
               Languages", BCP 47, RFC 5646, DOI 10.17487/RFC5646,
               September 2009, <https://www.rfc-editor.org/rfc/rfc5646>.
@@ -1336,15 +1242,6 @@ Internet-Draft        Machine-Readable CVD Policies          August 2026
               Applications (IDNA): Definitions and Document Framework",
               RFC 5890, DOI 10.17487/RFC5890, August 2010,
               <https://www.rfc-editor.org/rfc/rfc5890>.
-
-
-
-
-
-Behring & Berg            Expires 4 March 2027                 [Page 24]
-
-Internet-Draft        Machine-Readable CVD Policies          August 2026
-
 
    [RFC5891]  Klensin, J., "Internationalized Domain Names in
               Applications (IDNA): Protocol", RFC 5891,
@@ -1382,25 +1279,28 @@ Internet-Draft        Machine-Readable CVD Policies          August 2026
 
 19.2.  Informative References
 
+
+
+
+
+
+
+Behring & Berg            Expires 4 March 2027                 [Page 23]
+
+Internet-Draft        Machine-Readable CVD Policies          August 2026
+
+
    [CVD-POLICY-CORE]
               "TypeScript Reference Implementation for CVD Policy
               Version 1", 29 August 2026, <https://github.com/cvd-
               policy/web/commit/
-              ecde38cf555fcd8964d44778f315d2cbaf547efd>.
+              dd216d99553784e307f88d4da77c1fc24b90359b>.
 
    [CVD-POLICY-SPEC]
               "CVD Policy Version 1 Specification, Schema, and
               Conformance Corpus", 29 August 2026, <https://github.com/
               cvd-policy/spec/
-              commit/7b0c0b65e8260daa388db5e0e49045de98d51cdc>.
-
-
-
-
-Behring & Berg            Expires 4 March 2027                 [Page 25]
-
-Internet-Draft        Machine-Readable CVD Policies          August 2026
-
+              commit/55bd9f115c38c3704174fa9c0cb58b27afddf3da>.
 
    [JSON-SCHEMA-2020-12]
               "JSON Schema Core, Draft 2020-12", n.d., <https://json-
@@ -1441,16 +1341,4 @@ Authors' Addresses
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-Behring & Berg            Expires 4 March 2027                 [Page 26]
+Behring & Berg            Expires 4 March 2027                 [Page 24]

@@ -1,7 +1,7 @@
 ---
 title: Machine-Readable Coordinated Vulnerability Disclosure Policies
 abbrev: Machine-Readable CVD Policies
-docname: draft-behring-cvd-policy-00
+docname: draft-behringberg-cvd-policy-00
 date: 2026-08-31
 category: std
 ipr: trust200902
@@ -35,11 +35,11 @@ informative:
     target: "https://json-schema.org/draft/2020-12/json-schema-core.html"
   CVD-POLICY-SPEC:
     title: CVD Policy Version 1 Specification, Schema, and Conformance Corpus
-    target: "https://github.com/cvd-policy/spec/commit/7b0c0b65e8260daa388db5e0e49045de98d51cdc"
+    target: "https://github.com/cvd-policy/spec/commit/55bd9f115c38c3704174fa9c0cb58b27afddf3da"
     date: 2026-08-29
   CVD-POLICY-CORE:
     title: TypeScript Reference Implementation for CVD Policy Version 1
-    target: "https://github.com/cvd-policy/web/commit/ecde38cf555fcd8964d44778f315d2cbaf547efd"
+    target: "https://github.com/cvd-policy/web/commit/dd216d99553784e307f88d4da77c1fc24b90359b"
     date: 2026-08-29
 
 --- abstract
@@ -168,8 +168,10 @@ suffix {{RFC8615}}.
 
 Before creating Authority evidence, a client MUST successfully parse and assess
 the retrieved `security.txt`.  The file MUST contain at least one valid
-`Contact`, exactly one valid and unexpired `Expires`, and exactly one valid
-`CVD-Policy`.  Failure of any of these checks MUST NOT establish Authority.
+`Contact`, exactly one syntactically valid `Expires` whose timestamp is later
+than the retrieval time, and exactly one valid `CVD-Policy`.  A malformed
+`Expires` and a valid but expired `Expires` are distinct diagnostic conditions.
+Neither condition establishes Authority.
 
 <!-- requirements: DISC-004; disposition: normative -->
 
@@ -177,9 +179,10 @@ The originally requested `security.txt` URI, the final URI, and every redirect
 hop MUST use HTTPS.  Redirect processing MUST preserve the original Discovery
 Host.  If the final host differs from the originally requested host, at least
 one valid `Canonical` field in the resulting file MUST exactly equal the
-originally requested `security.txt` URI.  Otherwise, assessment MUST return
-`security_txt_canonical_mismatch` and MUST NOT establish Authority.  A same-host
-redirect does not add this `Canonical` requirement.
+originally requested `security.txt` URI.  Otherwise, assessment MUST NOT
+establish Authority.  A same-host redirect does not add this `Canonical`
+requirement.  Detailed canonical-mismatch diagnostics are implementation-
+specific and informative.
 
 <!-- requirements: DISC-005 DISC-006; disposition: normative -->
 
@@ -276,9 +279,10 @@ separate from this document format value.
 
 `last_updated` and `expires` are date-time strings conforming to {{RFC3339}}.
 `expires` MUST identify an instant strictly later than `last_updated`.  An
-expired policy MUST produce `invalid-policy` with reason code `policy_expired`
-and MUST NOT produce Testing Permission.  Evaluators MUST compare expiry with
-an explicitly supplied or recorded evaluation time.
+expired policy MUST produce the normative status `invalid-policy` and MUST NOT
+produce Testing Permission.  Detailed expiry diagnostics are informative and
+implementation-specific.  Evaluators MUST compare expiry with an explicitly
+supplied or recorded evaluation time.
 
 <!-- requirements: DOC-009 DOC-010; disposition: normative -->
 
@@ -292,10 +296,10 @@ Organization metadata does not establish Authority.
 
 ## Contact
 
-`contact.channels` is an ordered, non-empty array of unique contact URIs.  It
-MUST contain at least one `mailto:`, `tel:`, or HTTPS URI.  A web contact URI
-MUST use HTTPS, and an HTTPS URI MUST NOT contain userinfo.  Array order states
-channel preference.
+`contact.channels` is an ordered, non-empty array of unique contact URIs.  Every
+entry MUST be an absolute URI using only the `mailto`, `tel`, or `https` scheme.
+An HTTPS contact URI MUST NOT contain userinfo or a fragment.  Array order
+states channel preference.
 
 `contact.preferred_languages`, when present, is an array of unique language tags
 conforming to BCP 47 {{RFC5646}}.  Its order has no defined meaning.
@@ -523,7 +527,8 @@ presence.
 
 # Target Normalization and Scope Matching
 
-A Target is an absolute HTTP or HTTPS URL without userinfo.  Query and fragment
+A Target is an absolute HTTP or HTTPS URL without userinfo.  Product identifiers
+and URIs with any other scheme are not evaluation Targets.  Query and fragment
 components do not participate in scope matching.  The scheme and host are
 normalized, an omitted port becomes 80 for HTTP or 443 for HTTPS, and the URL
 pathname is used for path matching.
@@ -559,8 +564,13 @@ a subdomain does not establish Authority for that subdomain.
 
 An evaluator accepts policy text, a Target, one activity, the planned values
 needed by conditions, the set of understood extensions, an evaluation time, and
-Authority evidence.  It MUST execute the following order and return at the first
-terminal outcome:
+Authority evidence.  Before policy evaluation, it MUST validate and normalize
+the Target input.  Invalid Target input MUST produce a typed machine-readable
+input-validation failure with no evaluation status; it MUST NOT produce
+`not-covered` or any other status from this document.
+
+After successful Target input validation, an evaluator MUST execute the
+following order and return at the first terminal outcome:
 
 1. Parse the policy with duplicate detection.  A failure returns
    `invalid-policy`.
@@ -573,22 +583,21 @@ terminal outcome:
    critical behavior returns `unsupported-policy`.
 7. Require successfully established Authority evidence.  Missing or invalid
    evidence returns `authority-not-established`.
-8. Normalize the Target URL.
-9. Require exact normalized Target and Discovery Host equality.  A mismatch
+8. Require exact normalized Target and Discovery Host equality.  A mismatch
    returns `authority-not-established`.
-10. Collect matching Reporting Scope entries.
-11. If any matching entry is `out`, return `not-covered`; otherwise, if no
+9. Collect matching Reporting Scope entries.
+10. If any matching entry is `out`, return `not-covered`; otherwise, if no
     matching `in` web entry exists, return `not-covered`.
-12. Apply Research Posture.  `report_only` or `prohibited` returns
+11. Apply Research Posture.  `report_only` or `prohibited` returns
     `publisher-stated-prohibited`.
-13. Collect all rules for the requested activity that apply globally or refer to
+12. Collect all rules for the requested activity that apply globally or refer to
     a matching `in` target ID.
-14. If any collected rule is `prohibited`, return
+13. If any collected rule is `prohibited`, return
     `publisher-stated-prohibited`.
-15. If no collected `permitted` rule exists, return `not-covered`.  Otherwise,
+14. If no collected `permitted` rule exists, return `not-covered`.  Otherwise,
     evaluate all conditions fail closed.  If no permitted rule is fully
     satisfied, return `conditions-not-satisfied`.
-16. Return `publisher-stated-permitted`.  If multiple permitted rules are fully
+15. Return `publisher-stated-permitted`.  If multiple permitted rules are fully
     satisfied, the lexicographically smallest rule ID supplies the returned
     constraints; this selection does not create semantic priority between
     rules.
@@ -618,8 +627,8 @@ The status is exactly one of:
 - `publisher-stated-permitted`: every positive precondition is satisfied;
 - `publisher-stated-prohibited`: posture or an applicable rule prohibits the
   activity;
-- `not-covered`: no matching `in` scope exists, an `out` entry matches, the
-  Target is a product target, or no matching testing rule exists;
+- `not-covered`: a syntactically valid normalized Target has no matching `in`
+  web scope, matches an `out` web scope, or has no matching testing rule;
 - `authority-not-established`: required Authority evidence is absent, invalid,
   or bound to another host;
 - `conditions-not-satisfied`: applicable permission statements exist, but none
@@ -632,45 +641,12 @@ The status is exactly one of:
 The ordered algorithm in {{testing-permission-evaluation}} defines precedence.  Array order and
 implementation iteration order MUST NOT alter the status.
 
-Implementations MUST return stable machine-readable reason codes and JSON
-Pointer paths rather than localized prose as the interface contract.
-Implementations MAY add diagnostic codes for more specific failures.  The core
-reason codes are:
-
-| Code | Meaning |
-| --- | --- |
-| `policy_parse_error` | policy text is not one JSON text |
-| `policy_duplicate_member` | duplicate JSON object member |
-| `policy_schema_invalid` | structural schema failure |
-| `policy_version_unsupported` | format version is not understood |
-| `policy_expired` | policy is expired at evaluation time |
-| `policy_scope_id_duplicate` | document-wide ID collision |
-| `policy_target_reference_invalid` | rule target is missing or not an `in` web entry |
-| `policy_posture_conflict` | posture conflicts with a permitted rule |
-| `policy_condition_invalid` | semantic condition failure |
-| `policy_critical_extension_missing` | critical extension has no data |
-| `policy_critical_extension_unsupported` | critical extension is not understood |
-| `policy_activity_unsupported` | requested extension activity is not understood |
-| `security_txt_parse_error` | `security.txt` cannot be assessed |
-| `security_txt_contact_missing` | no usable `Contact` exists |
-| `security_txt_expires_missing` | `Expires` is missing |
-| `security_txt_expires_duplicate` | `Expires` occurs more than once |
-| `security_txt_expired` | `security.txt` is stale |
-| `security_txt_cvd_policy_missing` | `CVD-Policy` is missing |
-| `security_txt_cvd_policy_duplicate` | `CVD-Policy` occurs more than once |
-| `security_txt_cvd_policy_uri_invalid` | `CVD-Policy` is not an allowed URI |
-| `security_txt_canonical_mismatch` | cross-host redirect lacks original `Canonical` |
-| `authority_evidence_missing` | no established evidence was supplied |
-| `authority_host_mismatch` | Target and Discovery Host differ |
-| `target_url_invalid` | Target is not an allowed absolute URL |
-| `scope_target_not_covered` | no `in` entry matches |
-| `scope_target_excluded` | an `out` entry matches |
-| `testing_rule_missing` | no matching rule exists |
-| `testing_rule_prohibited` | posture or a matching rule prohibits testing |
-| `conditions_missing` | a required plan value is absent |
-| `conditions_exceeded` | planned rate or concurrency exceeds a limit |
-| `conditions_user_agent_missing` | a required token is absent |
-| `conditions_test_accounts_unconfirmed` | controlled test accounts were not confirmed |
+Input-validation and policy-processing failures MUST be machine-readable,
+structurally distinguishable from status-bearing evaluation results, and
+identify affected locations when available.  Localized prose MUST NOT be the
+only interface contract.  Implementations are not required to emit identical
+detailed diagnostic identifiers.  Such identifiers are informative and
+implementation-specific.
 
 <!-- requirements: ERR-001; disposition: normative -->
 
@@ -682,7 +658,7 @@ one year is a useful operational starting point.  They should update
 versions for incident records when practical.
 
 Clients should record the policy representation, retrieval context, evaluation
-time, status, reason code, and constraints used for a decision.  A policy can
+time, status, diagnostic details, and constraints used for a decision.  A policy can
 change during an investigation; a later policy must not silently rewrite the
 record of an earlier evaluation.  Clients should revalidate after cache
 revalidation, redirects, media-type changes, or expiry.
@@ -848,12 +824,12 @@ This section is informative and reflects publicly inspectable artifacts as of
 certification, or statement of interoperability.
 
 The CVD Policy specification repository at commit
-`7b0c0b65e8260daa388db5e0e49045de98d51cdc` contains the Version 1 source,
+`55bd9f115c38c3704174fa9c0cb58b27afddf3da` contains the Version 1 source,
 Draft 2020-12 schema, examples, and conformance corpus {{CVD-POLICY-SPEC}}.  Its
 traceability data maps all 61 normative requirement IDs to executable checks.
 
 The TypeScript reference implementation at commit
-`ecde38cf555fcd8964d44778f315d2cbaf547efd` exposes an isolated
+`dd216d99553784e307f88d4da77c1fc24b90359b` exposes an isolated
 `@cvd-policy/core/v1` entry point {{CVD-POLICY-CORE}}.  The package root,
 command-line tool, and website have not been fully migrated to Version 1.  The
 implementation assesses supplied retrieval evidence but does not itself perform
@@ -999,8 +975,8 @@ This policy accepts reports but contains no Testing Permission.
 ```
 
 For the plan in corpus vector `conditions-rate-exceeded`, a planned rate of 3
-requests per second exceeds the limit of 2.  The result is
-`conditions-not-satisfied` with reason `conditions_exceeded`.
+requests per second exceeds the limit of 2.  The normative result is
+`conditions-not-satisfied`.
 
 <!-- evaluation-vector: conditions-rate-exceeded -->
 
@@ -1179,8 +1155,8 @@ Authority evidence is required for each exact Discovery Host.  The
 ```
 
 For `https://example.com/`, both entries match.  The `out` entry wins regardless
-of array order, producing `not-covered` with reason `scope_target_excluded` as
-specified by corpus vector `scope-out-wins`.
+of array order, producing the normative status `not-covered` as specified by
+corpus vector `scope-out-wins`.
 
 <!-- evaluation-vector: scope-out-wins -->
 

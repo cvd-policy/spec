@@ -18,7 +18,7 @@ safe harbor, or the safety of an activity.
     " name="description">
 <meta content="xml2rfc 3.34.0" name="generator">
 <meta content="Internet-Draft" name="keyword">
-<meta content="draft-behring-cvd-policy-00" name="ietf.draft">
+<meta content="draft-behringberg-cvd-policy-00" name="ietf.draft">
 <!-- Generator version information:
   xml2rfc 3.34.0
     Python 3.11.15
@@ -34,7 +34,7 @@ safe harbor, or the safety of an activity.
     requests 2.34.2
     wcwidth 0.8.3
 -->
-<link href="draft-behring-cvd-policy-00.xml" rel="alternate" type="application/rfc+xml">
+<link href="draft-behringberg-cvd-policy-00.xml" rel="alternate" type="application/rfc+xml">
 <link href="#copyright" rel="license">
 <style type="text/css">/*
 
@@ -1237,7 +1237,7 @@ li > p:last-of-type:only-child {
 <dt class="label-workgroup">Workgroup:</dt>
 <dd class="workgroup">Network Working Group</dd>
 <dt class="label-internet-draft">Internet-Draft:</dt>
-<dd class="internet-draft">draft-behring-cvd-policy-00</dd>
+<dd class="internet-draft">draft-behringberg-cvd-policy-00</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
 <time datetime="2026-08-31" class="published">31 August 2026</time>
@@ -1613,15 +1613,18 @@ to a human-readable policy.<a href="#section-5-2" class="pilcrow">¶</a></p>
 suffix <span>[<a href="#RFC8615" class="cite xref">RFC8615</a>]</span>.<a href="#section-5-3" class="pilcrow">¶</a></p>
 <p id="section-5-4">Before creating Authority evidence, a client MUST successfully parse and assess
 the retrieved <code>security.txt</code>.  The file MUST contain at least one valid
-<code>Contact</code>, exactly one valid and unexpired <code>Expires</code>, and exactly one valid
-<code>CVD-Policy</code>.  Failure of any of these checks MUST NOT establish Authority.<a href="#section-5-4" class="pilcrow">¶</a></p>
+<code>Contact</code>, exactly one syntactically valid <code>Expires</code> whose timestamp is later
+than the retrieval time, and exactly one valid <code>CVD-Policy</code>.  A malformed
+<code>Expires</code> and a valid but expired <code>Expires</code> are distinct diagnostic conditions.
+Neither condition establishes Authority.<a href="#section-5-4" class="pilcrow">¶</a></p>
 <p id="section-5-5">The originally requested <code>security.txt</code> URI, the final URI, and every redirect
 hop MUST use HTTPS.  Redirect processing MUST preserve the original Discovery
 Host.  If the final host differs from the originally requested host, at least
 one valid <code>Canonical</code> field in the resulting file MUST exactly equal the
-originally requested <code>security.txt</code> URI.  Otherwise, assessment MUST return
-<code>security_txt_canonical_mismatch</code> and MUST NOT establish Authority.  A same-host
-redirect does not add this <code>Canonical</code> requirement.<a href="#section-5-5" class="pilcrow">¶</a></p>
+originally requested <code>security.txt</code> URI.  Otherwise, assessment MUST NOT
+establish Authority.  A same-host redirect does not add this <code>Canonical</code>
+requirement.  Detailed canonical-mismatch diagnostics are implementation-
+specific and informative.<a href="#section-5-5" class="pilcrow">¶</a></p>
 <p id="section-5-6">An OpenPGP cleartext signature can protect <code>security.txt</code> as described by
 <span>[<a href="#RFC9116" class="cite xref">RFC9116</a>]</span>.  Software that cannot genuinely re-sign a signed file MUST NOT
 rewrite it automatically.  Core assessment software is not required to verify
@@ -1710,9 +1713,10 @@ separate from this document format value.<a href="#section-8.1-1" class="pilcrow
         </h3>
 <p id="section-8.2-1"><code>last_updated</code> and <code>expires</code> are date-time strings conforming to <span>[<a href="#RFC3339" class="cite xref">RFC3339</a>]</span>.
 <code>expires</code> MUST identify an instant strictly later than <code>last_updated</code>.  An
-expired policy MUST produce <code>invalid-policy</code> with reason code <code>policy_expired</code>
-and MUST NOT produce Testing Permission.  Evaluators MUST compare expiry with
-an explicitly supplied or recorded evaluation time.<a href="#section-8.2-1" class="pilcrow">¶</a></p>
+expired policy MUST produce the normative status <code>invalid-policy</code> and MUST NOT
+produce Testing Permission.  Detailed expiry diagnostics are informative and
+implementation-specific.  Evaluators MUST compare expiry with an explicitly
+supplied or recorded evaluation time.<a href="#section-8.2-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="organization">
@@ -1730,10 +1734,10 @@ Organization metadata does not establish Authority.<a href="#section-8.3-1" clas
         <h3 id="name-contact">
 <a href="#section-8.4" class="section-number selfRef">8.4. </a><a href="#name-contact" class="section-name selfRef">Contact</a>
         </h3>
-<p id="section-8.4-1"><code>contact.channels</code> is an ordered, non-empty array of unique contact URIs.  It
-MUST contain at least one <code>mailto:</code>, <code>tel:</code>, or HTTPS URI.  A web contact URI
-MUST use HTTPS, and an HTTPS URI MUST NOT contain userinfo.  Array order states
-channel preference.<a href="#section-8.4-1" class="pilcrow">¶</a></p>
+<p id="section-8.4-1"><code>contact.channels</code> is an ordered, non-empty array of unique contact URIs.  Every
+entry MUST be an absolute URI using only the <code>mailto</code>, <code>tel</code>, or <code>https</code> scheme.
+An HTTPS contact URI MUST NOT contain userinfo or a fragment.  Array order
+states channel preference.<a href="#section-8.4-1" class="pilcrow">¶</a></p>
 <p id="section-8.4-2"><code>contact.preferred_languages</code>, when present, is an array of unique language tags
 conforming to BCP 47 <span>[<a href="#RFC5646" class="cite xref">RFC5646</a>]</span>.  Its order has no defined meaning.
 <code>contact.encryption</code>, when present, is an array of unique absolute URIs that
@@ -1985,7 +1989,8 @@ presence.<a href="#section-9-7" class="pilcrow">¶</a></p>
       <h2 id="name-target-normalization-and-sc">
 <a href="#section-10" class="section-number selfRef">10. </a><a href="#name-target-normalization-and-sc" class="section-name selfRef">Target Normalization and Scope Matching</a>
       </h2>
-<p id="section-10-1">A Target is an absolute HTTP or HTTPS URL without userinfo.  Query and fragment
+<p id="section-10-1">A Target is an absolute HTTP or HTTPS URL without userinfo.  Product identifiers
+and URIs with any other scheme are not evaluation Targets.  Query and fragment
 components do not participate in scope matching.  The scheme and host are
 normalized, an omitted port becomes 80 for HTTP or 443 for HTTPS, and the URL
 pathname is used for path matching.<a href="#section-10-1" class="pilcrow">¶</a></p>
@@ -2028,82 +2033,83 @@ a subdomain does not establish Authority for that subdomain.<a href="#section-10
       </h2>
 <p id="section-11-1">An evaluator accepts policy text, a Target, one activity, the planned values
 needed by conditions, the set of understood extensions, an evaluation time, and
-Authority evidence.  It MUST execute the following order and return at the first
-terminal outcome:<a href="#section-11-1" class="pilcrow">¶</a></p>
-<ol start="1" type="1" class="normal type-1" id="section-11-2">
-<li id="section-11-2.1">
-          <p id="section-11-2.1.1">Parse the policy with duplicate detection.  A failure returns
-<code>invalid-policy</code>.<a href="#section-11-2.1.1" class="pilcrow">¶</a></p>
+Authority evidence.  Before policy evaluation, it MUST validate and normalize
+the Target input.  Invalid Target input MUST produce a typed machine-readable
+input-validation failure with no evaluation status; it MUST NOT produce
+<code>not-covered</code> or any other status from this document.<a href="#section-11-1" class="pilcrow">¶</a></p>
+<p id="section-11-2">After successful Target input validation, an evaluator MUST execute the
+following order and return at the first terminal outcome:<a href="#section-11-2" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-11-3">
+<li id="section-11-3.1">
+          <p id="section-11-3.1.1">Parse the policy with duplicate detection.  A failure returns
+<code>invalid-policy</code>.<a href="#section-11-3.1.1" class="pilcrow">¶</a></p>
 </li>
-        <li id="section-11-2.2">
-          <p id="section-11-2.2.1">Check <code>cvd_policy</code>.  An unsupported version returns <code>unsupported-policy</code>.<a href="#section-11-2.2.1" class="pilcrow">¶</a></p>
+        <li id="section-11-3.2">
+          <p id="section-11-3.2.1">Check <code>cvd_policy</code>.  An unsupported version returns <code>unsupported-policy</code>.<a href="#section-11-3.2.1" class="pilcrow">¶</a></p>
 </li>
-        <li id="section-11-2.3">
-          <p id="section-11-2.3.1">Perform structural validation.  A failure returns <code>invalid-policy</code>.<a href="#section-11-2.3.1" class="pilcrow">¶</a></p>
+        <li id="section-11-3.3">
+          <p id="section-11-3.3.1">Perform structural validation.  A failure returns <code>invalid-policy</code>.<a href="#section-11-3.3.1" class="pilcrow">¶</a></p>
 </li>
-        <li id="section-11-2.4">
-          <p id="section-11-2.4.1">Perform semantic and reference validation.  A failure returns
-<code>invalid-policy</code>.<a href="#section-11-2.4.1" class="pilcrow">¶</a></p>
+        <li id="section-11-3.4">
+          <p id="section-11-3.4.1">Perform semantic and reference validation.  A failure returns
+<code>invalid-policy</code>.<a href="#section-11-3.4.1" class="pilcrow">¶</a></p>
 </li>
-        <li id="section-11-2.5">
-          <p id="section-11-2.5.1">Check policy expiry.  Expiry returns <code>invalid-policy</code>.<a href="#section-11-2.5.1" class="pilcrow">¶</a></p>
+        <li id="section-11-3.5">
+          <p id="section-11-3.5.1">Check policy expiry.  Expiry returns <code>invalid-policy</code>.<a href="#section-11-3.5.1" class="pilcrow">¶</a></p>
 </li>
-        <li id="section-11-2.6">
-          <p id="section-11-2.6.1">Check critical extensions and the requested extension activity.  Unsupported
-critical behavior returns <code>unsupported-policy</code>.<a href="#section-11-2.6.1" class="pilcrow">¶</a></p>
+        <li id="section-11-3.6">
+          <p id="section-11-3.6.1">Check critical extensions and the requested extension activity.  Unsupported
+critical behavior returns <code>unsupported-policy</code>.<a href="#section-11-3.6.1" class="pilcrow">¶</a></p>
 </li>
-        <li id="section-11-2.7">
-          <p id="section-11-2.7.1">Require successfully established Authority evidence.  Missing or invalid
-evidence returns <code>authority-not-established</code>.<a href="#section-11-2.7.1" class="pilcrow">¶</a></p>
+        <li id="section-11-3.7">
+          <p id="section-11-3.7.1">Require successfully established Authority evidence.  Missing or invalid
+evidence returns <code>authority-not-established</code>.<a href="#section-11-3.7.1" class="pilcrow">¶</a></p>
 </li>
-        <li id="section-11-2.8">
-          <p id="section-11-2.8.1">Normalize the Target URL.<a href="#section-11-2.8.1" class="pilcrow">¶</a></p>
+        <li id="section-11-3.8">
+          <p id="section-11-3.8.1">Require exact normalized Target and Discovery Host equality.  A mismatch
+returns <code>authority-not-established</code>.<a href="#section-11-3.8.1" class="pilcrow">¶</a></p>
 </li>
-        <li id="section-11-2.9">
-          <p id="section-11-2.9.1">Require exact normalized Target and Discovery Host equality.  A mismatch
-returns <code>authority-not-established</code>.<a href="#section-11-2.9.1" class="pilcrow">¶</a></p>
+        <li id="section-11-3.9">
+          <p id="section-11-3.9.1">Collect matching Reporting Scope entries.<a href="#section-11-3.9.1" class="pilcrow">¶</a></p>
 </li>
-        <li id="section-11-2.10">
-          <p id="section-11-2.10.1">Collect matching Reporting Scope entries.<a href="#section-11-2.10.1" class="pilcrow">¶</a></p>
+        <li id="section-11-3.10">
+          <p id="section-11-3.10.1">If any matching entry is <code>out</code>, return <code>not-covered</code>; otherwise, if no
+matching <code>in</code> web entry exists, return <code>not-covered</code>.<a href="#section-11-3.10.1" class="pilcrow">¶</a></p>
 </li>
-        <li id="section-11-2.11">
-          <p id="section-11-2.11.1">If any matching entry is <code>out</code>, return <code>not-covered</code>; otherwise, if no
-matching <code>in</code> web entry exists, return <code>not-covered</code>.<a href="#section-11-2.11.1" class="pilcrow">¶</a></p>
+        <li id="section-11-3.11">
+          <p id="section-11-3.11.1">Apply Research Posture.  <code>report_only</code> or <code>prohibited</code> returns
+<code>publisher-stated-prohibited</code>.<a href="#section-11-3.11.1" class="pilcrow">¶</a></p>
 </li>
-        <li id="section-11-2.12">
-          <p id="section-11-2.12.1">Apply Research Posture.  <code>report_only</code> or <code>prohibited</code> returns
-<code>publisher-stated-prohibited</code>.<a href="#section-11-2.12.1" class="pilcrow">¶</a></p>
+        <li id="section-11-3.12">
+          <p id="section-11-3.12.1">Collect all rules for the requested activity that apply globally or refer to
+a matching <code>in</code> target ID.<a href="#section-11-3.12.1" class="pilcrow">¶</a></p>
 </li>
-        <li id="section-11-2.13">
-          <p id="section-11-2.13.1">Collect all rules for the requested activity that apply globally or refer to
-a matching <code>in</code> target ID.<a href="#section-11-2.13.1" class="pilcrow">¶</a></p>
+        <li id="section-11-3.13">
+          <p id="section-11-3.13.1">If any collected rule is <code>prohibited</code>, return
+<code>publisher-stated-prohibited</code>.<a href="#section-11-3.13.1" class="pilcrow">¶</a></p>
 </li>
-        <li id="section-11-2.14">
-          <p id="section-11-2.14.1">If any collected rule is <code>prohibited</code>, return
-<code>publisher-stated-prohibited</code>.<a href="#section-11-2.14.1" class="pilcrow">¶</a></p>
-</li>
-        <li id="section-11-2.15">
-          <p id="section-11-2.15.1">If no collected <code>permitted</code> rule exists, return <code>not-covered</code>.  Otherwise,
+        <li id="section-11-3.14">
+          <p id="section-11-3.14.1">If no collected <code>permitted</code> rule exists, return <code>not-covered</code>.  Otherwise,
 evaluate all conditions fail closed.  If no permitted rule is fully
-satisfied, return <code>conditions-not-satisfied</code>.<a href="#section-11-2.15.1" class="pilcrow">¶</a></p>
+satisfied, return <code>conditions-not-satisfied</code>.<a href="#section-11-3.14.1" class="pilcrow">¶</a></p>
 </li>
-        <li id="section-11-2.16">
-          <p id="section-11-2.16.1">Return <code>publisher-stated-permitted</code>.  If multiple permitted rules are fully
+        <li id="section-11-3.15">
+          <p id="section-11-3.15.1">Return <code>publisher-stated-permitted</code>.  If multiple permitted rules are fully
 satisfied, the lexicographically smallest rule ID supplies the returned
 constraints; this selection does not create semantic priority between
-rules.<a href="#section-11-2.16.1" class="pilcrow">¶</a></p>
+rules.<a href="#section-11-3.15.1" class="pilcrow">¶</a></p>
 </li>
       </ol>
-<p id="section-11-3">A positive status requires a valid unexpired policy, understood critical
+<p id="section-11-4">A positive status requires a valid unexpired policy, understood critical
 behavior, established Authority, exact Target and Discovery Host equality, at
 least one matching <code>in</code> web entry, no matching <code>out</code>, no applicable prohibition,
-and at least one fully satisfied <code>permitted</code> rule.<a href="#section-11-3" class="pilcrow">¶</a></p>
-<p id="section-11-4">The primary public result MUST NOT be a Boolean named <code>allowed</code>, <code>authorized</code>,
+and at least one fully satisfied <code>permitted</code> rule.<a href="#section-11-4" class="pilcrow">¶</a></p>
+<p id="section-11-5">The primary public result MUST NOT be a Boolean named <code>allowed</code>, <code>authorized</code>,
 or <code>safe</code>.  Calling software MUST treat every status other than
 <code>publisher-stated-permitted</code> as no established Testing Permission.  Even
 <code>publisher-stated-permitted</code> reports only a publisher statement obtained by the
 algorithm above; it is not a determination of legal authorization or safe
-harbor.<a href="#section-11-4" class="pilcrow">¶</a></p>
+harbor.<a href="#section-11-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="processing-errors-and-result-statuses">
@@ -2121,8 +2127,8 @@ harbor.<a href="#section-11-4" class="pilcrow">¶</a></p>
 activity;<a href="#section-12-2.2.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-12-2.3">
-          <p id="section-12-2.3.1"><code>not-covered</code>: no matching <code>in</code> scope exists, an <code>out</code> entry matches, the
-Target is a product target, or no matching testing rule exists;<a href="#section-12-2.3.1" class="pilcrow">¶</a></p>
+          <p id="section-12-2.3.1"><code>not-covered</code>: a syntactically valid normalized Target has no matching <code>in</code>
+web scope, matches an <code>out</code> web scope, or has no matching testing rule;<a href="#section-12-2.3.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-12-2.4">
           <p id="section-12-2.4.1"><code>authority-not-established</code>: required Authority evidence is absent, invalid,
@@ -2143,221 +2149,12 @@ extension activity is not understood.<a href="#section-12-2.7.1" class="pilcrow"
       </ul>
 <p id="section-12-3">The ordered algorithm in <a href="#testing-permission-evaluation" class="auto internal xref">Section 11</a> defines precedence.  Array order and
 implementation iteration order MUST NOT alter the status.<a href="#section-12-3" class="pilcrow">¶</a></p>
-<p id="section-12-4">Implementations MUST return stable machine-readable reason codes and JSON
-Pointer paths rather than localized prose as the interface contract.
-Implementations MAY add diagnostic codes for more specific failures.  The core
-reason codes are:<a href="#section-12-4" class="pilcrow">¶</a></p>
-<table class="center" id="table-1">
-        <caption><a href="#table-1" class="selfRef">Table 1</a></caption>
-<thead>
-          <tr>
-            <th class="text-left" rowspan="1" colspan="1">Code</th>
-            <th class="text-left" rowspan="1" colspan="1">Meaning</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>policy_parse_error</code>
-</td>
-            <td class="text-left" rowspan="1" colspan="1">policy text is not one JSON text</td>
-          </tr>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>policy_duplicate_member</code>
-</td>
-            <td class="text-left" rowspan="1" colspan="1">duplicate JSON object member</td>
-          </tr>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>policy_schema_invalid</code>
-</td>
-            <td class="text-left" rowspan="1" colspan="1">structural schema failure</td>
-          </tr>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>policy_version_unsupported</code>
-</td>
-            <td class="text-left" rowspan="1" colspan="1">format version is not understood</td>
-          </tr>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>policy_expired</code>
-</td>
-            <td class="text-left" rowspan="1" colspan="1">policy is expired at evaluation time</td>
-          </tr>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>policy_scope_id_duplicate</code>
-</td>
-            <td class="text-left" rowspan="1" colspan="1">document-wide ID collision</td>
-          </tr>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>policy_target_reference_invalid</code>
-</td>
-            <td class="text-left" rowspan="1" colspan="1">rule target is missing or not an <code>in</code> web entry</td>
-          </tr>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>policy_posture_conflict</code>
-</td>
-            <td class="text-left" rowspan="1" colspan="1">posture conflicts with a permitted rule</td>
-          </tr>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>policy_condition_invalid</code>
-</td>
-            <td class="text-left" rowspan="1" colspan="1">semantic condition failure</td>
-          </tr>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>policy_critical_extension_missing</code>
-</td>
-            <td class="text-left" rowspan="1" colspan="1">critical extension has no data</td>
-          </tr>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>policy_critical_extension_unsupported</code>
-</td>
-            <td class="text-left" rowspan="1" colspan="1">critical extension is not understood</td>
-          </tr>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>policy_activity_unsupported</code>
-</td>
-            <td class="text-left" rowspan="1" colspan="1">requested extension activity is not understood</td>
-          </tr>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>security_txt_parse_error</code>
-</td>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>security.txt</code> cannot be assessed</td>
-          </tr>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>security_txt_contact_missing</code>
-</td>
-            <td class="text-left" rowspan="1" colspan="1">no usable <code>Contact</code> exists</td>
-          </tr>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>security_txt_expires_missing</code>
-</td>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>Expires</code> is missing</td>
-          </tr>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>security_txt_expires_duplicate</code>
-</td>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>Expires</code> occurs more than once</td>
-          </tr>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>security_txt_expired</code>
-</td>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>security.txt</code> is stale</td>
-          </tr>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>security_txt_cvd_policy_missing</code>
-</td>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>CVD-Policy</code> is missing</td>
-          </tr>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>security_txt_cvd_policy_duplicate</code>
-</td>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>CVD-Policy</code> occurs more than once</td>
-          </tr>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>security_txt_cvd_policy_uri_invalid</code>
-</td>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>CVD-Policy</code> is not an allowed URI</td>
-          </tr>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>security_txt_canonical_mismatch</code>
-</td>
-            <td class="text-left" rowspan="1" colspan="1">cross-host redirect lacks original <code>Canonical</code>
-</td>
-          </tr>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>authority_evidence_missing</code>
-</td>
-            <td class="text-left" rowspan="1" colspan="1">no established evidence was supplied</td>
-          </tr>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>authority_host_mismatch</code>
-</td>
-            <td class="text-left" rowspan="1" colspan="1">Target and Discovery Host differ</td>
-          </tr>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>target_url_invalid</code>
-</td>
-            <td class="text-left" rowspan="1" colspan="1">Target is not an allowed absolute URL</td>
-          </tr>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>scope_target_not_covered</code>
-</td>
-            <td class="text-left" rowspan="1" colspan="1">no <code>in</code> entry matches</td>
-          </tr>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>scope_target_excluded</code>
-</td>
-            <td class="text-left" rowspan="1" colspan="1">an <code>out</code> entry matches</td>
-          </tr>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>testing_rule_missing</code>
-</td>
-            <td class="text-left" rowspan="1" colspan="1">no matching rule exists</td>
-          </tr>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>testing_rule_prohibited</code>
-</td>
-            <td class="text-left" rowspan="1" colspan="1">posture or a matching rule prohibits testing</td>
-          </tr>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>conditions_missing</code>
-</td>
-            <td class="text-left" rowspan="1" colspan="1">a required plan value is absent</td>
-          </tr>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>conditions_exceeded</code>
-</td>
-            <td class="text-left" rowspan="1" colspan="1">planned rate or concurrency exceeds a limit</td>
-          </tr>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>conditions_user_agent_missing</code>
-</td>
-            <td class="text-left" rowspan="1" colspan="1">a required token is absent</td>
-          </tr>
-          <tr>
-            <td class="text-left" rowspan="1" colspan="1">
-              <code>conditions_test_accounts_unconfirmed</code>
-</td>
-            <td class="text-left" rowspan="1" colspan="1">controlled test accounts were not confirmed</td>
-          </tr>
-        </tbody>
-      </table>
+<p id="section-12-4">Input-validation and policy-processing failures MUST be machine-readable,
+structurally distinguishable from status-bearing evaluation results, and
+identify affected locations when available.  Localized prose MUST NOT be the
+only interface contract.  Implementations are not required to emit identical
+detailed diagnostic identifiers.  Such identifiers are informative and
+implementation-specific.<a href="#section-12-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="operational-considerations">
@@ -2370,7 +2167,7 @@ one year is a useful operational starting point.  They should update
 <code>last_updated</code> only for substantive changes and should preserve old policy
 versions for incident records when practical.<a href="#section-13-1" class="pilcrow">¶</a></p>
 <p id="section-13-2">Clients should record the policy representation, retrieval context, evaluation
-time, status, reason code, and constraints used for a decision.  A policy can
+time, status, diagnostic details, and constraints used for a decision.  A policy can
 change during an investigation; a later policy must not silently rewrite the
 record of an earlier evaluation.  Clients should revalidate after cache
 revalidation, redirects, media-type changes, or expiry.<a href="#section-13-2" class="pilcrow">¶</a></p>
@@ -2455,8 +2252,8 @@ remain proposed until IANA completes the applicable actions.<a href="#section-16
 <a href="#section-16.1" class="section-number selfRef">16.1. </a><a href="#name-securitytxt-field" class="section-name selfRef">security.txt Field</a>
         </h3>
 <p id="section-16.1-1">IANA is requested to add this entry to the "security.txt Fields" registry:<a href="#section-16.1-1" class="pilcrow">¶</a></p>
-<table class="center" id="table-2">
-          <caption><a href="#table-2" class="selfRef">Table 2</a></caption>
+<table class="center" id="table-1">
+          <caption><a href="#table-1" class="selfRef">Table 1</a></caption>
 <thead>
             <tr>
               <th class="text-left" rowspan="1" colspan="1">Registration item</th>
@@ -2605,11 +2402,11 @@ does not create an Activity or extension registry in Draft 00.<a href="#section-
 2026-08-31.  Listing an implementation is not an IETF recommendation,
 certification, or statement of interoperability.<a href="#section-17-1" class="pilcrow">¶</a></p>
 <p id="section-17-2">The CVD Policy specification repository at commit
-<code>7b0c0b65e8260daa388db5e0e49045de98d51cdc</code> contains the Version 1 source,
+<code>55bd9f115c38c3704174fa9c0cb58b27afddf3da</code> contains the Version 1 source,
 Draft 2020-12 schema, examples, and conformance corpus <span>[<a href="#CVD-POLICY-SPEC" class="cite xref">CVD-POLICY-SPEC</a>]</span>.  Its
 traceability data maps all 61 normative requirement IDs to executable checks.<a href="#section-17-2" class="pilcrow">¶</a></p>
 <p id="section-17-3">The TypeScript reference implementation at commit
-<code>ecde38cf555fcd8964d44778f315d2cbaf547efd</code> exposes an isolated
+<code>dd216d99553784e307f88d4da77c1fc24b90359b</code> exposes an isolated
 <code>@cvd-policy/core/v1</code> entry point <span>[<a href="#CVD-POLICY-CORE" class="cite xref">CVD-POLICY-CORE</a>]</span>.  The package root,
 command-line tool, and website have not been fully migrated to Version 1.  The
 implementation assesses supplied retrieval evidence but does not itself perform
@@ -2759,8 +2556,8 @@ outcomes are tied to named conformance-corpus vectors.<a href="#section-18-1" cl
 }
 </code><a href="#section-18.2-1" class="pilcrow">¶</a></p>
 <p id="section-18.2-2">For the plan in corpus vector <code>conditions-rate-exceeded</code>, a planned rate of 3
-requests per second exceeds the limit of 2.  The result is
-<code>conditions-not-satisfied</code> with reason <code>conditions_exceeded</code>.<a href="#section-18.2-2" class="pilcrow">¶</a></p>
+requests per second exceeds the limit of 2.  The normative result is
+<code>conditions-not-satisfied</code>.<a href="#section-18.2-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="externally-hosted-policy">
@@ -2941,8 +2738,8 @@ Authority evidence is required for each exact Discovery Host.  The
 }
 </code><a href="#section-18.5-1" class="pilcrow">¶</a></p>
 <p id="section-18.5-2">For <code>https://example.com/</code>, both entries match.  The <code>out</code> entry wins regardless
-of array order, producing <code>not-covered</code> with reason <code>scope_target_excluded</code> as
-specified by corpus vector <code>scope-out-wins</code>.<a href="#section-18.5-2" class="pilcrow">¶</a></p>
+of array order, producing the normative status <code>not-covered</code> as specified by
+corpus vector <code>scope-out-wins</code>.<a href="#section-18.5-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -3017,11 +2814,11 @@ specified by corpus vector <code>scope-out-wins</code>.<a href="#section-18.5-2"
 <dl class="references">
 <dt id="CVD-POLICY-CORE">[CVD-POLICY-CORE]</dt>
         <dd>
-<span class="refTitle">"TypeScript Reference Implementation for CVD Policy Version 1"</span>, <time datetime="2026-08-29" class="refDate">29 August 2026</time>, <span>&lt;<a href="https://github.com/cvd-policy/web/commit/ecde38cf555fcd8964d44778f315d2cbaf547efd">https://github.com/cvd-policy/web/commit/ecde38cf555fcd8964d44778f315d2cbaf547efd</a>&gt;</span>. </dd>
+<span class="refTitle">"TypeScript Reference Implementation for CVD Policy Version 1"</span>, <time datetime="2026-08-29" class="refDate">29 August 2026</time>, <span>&lt;<a href="https://github.com/cvd-policy/web/commit/dd216d99553784e307f88d4da77c1fc24b90359b">https://github.com/cvd-policy/web/commit/dd216d99553784e307f88d4da77c1fc24b90359b</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="CVD-POLICY-SPEC">[CVD-POLICY-SPEC]</dt>
         <dd>
-<span class="refTitle">"CVD Policy Version 1 Specification, Schema, and Conformance Corpus"</span>, <time datetime="2026-08-29" class="refDate">29 August 2026</time>, <span>&lt;<a href="https://github.com/cvd-policy/spec/commit/7b0c0b65e8260daa388db5e0e49045de98d51cdc">https://github.com/cvd-policy/spec/commit/7b0c0b65e8260daa388db5e0e49045de98d51cdc</a>&gt;</span>. </dd>
+<span class="refTitle">"CVD Policy Version 1 Specification, Schema, and Conformance Corpus"</span>, <time datetime="2026-08-29" class="refDate">29 August 2026</time>, <span>&lt;<a href="https://github.com/cvd-policy/spec/commit/55bd9f115c38c3704174fa9c0cb58b27afddf3da">https://github.com/cvd-policy/spec/commit/55bd9f115c38c3704174fa9c0cb58b27afddf3da</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="JSON-SCHEMA-2020-12">[JSON-SCHEMA-2020-12]</dt>
         <dd>

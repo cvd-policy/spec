@@ -1,7 +1,7 @@
 # Internet-Draft source
 
-`draft-behring-cvd-policy.md` is the single canonical source for
-`draft-behring-cvd-policy-00`. The build converts it to RFCXML v3 and renders
+`draft-behringberg-cvd-policy.md` is the single canonical source for
+`draft-behringberg-cvd-policy-00`. The build converts it to RFCXML v3 and renders
 text and HTML under `build/`. The generated files are committed for review,
 but this Markdown file remains the only canonical source.
 
@@ -32,9 +32,9 @@ make clean
 Outputs:
 
 ```text
-build/draft-behring-cvd-policy-00.xml
-build/draft-behring-cvd-policy-00.txt
-build/draft-behring-cvd-policy-00.html
+build/draft-behringberg-cvd-policy-00.xml
+build/draft-behringberg-cvd-policy-00.txt
+build/draft-behringberg-cvd-policy-00.html
 ```
 
 `REQUIREMENTS-MAPPING.md` maps every V1 requirement ID to a stable Draft
@@ -49,7 +49,7 @@ The checker validates every embedded policy example against
 checks all 61 requirement IDs and anchors, limits unresolved placeholders to
 the declared author metadata, and rejects unqualified legacy 0.x semantics.
 `make check-core` independently archives and tests Web commit
-`ecde38cf555fcd8964d44778f315d2cbaf547efd`; it never reads or changes the Web
+`dd216d99553784e307f88d4da77c1fc24b90359b`; it never reads or changes the Web
 worktree.
 
 No target in this directory publishes, uploads, submits, tags, or pushes the

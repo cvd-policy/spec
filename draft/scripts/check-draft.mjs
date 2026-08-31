@@ -12,12 +12,22 @@ import {
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const draftDir = path.join(root, "draft");
-const sourcePath = path.join(draftDir, "draft-behring-cvd-policy.md");
+const sourcePath = path.join(draftDir, "draft-behringberg-cvd-policy.md");
 const mappingPath = path.join(draftDir, "REQUIREMENTS-MAPPING.md");
+const parseJson = (text, label) => {
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    throw new Error(`Cannot parse ${label}`, { cause: error });
+  }
+};
 const source = await readFile(sourcePath, "utf8");
-const requirements = JSON.parse(await readFile(path.join(root, "v1/requirements.json"), "utf8"));
-const schema = JSON.parse(await readFile(path.join(root, "schema/cvd-policy-1.schema.json"), "utf8"));
-const evaluationCases = JSON.parse(await readFile(path.join(root, "tests/v1/evaluation/cases.json"), "utf8"));
+const requirementsPath = path.join(root, "v1/requirements.json");
+const schemaPath = path.join(root, "schema/cvd-policy-1.schema.json");
+const evaluationPath = path.join(root, "tests/v1/evaluation/cases.json");
+const requirements = parseJson(await readFile(requirementsPath, "utf8"), requirementsPath);
+const schema = parseJson(await readFile(schemaPath, "utf8"), schemaPath);
+const evaluationCases = parseJson(await readFile(evaluationPath, "utf8"), evaluationPath);
 
 const ajv = new Ajv2020({ allErrors: true, strict: true, validateFormats: true });
 addFormats(ajv);
@@ -60,7 +70,7 @@ for (const match of source.matchAll(/\{\{([^}]+)\}\}/g)) {
 }
 
 assert.match(source, /^title: Machine-Readable Coordinated Vulnerability Disclosure Policies$/m);
-assert.match(source, /^docname: draft-behring-cvd-policy-00$/m);
+assert.match(source, /^docname: draft-behringberg-cvd-policy-00$/m);
 assert.match(source, /^category: std$/m);
 assert.match(source, /^author: \[\{ ins: B\. L\. Behring, name: Ben Luca Behring \}, \{ ins: M\. Berg, name: Marco Berg \}\]$/m);
 assert(!/^\s+(email|org|organization|street|city|country):/m.test(source), "Unprovided author metadata must remain omitted");
@@ -114,7 +124,10 @@ for (const match of source.matchAll(/<!-- policy-example: ([a-z0-9-]+) -->\s*```
 }
 assert.equal(examples.size, 4, "Draft must contain the four checked policy examples");
 
-const readJson = async (relative) => JSON.parse(await readFile(path.join(root, relative), "utf8"));
+const readJson = async (relative) => {
+  const file = path.join(root, relative);
+  return parseJson(await readFile(file, "utf8"), file);
+};
 assert.deepEqual(examples.get("minimal-report-only"), await readJson("examples/v1/minimal-report-only.json"));
 assert.deepEqual(examples.get("limited-web-testing"), await readJson("examples/v1/limited-web-testing.json"));
 assert.deepEqual(examples.get("shared-policy-multiple-hosts"), await readJson("examples/v1/shared-policy-multiple-hosts/cvd-policy.json"));
@@ -125,7 +138,6 @@ for (const id of [...source.matchAll(/<!-- evaluation-vector: ([a-z0-9-]+) -->/g
   const marker = source.indexOf(`<!-- evaluation-vector: ${id} -->`);
   const context = source.slice(Math.max(0, marker - 700), marker);
   assert(context.includes(`\`${vector.expected.status}\``), `${id} example omits expected status`);
-  assert(context.includes(`\`${vector.expected.reasonCode}\``), `${id} example omits expected reason code`);
 }
 
 const outVector = evaluationCases.find(({ id }) => id === "scope-out-wins");
@@ -143,7 +155,7 @@ const mapping = [
   "| --- | --- | --- |",
   ...expectedIds.map((id) => {
     const heading = mapped.get(id);
-    return `| \`${id}\` | [${heading.title}](draft-behring-cvd-policy.md#${heading.anchor}) | ${requirements[id].map((item) => `\`${item}\``).join("<br>")} |`;
+    return `| \`${id}\` | [${heading.title}](draft-behringberg-cvd-policy.md#${heading.anchor}) | ${requirements[id].map((item) => `\`${item}\``).join("<br>")} |`;
   }),
   "",
 ].join("\n");

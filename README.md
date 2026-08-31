@@ -27,9 +27,9 @@ v1/SPEC.md                            Isolated V1 candidate (English governs)
 schema/cvd-policy-1.schema.json       V1 candidate schema
 tests/v1/                             V1 candidate corpus and vectors
 v1/requirements.json                 Normative requirement-to-test map
-draft/draft-behring-cvd-policy.md     Canonical individual Internet-Draft source
+draft/draft-behringberg-cvd-policy.md Canonical individual Internet-Draft source
 draft/REQUIREMENTS-MAPPING.md         V1 requirement-to-Draft traceability
-draft/READINESS.md                    Submission-readiness decision
+draft/READINESS.md                    Human-review readiness decision
 ```
 
 ## The test corpus is the real specification

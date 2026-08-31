@@ -1,5 +1,5 @@
-DRAFT := draft-behring-cvd-policy-00
-SOURCE := draft-behring-cvd-policy.md
+DRAFT := draft-behringberg-cvd-policy-00
+SOURCE := draft-behringberg-cvd-policy.md
 BUILD := build
 XML := $(BUILD)/$(DRAFT).xml
 TXT := $(BUILD)/$(DRAFT).txt
