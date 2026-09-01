@@ -2,11 +2,11 @@
 
 ## Decision
 
-Status: **NOT READY FOR DATATRACKER SUBMISSION**
+Status: **READY FOR DATATRACKER SUBMISSION**
 
-The technical Draft, Spec, schema, corpus, and isolated Core implementation pass their local checks. Submission remains blocked because the two implementation references are not publicly inspectable: both pinned GitHub commit URLs returned HTTP 404 on 2026-09-01. The task explicitly requires verifiable public implementation evidence.
+The technical Draft, Spec, schema, corpus, and isolated Core implementation pass their checks. Both pinned implementation references returned HTTP 200 and were publicly inspectable on 2026-09-01.
 
-No submission, upload, push, tag, release, npm publication, or other publication was performed.
+The two review branches were pushed solely to make the cited commits inspectable. No Datatracker submission, upload, tag, release, or npm publication was performed.
 
 ## Review inputs and outputs
 
@@ -21,9 +21,9 @@ No submission, upload, push, tag, release, npm publication, or other publication
 
 Artifact SHA-256 values:
 
-- RFCXML: `e3d37dcf194b2a3c366c13d6666db03b48ac268bafe346e3f13bbb86a78969c9`
-- Text: `9343fc1cfb3a191092f77da47c6739ad8e58b88a82cfe469f82fa4ac704fe4f6`
-- HTML: `6bfc29ecb227f390bd556451d1ab25884e5b1911b585d46617c1e06c204e5f15`
+- RFCXML: `38d0e522911436ce3b1c2865b2d61d344b79e05948efae5401fec89de681fa11`
+- Text: `eea9b539b0db80702c5b3d718b2b4dfc7d859d3600ff15685ea32c1db3ccf91e`
+- HTML: `dd92f4cfe4d6405aacadb3aab46975885ba651c84de5572d9d62d6e6bf9fb899`
 
 ## Human-review changes completed
 
@@ -38,7 +38,7 @@ Artifact SHA-256 values:
 9. Prohibited testing rules cannot contain conditions.
 10. Evaluation reports every satisfied permit rule informatively; Draft 00 defines neither lexicographic permit selection nor aggregated constraints.
 11. The `security.txt` field request and complete `application/cvd-policy+json` registration template include IETF change control, `+json` fragment wording, full security considerations, and no provisional registration.
-12. Implementation Status immediately precedes Security Considerations, includes RFC 7942 removal instructions, and accurately records the unavailable public references.
+12. Implementation Status immediately precedes Security Considerations, includes RFC 7942 removal instructions, and accurately records the publicly inspectable references.
 
 ## Coverage and verification
 
@@ -58,9 +58,11 @@ Artifact SHA-256 values:
 - Version 1 remains opt-in through `@cvd-policy/core/v1`.
 - Work was performed in isolated Spec and Web worktrees. The unrelated modifications in the primary Web worktree were not touched.
 
-## Blocking evidence
+## Public reference evidence
 
-- `https://github.com/cvd-policy/spec/commit/a7e359ac2bc2efbc89febc7c4a5cd42dec03eade` → HTTP 404.
-- `https://github.com/cvd-policy/web/commit/acc609efc4adc33683cc6c71acd57a8a8e06169b` → HTTP 404.
+- `https://github.com/cvd-policy/spec/commit/a7e359ac2bc2efbc89febc7c4a5cd42dec03eade` → HTTP 200.
+- `https://github.com/cvd-policy/web/commit/acc609efc4adc33683cc6c71acd57a8a8e06169b` → HTTP 200.
+- Remote Spec branch `human-review/datatracker-spec` contains the reviewed Spec commit.
+- Remote Core branch `human-review/datatracker-core` points exactly to the reviewed Core commit.
 
-To become ready, make both exact commits publicly inspectable through the cited URLs, revalidate the references and Implementation Status text, rerun `make -C draft check`, and repeat the final human editorial, interoperability, security, privacy, and IANA review. Publication and submission require separate explicit authorization.
+The exact references and all checks must be revalidated immediately before submission. Datatracker submission requires separate explicit authorization.

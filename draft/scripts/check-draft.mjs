@@ -113,7 +113,7 @@ assert.equal(
   headings.findIndex(({ title }) => title === "Implementation Status") + 1,
   "Implementation Status must immediately precede Security Considerations",
 );
-assert.match(source, /both referenced GitHub commit URLs returned HTTP 404/);
+assert.match(source, /both referenced GitHub commit URLs returned HTTP 200/);
 
 for (const pattern of [
   /`testing\.default`/,

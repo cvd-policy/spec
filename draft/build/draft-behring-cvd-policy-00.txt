@@ -975,28 +975,28 @@ Internet-Draft        Machine-Readable CVD Policies       September 2026
    review; listing an implementation does not imply IETF endorsement or
    independently verified interoperability.
 
-   The local specification commit
-   a7e359ac2bc2efbc89febc7c4a5cd42dec03eade contains the Version 1
-   source, Draft 2020-12 schema, examples, and a conformance corpus
-   mapping all 71 normative requirement IDs to executable checks
-   [CVD-POLICY-SPEC].  The local TypeScript reference implementation
-   commit acc609efc4adc33683cc6c71acd57a8a8e06169b exposes the isolated
-   @cvd-policy/core/v1 entry point and executes that corpus
-   [CVD-POLICY-CORE].  It validates supplied retrieval evidence but does
-   not perform network retrieval or OpenPGP signature verification.  The
-   package root, CLI, and website retain their published 0.x behavior.
+   The specification commit a7e359ac2bc2efbc89febc7c4a5cd42dec03eade
+   contains the Version 1 source, Draft 2020-12 schema, examples, and a
+   conformance corpus mapping all 71 normative requirement IDs to
+   executable checks [CVD-POLICY-SPEC].  The TypeScript reference
+   implementation commit acc609efc4adc33683cc6c71acd57a8a8e06169b
+   exposes the isolated @cvd-policy/core/v1 entry point and executes
+   that corpus [CVD-POLICY-CORE].  It validates supplied retrieval
+   evidence but does not perform network retrieval or OpenPGP signature
+   verification.  The package root, CLI, and website retain their
+   published 0.x behavior.
 
    At the 2026-09-01 build, both referenced GitHub commit URLs returned
-   HTTP 404.  The artifacts therefore are not publicly inspectable, and
-   this Implementation Status evidence is *not ready for Datatracker
-   submission*.  The references and this statement require revalidation
-   after the commits become publicly available.
+   HTTP 200 and the artifacts were publicly inspectable.  This
+   Implementation Status evidence is ready for Datatracker submission.
+   The references require revalidation immediately before submission.
 
 15.  Security Considerations
 
    Policies and security.txt files are untrusted input.  Implementations
    MUST fail closed for every security-sensitive ambiguity in parsing,
    Authority, scope, rule matching, conditions, and extensions.
+
 
 
 

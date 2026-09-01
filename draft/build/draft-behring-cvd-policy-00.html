@@ -2284,21 +2284,20 @@ reporter.<a href="#section-13-3" class="pilcrow">¶</a></p>
 recommended by <span>[<a href="#RFC7942" class="cite xref">RFC7942</a>]</span>.  Its purpose is to assist IETF review; listing an
 implementation does not imply IETF endorsement or independently verified
 interoperability.<a href="#section-14-2" class="pilcrow">¶</a></p>
-<p id="section-14-3">The local specification commit
+<p id="section-14-3">The specification commit
 <code>a7e359ac2bc2efbc89febc7c4a5cd42dec03eade</code> contains the Version 1 source,
 Draft 2020-12 schema, examples, and a conformance corpus mapping all 71
-normative requirement IDs to executable checks <span>[<a href="#CVD-POLICY-SPEC" class="cite xref">CVD-POLICY-SPEC</a>]</span>.  The local
+normative requirement IDs to executable checks <span>[<a href="#CVD-POLICY-SPEC" class="cite xref">CVD-POLICY-SPEC</a>]</span>.  The
 TypeScript reference implementation commit
 <code>acc609efc4adc33683cc6c71acd57a8a8e06169b</code> exposes the isolated
 <code>@cvd-policy/core/v1</code> entry point and executes that corpus
 <span>[<a href="#CVD-POLICY-CORE" class="cite xref">CVD-POLICY-CORE</a>]</span>.  It validates supplied retrieval evidence but does not
 perform network retrieval or OpenPGP signature verification.  The package root,
 CLI, and website retain their published 0.x behavior.<a href="#section-14-3" class="pilcrow">¶</a></p>
-<p id="section-14-4">At the 2026-09-01 build, both referenced GitHub commit URLs returned HTTP 404.
-The artifacts therefore are not publicly inspectable, and this Implementation
-Status evidence is <strong>not ready for Datatracker submission</strong>.  The references
-and this statement require revalidation after the commits become publicly
-available.<a href="#section-14-4" class="pilcrow">¶</a></p>
+<p id="section-14-4">At the 2026-09-01 build, both referenced GitHub commit URLs returned HTTP 200
+and the artifacts were publicly inspectable.  This Implementation Status
+evidence is ready for Datatracker submission.  The references require
+revalidation immediately before submission.<a href="#section-14-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="security-considerations">
