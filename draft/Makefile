@@ -1,5 +1,5 @@
-DRAFT := draft-behringberg-cvd-policy-00
-SOURCE := draft-behringberg-cvd-policy.md
+DRAFT := draft-behring-cvd-policy-00
+SOURCE := draft-behring-cvd-policy.md
 BUILD := build
 XML := $(BUILD)/$(DRAFT).xml
 TXT := $(BUILD)/$(DRAFT).txt
@@ -19,7 +19,9 @@ all: $(XML)
 	test -s "$(TXT)" -a -s "$(HTML)"
 
 $(XML): $(SOURCE) | tools $(BUILD)
-	GEM_HOME="$(GEM_HOME)" GEM_PATH="$(GEM_HOME)" "$(KRAMDOWN_RFC)" --v3 "$(SOURCE)" > "$(XML).tmp"
+	GEM_HOME="$(GEM_HOME)" GEM_PATH="$(GEM_HOME)" "$(KRAMDOWN_RFC)" --v3 "$(SOURCE)" > "$(XML).v2.tmp"
+	uvx --from "xml2rfc==$(XML2RFC_VERSION)" xml2rfc --v2v3 --strict "$(XML).v2.tmp" -o "$(XML).tmp"
+	rm "$(XML).v2.tmp"
 	mv "$(XML).tmp" "$(XML)"
 
 $(BUILD):
@@ -35,6 +37,7 @@ $(TOOLS_STAMP):
 
 check: check-draft check-spec check-core
 	$(MAKE) clean all
+	node scripts/check-draft.mjs --check-rendered
 	xmllint --noout "$(XML)"
 	git -C .. diff --check
 	git -C .. diff --exit-code -- "draft/$(XML)" "draft/$(TXT)" "draft/$(HTML)"
@@ -50,4 +53,4 @@ check-core:
 	./scripts/check-core-reference.sh
 
 clean:
-	rm -f $(BUILD)/$(DRAFT).xml $(BUILD)/$(DRAFT).txt $(BUILD)/$(DRAFT).html
+	rm -f $(BUILD)/$(DRAFT).xml $(BUILD)/$(DRAFT).txt $(BUILD)/$(DRAFT).html $(BUILD)/$(DRAFT).xml.*.tmp

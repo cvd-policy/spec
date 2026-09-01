@@ -1,51 +1,66 @@
-# Draft 00 Readiness
+# Draft 00 Datatracker Readiness
 
 ## Decision
 
-READY FOR HUMAN REVIEW
+Status: **NOT READY FOR DATATRACKER SUBMISSION**
 
-Scope: technical and editorial readiness for human review of `draft-behringberg-cvd-policy-00`. This is not a Datatracker-submission decision. No submission, upload, push, tag, release, npm publication, or other publication was performed.
+The technical Draft, Spec, schema, corpus, and isolated Core implementation pass their local checks. Submission remains blocked because the two implementation references are not publicly inspectable: both pinned GitHub commit URLs returned HTTP 404 on 2026-09-01. The task explicitly requires verifiable public implementation evidence.
+
+No submission, upload, push, tag, release, npm publication, or other publication was performed.
 
 ## Review inputs and outputs
 
-- Draft input commit: `cff561138664f1e32d4a01724cbcde231f1a8856`
-- Version 1 baseline output commit: `55bd9f115c38c3704174fa9c0cb58b27afddf3da`
-- Core input commit: `ecde38cf555fcd8964d44778f315d2cbaf547efd`
-- Core output commit: `dd216d99553784e307f88d4da77c1fc24b90359b`
-- Canonical source: `draft-behringberg-cvd-policy.md`
-- Generated artifacts: `build/draft-behringberg-cvd-policy-00.{xml,txt,html}`
+- Draft input commit: `63e835d1010af3602d921f2d5bd0850092e5f9b0`
+- Reviewed Version 1 Spec commit: `a7e359ac2bc2efbc89febc7c4a5cd42dec03eade`
+- Reviewed Core commit: `acc609efc4adc33683cc6c71acd57a8a8e06169b`
+- Canonical source: `draft-behring-cvd-policy.md`
+- Generated RFCXML v3: `build/draft-behring-cvd-policy-00.xml`
+- Generated text: `build/draft-behring-cvd-policy-00.txt`
+- Generated HTML: `build/draft-behring-cvd-policy-00.html`
 - Requirement mapping: `REQUIREMENTS-MAPPING.md`
 
-## Baseline corrections completed
+Artifact SHA-256 values:
 
-1. The seven evaluation statuses remain the normative interoperability contract. Detailed diagnostic identifiers are informative and implementation-specific; the Draft no longer requires identical reason codes.
-2. Invalid Target input now produces a typed machine-readable input-validation failure with no evaluation status. It never produces `not-covered`; Core uses the informative diagnostic `target_url_invalid`.
-3. Product scope remains reporting metadata and is not accepted as an HTTP(S) evaluation Target.
-4. Every contact channel must be an absolute `mailto:`, `tel:`, or HTTPS URI. HTTPS contacts reject userinfo and fragments.
-5. A malformed `security.txt` `Expires` value and a valid but expired value both prevent Authority and remain distinct Core diagnostics: `security_txt_expires_invalid` and `security_txt_expired`.
-6. The unused `policy_condition_invalid` diagnostic was removed. Core-specific diagnostics remain documented and tested without becoming normative Draft requirements.
+- RFCXML: `e3d37dcf194b2a3c366c13d6666db03b48ac268bafe346e3f13bbb86a78969c9`
+- Text: `9343fc1cfb3a191092f77da47c6739ad8e58b88a82cfe469f82fa4ac704fe4f6`
+- HTML: `6bfc29ecb227f390bd556451d1ab25884e5b1911b585d46617c1e06c204e5f15`
+
+## Human-review changes completed
+
+1. The document is named `draft-behring-cvd-policy-00` throughout.
+2. Both authors have organization, email, and country metadata; no placeholder remains.
+3. RFC 9110 is normative. RFC 7942 is informative and is referenced only by the removable Implementation Status section.
+4. Policy retrieval now defines HTTPS `GET`, `Accept`, compatibility-mode media-type handling, complete `200 OK` responses, HTTPS redirects, and credential isolation.
+5. Authority evidence is bound to the advertised Policy URI and its recorded all-HTTPS redirect chain.
+6. `Canonical` validation applies whenever the field is present, including no-redirect and same-host-redirect cases.
+7. Version dispatch, identifier syntax and comparison, absolute product and extension URIs, exact Core object members, array cardinality, period start points, and the input-failure boundary are explicit.
+8. Scope and Target paths use the same dot-segment, repeated-slash, percent-triplet, and encoded-slash normalization.
+9. Prohibited testing rules cannot contain conditions.
+10. Evaluation reports every satisfied permit rule informatively; Draft 00 defines neither lexicographic permit selection nor aggregated constraints.
+11. The `security.txt` field request and complete `application/cvd-policy+json` registration template include IETF change control, `+json` fragment wording, full security considerations, and no provisional registration.
+12. Implementation Status immediately precedes Security Considerations, includes RFC 7942 removal instructions, and accurately records the unavailable public references.
 
 ## Coverage and verification
 
-- All 61 Version 1 normative requirement IDs are represented exactly once in the Draft and map to executable checks.
-- Spec checks passed: legacy corpus; 9 valid V1 documents; 40 invalid V1 documents; 8 raw JSON cases; 17 `security.txt` vectors; 39 evaluation vectors.
-- The normative corpus requires statuses and structural outcomes, not implementation-specific detailed reason codes.
-- Core `@cvd-policy/core/v1` build, typecheck, tarball/export check, and tests passed.
-- Pinned isolated Core-reference check passed: 9 test files passed, 1 unrelated cross-repository test skipped, 164 tests passed.
-- Four complete Draft policy examples validate against the V1 schema and semantic validator.
+- All 71 normative Version 1 requirement IDs occur exactly once in the Draft and map to executable checks.
+- Spec checks pass: 9 valid documents, 47 invalid documents, 8 raw JSON cases, 19 `security.txt` vectors, and 55 evaluation vectors.
+- Core build and isolated pinned-reference checks pass: 9 test files passed, 1 unrelated cross-repository test skipped, and 165 tests passed.
+- Four complete Draft policy examples validate against the Version 1 schema and semantic validator.
 - Two Draft evaluation examples are bound to executable corpus vectors.
-- Kramdown-RFC 1.7.43 generated RFCXML v3; `xml2rfc` 3.34.0 strict mode generated text and HTML; `xmllint` passed.
-- `git diff --check` passed and a clean rebuild reproduced the staged Draft artifacts.
-- An independent Core diff review found one empty-fragment URI edge case; it was fixed and covered by a regression test before the Core commit.
+- Kramdown-RFC 1.7.43 produces the intermediate XML; `xml2rfc` 3.34.0 converts it to RFCXML v3 and renders text and HTML in strict mode.
+- RFCXML declares version 3 and contains no deprecated `spanx` or `texttable` elements.
+- Automated checks verify that JSON and `security.txt` examples remain multiline in RFCXML, text, and HTML.
+- `xmllint`, `git diff --check`, clean rebuild comparison, Spec tests, and the pinned Core-reference check pass under `make -C draft check`.
 
-## Compatibility and repository isolation
+## Compatibility and isolation
 
-- Formats 0.1 and 0.2, the package root Core API, CLI commands, website behavior, report intake, package versions, release metadata, and npm metadata are unchanged.
+- Formats 0.1 and 0.2, package versions, the root Core API, CLI commands, website behavior, report intake, releases, and npm metadata remain unchanged.
 - Version 1 remains opt-in through `@cvd-policy/core/v1`.
-- The primary Web worktree remained untouched with 18 pre-existing modified files and binary-diff SHA-256 `40816089faa48ffec9c1ab540212e6c4966290e274f4ecd556de5ce16d30e904`.
-- The unrelated formatter changes in the primary Spec worktree were not included.
+- Work was performed in isolated Spec and Web worktrees. The unrelated modifications in the primary Web worktree were not touched.
 
-## Remaining administrative blockers
+## Blocking evidence
 
-- Author affiliations and email addresses have not been provided. They remain explicit placeholders in the media-type registration template and are omitted from author metadata.
-- Datatracker submission must remain blocked until verified author metadata is supplied and human editorial, interoperability, security, privacy, and IANA review is complete.
+- `https://github.com/cvd-policy/spec/commit/a7e359ac2bc2efbc89febc7c4a5cd42dec03eade` → HTTP 404.
+- `https://github.com/cvd-policy/web/commit/acc609efc4adc33683cc6c71acd57a8a8e06169b` → HTTP 404.
+
+To become ready, make both exact commits publicly inspectable through the cited URLs, revalidate the references and Implementation Status text, rerun `make -C draft check`, and repeat the final human editorial, interoperability, security, privacy, and IANA review. Publication and submission require separate explicit authorization.

@@ -1,8 +1,8 @@
 ---
 title: Machine-Readable Coordinated Vulnerability Disclosure Policies
 abbrev: Machine-Readable CVD Policies
-docname: draft-behringberg-cvd-policy-00
-date: 2026-08-31
+docname: draft-behring-cvd-policy-00
+date: 2026-09-01
 category: std
 ipr: trust200902
 area: Security
@@ -11,8 +11,17 @@ stand_alone: true
 submissiontype: IETF
 pi: [toc, sortrefs, symrefs]
 
-# author-metadata-placeholders: affiliations and email addresses omitted until provided
-author: [{ ins: B. L. Behring, name: Ben Luca Behring }, { ins: M. Berg, name: Marco Berg }]
+author:
+  - ins: B. L. Behring
+    name: Ben Luca Behring
+    org: Skalvar Technologies
+    email: behring@skalvar.de
+    country: Germany
+  - ins: M. Berg
+    name: Marco Berg
+    org: Skalvar Technologies
+    email: berg@skalvar.de
+    country: Germany
 
 normative:
   RFC2119:
@@ -26,21 +35,23 @@ normative:
   RFC6839:
   RFC8174:
   RFC8259:
+  RFC9110:
   RFC9116:
 
 informative:
+  RFC7942:
   RFC8615:
   JSON-SCHEMA-2020-12:
     title: JSON Schema Core, Draft 2020-12
     target: "https://json-schema.org/draft/2020-12/json-schema-core.html"
   CVD-POLICY-SPEC:
     title: CVD Policy Version 1 Specification, Schema, and Conformance Corpus
-    target: "https://github.com/cvd-policy/spec/commit/55bd9f115c38c3704174fa9c0cb58b27afddf3da"
-    date: 2026-08-29
+    target: "https://github.com/cvd-policy/spec/commit/a7e359ac2bc2efbc89febc7c4a5cd42dec03eade"
+    date: 2026-09-01
   CVD-POLICY-CORE:
     title: TypeScript Reference Implementation for CVD Policy Version 1
-    target: "https://github.com/cvd-policy/web/commit/dd216d99553784e307f88d4da77c1fc24b90359b"
-    date: 2026-08-29
+    target: "https://github.com/cvd-policy/web/commit/acc609efc4adc33683cc6c71acd57a8a8e06169b"
+    date: 2026-09-01
 
 --- abstract
 
@@ -180,11 +191,15 @@ hop MUST use HTTPS.  Redirect processing MUST preserve the original Discovery
 Host.  If the final host differs from the originally requested host, at least
 one valid `Canonical` field in the resulting file MUST exactly equal the
 originally requested `security.txt` URI.  Otherwise, assessment MUST NOT
-establish Authority.  A same-host redirect does not add this `Canonical`
-requirement.  Detailed canonical-mismatch diagnostics are implementation-
-specific and informative.
+establish Authority.  Detailed canonical-mismatch diagnostics are
+implementation-specific and informative.
 
-<!-- requirements: DISC-005 DISC-006; disposition: normative -->
+Whenever one or more `Canonical` fields are present, at least one value MUST
+exactly equal the originally requested `security.txt` URI before Authority is
+established.  This requirement applies without a redirect and to same-host
+redirects.
+
+<!-- requirements: DISC-005 DISC-006 DISC-008; disposition: normative -->
 
 An OpenPGP cleartext signature can protect `security.txt` as described by
 {{RFC9116}}.  Software that cannot genuinely re-sign a signed file MUST NOT
@@ -200,20 +215,32 @@ become the Discovery Host and does not gain Authority over any Target.
 # Policy Retrieval
 
 The media type defined by this document is
-`application/cvd-policy+json`.  Network clients MUST accept that media type.
-During deployment before registration and broad adoption, a client MAY also
-accept `application/json` while presenting a notice.  A client performing
-automatic evaluation MUST reject HTML, plain text, and other unexpected
-representations.
+`application/cvd-policy+json`.  Network clients MUST accept that media type.  A
+separately enabled compatibility mode MAY accept `application/json` while
+presenting a notice; it MUST NOT broaden acceptance to other media types.  A
+client performing automatic evaluation MUST reject HTML, plain text, and other
+unexpected representations.
 
 <!-- requirements: FETCH-001; disposition: normative -->
 
-A retrieved representation is processed as UTF-8 JSON under {{structural-and-semantic-validation}}.
-Clients should apply finite redirect, response-size, time, and resource limits,
-isolate credentials between origins, and block automatic access to loopback,
-link-local, private, reserved, and metadata addresses.  Redirects of the JSON
-policy do not change the Discovery Host recorded during `security.txt`
-assessment.
+A network client MUST retrieve the Policy URI with HTTPS `GET` as defined by
+{{RFC9110}}.  It MUST send an `Accept` field preferring
+`application/cvd-policy+json` and MUST list `application/json` only when the
+compatibility mode is enabled.  Only `200 OK` is a complete Policy
+representation.  `204 No Content`, `206 Partial Content`, and every other
+status are not complete Policy representations.  Every redirect hop MUST use
+HTTPS.  A client MUST NOT automatically send ambient credentials, cookies,
+`Authorization`, or `Proxy-Authorization`, and MUST NOT forward such fields
+across redirects.
+
+<!-- requirements: FETCH-002; disposition: normative -->
+
+A retrieved representation is processed as UTF-8 JSON under
+{{structural-and-semantic-validation}}.  Clients should apply finite redirect,
+response-size, time, and resource limits and block automatic access to
+loopback, link-local, private, reserved, and metadata addresses.  Redirects of
+the JSON policy do not change the Discovery Host recorded during
+`security.txt` assessment.
 
 Clients should retain the retrieval time, final Policy URI, redirect chain,
 media type, and validators such as `ETag` or `Last-Modified`.  A cached policy
@@ -251,6 +278,13 @@ uses the evidence created for that exact host.
 
 <!-- requirements: AUTH-004; disposition: normative -->
 
+Authority evidence MUST be bound to its advertised Policy URI.  The evaluated
+Policy representation MUST have been retrieved from that exact URI or from the
+final URI of its recorded all-HTTPS redirect chain.  An evaluator MUST NOT
+combine arbitrary Policy JSON with Authority evidence for another Policy URI.
+
+<!-- requirements: AUTH-005; disposition: normative -->
+
 A non-default port on the same exact host can be covered only by an explicit
 Reporting Scope entry.  Port coverage does not relax the exact-host Authority
 check.
@@ -266,14 +300,46 @@ missing `testing` means that no Testing Permission is established.
 
 <!-- requirements: DOC-008; disposition: normative -->
 
+Core object members are exactly as follows.  Every unlisted member is forbidden:
+
+- `organization` requires `name` and optionally contains `uri`;
+- `contact` requires `channels` and optionally contains
+  `preferred_languages` and `encryption`;
+- `research` requires `posture` and optionally contains `statement`;
+- `reporting_scope` contains `web`, `products`, or both;
+- a web entry requires `id`, `state`, `host`, `schemes`, `path_prefix`, and
+  `include_subdomains`, and optionally contains `ports`;
+- a product entry requires `id`, `state`, and `name`, and optionally contains
+  `identifiers`;
+- `testing` requires only `rules`;
+- a testing rule requires `id`, `activity`, and `state`, and optionally contains
+  `target_ids` and, only when permitted, `conditions`;
+- `conditions` contains one or more defined condition members;
+- `reporting` requires `requested_fields` and `proof_of_exploitation` and has no
+  optional members;
+- `response_targets` contains one or more of `acknowledgement_days`,
+  `initial_assessment_days`, and `update_interval_days`;
+- `disclosure` requires `approach` and optionally contains `default_days` and
+  `statement`; and
+- `extensions` has absolute-URI member names and extension-defined values.
+
+Arrays declared non-empty MUST contain at least one item.
+`reporting.requested_fields`, `contact.preferred_languages`,
+`contact.encryption`, and `critical_extensions` MAY be empty; other optional
+arrays, when present, MUST be non-empty.
+
+<!-- requirements: DOC-019; disposition: normative -->
+
 ## Version
 
 The `cvd_policy` member identifies the document format.  A Version 1 document
 MUST contain the JSON number `1`; the string `"1"` and every 0.x value are not
-Version 1 documents.  Implementations MUST keep software package versions
+Version 1 documents.  A missing or non-integer `cvd_policy` member MUST produce
+`invalid-policy`.  An unknown integer version MUST produce
+`unsupported-policy`.  Implementations MUST keep software package versions
 separate from this document format value.
 
-<!-- requirements: DOC-001; disposition: normative -->
+<!-- requirements: DOC-001 DOC-017; disposition: normative -->
 
 ## Timestamps
 
@@ -315,9 +381,11 @@ The optional `research.statement` is explanatory text and has no evaluation
 effect.
 
 `open` states a generally welcoming posture but MUST NOT imply Testing
-Permission without a matching `permitted` rule.  A policy with `report_only` or
-`prohibited` posture MUST NOT contain a `permitted` testing rule.  Such a
-posture produces `publisher-stated-prohibited` only after the evaluation has
+Permission without a matching `permitted` rule.  `report_only` states that
+reports are accepted but active testing under this Policy is not permitted.  A
+policy with `report_only` or `prohibited` posture MUST NOT contain a `permitted`
+testing rule.  Such a posture produces `publisher-stated-prohibited` only after
+the evaluation has
 established Authority and matching Reporting Scope as specified in
 {{testing-permission-evaluation}}.
 
@@ -327,9 +395,12 @@ established Authority and matching Reporting Scope as specified in
 
 `reporting_scope` contains a non-empty `web` array, a non-empty `products`
 array, or both.  Every scope-entry ID and testing-rule ID MUST be unique across
-the entire document.
+the entire document.  Every ID MUST be 1 through 128 ASCII characters, start
+with an ASCII letter or digit, and otherwise contain only ASCII letters,
+digits, `.`, `_`, or `-`.  IDs and references are compared as exact,
+case-sensitive strings.
 
-<!-- requirements: SCOP-001; disposition: normative -->
+<!-- requirements: SCOP-001 DOC-018; disposition: normative -->
 
 A web entry contains:
 
@@ -359,9 +430,11 @@ array order MUST NOT change an evaluation result.
 <!-- requirements: SCOP-007 SCOP-008; disposition: normative -->
 
 A product entry contains `id`, `state`, a non-empty `name`, and an optional
-non-empty array of unique absolute-URI-like `identifiers`.  Product entries are
-reporting metadata only and MUST NOT produce automatic Testing Permission.
-Version-range syntax is not defined by Version 1.
+non-empty array of unique `identifiers`.  Every product identifier MUST be an
+absolute RFC 3986 URI and is compared as an exact, case-sensitive string
+without scheme-specific equivalence processing.  Product entries are reporting
+metadata only and MUST NOT produce automatic Testing Permission.  Version-range
+syntax is not defined by Version 1.
 
 <!-- requirements: SCOP-009; disposition: normative -->
 
@@ -383,7 +456,8 @@ The core activity identifiers are:
   and use of third-party credentials.
 
 An extension activity identifier MUST be an absolute URI.  An unknown
-unqualified token is structurally invalid.
+unqualified token is structurally invalid.  Activity identifiers, including
+extension URI identifiers, are compared as exact, case-sensitive strings.
 
 <!-- requirements: TEST-003; disposition: normative -->
 
@@ -399,7 +473,10 @@ For one activity and Target, every applicable rule is collected.  Any matching
 `prohibited` rule MUST override every matching `permitted` rule.  No matching
 rule means no established Testing Permission.
 
-<!-- requirements: TEST-007; disposition: normative -->
+A `prohibited` rule MUST NOT contain `conditions`; a prohibition is
+unconditional once the rule applies.
+
+<!-- requirements: TEST-007 TEST-008; disposition: normative -->
 
 ### Conditions
 
@@ -457,21 +534,24 @@ attachment protocol.
 
 `response_targets` is optional and contains one or more positive integer values:
 `acknowledgement_days`, `initial_assessment_days`, and `update_interval_days`.
-They are publisher targets, not guarantees, deadlines imposed on a reporter, or
-permission to test.
+Acknowledgement and initial-assessment periods start when the publisher
+receives the initial report.  Each update interval starts when the preceding
+substantive update is sent.  They are publisher targets, not guarantees,
+deadlines imposed on a reporter, or permission to test.
 
 ## Disclosure Preferences
 
 `disclosure.approach` is required when `disclosure` is present and is one of
 `coordinated`, `case_by_case`, or `no_preference`.  The optional
-`default_days` is a positive integer.  The optional `statement` is explanatory
-text.  These members express publisher preferences and do not override a
+`default_days` is a positive integer whose period starts when the publisher
+receives the initial report.  The optional `statement` is explanatory text.  These members express publisher preferences and do not override a
 Testing Rule, a condition, or applicable law.
 
 ## Extensions
 
-Extension identifiers are absolute URIs.  Extension data appears only as values
-of same-named members in the `extensions` object.  `critical_extensions` is an
+Extension identifiers are absolute RFC 3986 URIs compared as exact,
+case-sensitive strings.  Extension data appears only as values of same-named
+members in the `extensions` object.  `critical_extensions` is an
 array of unique extension identifiers.  Every identifier in
 `critical_extensions` MUST have a same-named member in `extensions`.
 
@@ -549,8 +629,16 @@ A web scope entry matches only if all of the following hold:
    effective port is the scheme's default; and
 4. the normalized pathname matches `path_prefix`.
 
-Path matching is case-sensitive and does not percent-decode reserved
-characters.  `/` matches every path.  A prefix ending in `/` matches paths that
+Scope `path_prefix` and Target paths MUST use the same normalization.  An empty
+path becomes `/`; RFC 3986 dot-segments are removed; repeated slashes are
+preserved; hexadecimal digits in percent-encoded triplets are converted to
+uppercase; and no percent-encoded octet is decoded for matching.  A percent
+sign not followed by exactly two hexadecimal digits is invalid.  An encoded
+slash therefore remains distinct from `/`.
+
+<!-- requirements: SCOP-010; disposition: normative -->
+
+Path matching is case-sensitive.  `/` matches every path.  A prefix ending in `/` matches paths that
 start with that prefix.  Any other prefix matches the exact path or that prefix
 followed by `/`.  Therefore, `/api` matches `/api`, `/api/`, and `/api/v1`, but
 not `/apix`.
@@ -574,14 +662,16 @@ following order and return at the first terminal outcome:
 
 1. Parse the policy with duplicate detection.  A failure returns
    `invalid-policy`.
-2. Check `cvd_policy`.  An unsupported version returns `unsupported-policy`.
+2. Check `cvd_policy`.  A missing or non-integer value returns
+   `invalid-policy`; an unknown integer version returns `unsupported-policy`.
 3. Perform structural validation.  A failure returns `invalid-policy`.
 4. Perform semantic and reference validation.  A failure returns
    `invalid-policy`.
 5. Check policy expiry.  Expiry returns `invalid-policy`.
 6. Check critical extensions and the requested extension activity.  Unsupported
    critical behavior returns `unsupported-policy`.
-7. Require successfully established Authority evidence.  Missing or invalid
+7. Require successfully established Authority evidence and Policy retrieval
+   evidence bound to its advertised Policy URI.  Missing, invalid, or mismatched
    evidence returns `authority-not-established`.
 8. Require exact normalized Target and Discovery Host equality.  A mismatch
    returns `authority-not-established`.
@@ -597,12 +687,13 @@ following order and return at the first terminal outcome:
 14. If no collected `permitted` rule exists, return `not-covered`.  Otherwise,
     evaluate all conditions fail closed.  If no permitted rule is fully
     satisfied, return `conditions-not-satisfied`.
-15. Return `publisher-stated-permitted`.  If multiple permitted rules are fully
-    satisfied, the lexicographically smallest rule ID supplies the returned
-    constraints; this selection does not create semantic priority between
-    rules.
+15. Return `publisher-stated-permitted` when one or more permitted rules are
+    fully satisfied.  Implementations MAY report all satisfied rule IDs
+    informatively.  Draft 00 defines neither lexicographic rule selection nor
+    one aggregated constraint object; each satisfied rule retains its own
+    conditions.
 
-<!-- requirements: EVAL-003; disposition: normative -->
+<!-- requirements: EVAL-003 EVAL-005; disposition: normative -->
 
 A positive status requires a valid unexpired policy, understood critical
 behavior, established Authority, exact Target and Discovery Host equality, at
@@ -641,14 +732,17 @@ The status is exactly one of:
 The ordered algorithm in {{testing-permission-evaluation}} defines precedence.  Array order and
 implementation iteration order MUST NOT alter the status.
 
-Input-validation and policy-processing failures MUST be machine-readable,
-structurally distinguishable from status-bearing evaluation results, and
-identify affected locations when available.  Localized prose MUST NOT be the
+Input-validation and policy-processing failures MUST be machine-readable and
+identify affected locations when available.  Only failures that validate
+evaluation-call input, such as an invalid Target URL, are structurally outside
+status-bearing evaluation results.  Policy parsing, version dispatch,
+structural, semantic, reference, and expiry failures remain normal
+status-bearing results; in particular, `invalid-policy` is a normative status.  Localized prose MUST NOT be the
 only interface contract.  Implementations are not required to emit identical
 detailed diagnostic identifiers.  Such identifiers are informative and
 implementation-specific.
 
-<!-- requirements: ERR-001; disposition: normative -->
+<!-- requirements: ERR-001 ERR-002; disposition: normative -->
 
 # Operational Considerations
 
@@ -658,7 +752,7 @@ one year is a useful operational starting point.  They should update
 versions for incident records when practical.
 
 Clients should record the policy representation, retrieval context, evaluation
-time, status, diagnostic details, and constraints used for a decision.  A policy can
+time, status, diagnostic details, and satisfied rules used for a decision.  A policy can
 change during an investigation; a later policy must not silently rewrite the
 record of an earlier evaluation.  Clients should revalidate after cache
 revalidation, redirects, media-type changes, or expiry.
@@ -666,6 +760,33 @@ revalidation, redirects, media-type changes, or expiry.
 Response and disclosure targets are publisher statements.  Operational tooling
 must not present them as service guarantees or as conditions imposed on a
 reporter.
+
+# Implementation Status
+
+**RFC Editor: remove this entire section and the informative reference to RFC
+7942 before publication.**
+
+This section records known implementation status at the time of posting, as
+recommended by {{RFC7942}}.  Its purpose is to assist IETF review; listing an
+implementation does not imply IETF endorsement or independently verified
+interoperability.
+
+The local specification commit
+`a7e359ac2bc2efbc89febc7c4a5cd42dec03eade` contains the Version 1 source,
+Draft 2020-12 schema, examples, and a conformance corpus mapping all 71
+normative requirement IDs to executable checks {{CVD-POLICY-SPEC}}.  The local
+TypeScript reference implementation commit
+`acc609efc4adc33683cc6c71acd57a8a8e06169b` exposes the isolated
+`@cvd-policy/core/v1` entry point and executes that corpus
+{{CVD-POLICY-CORE}}.  It validates supplied retrieval evidence but does not
+perform network retrieval or OpenPGP signature verification.  The package root,
+CLI, and website retain their published 0.x behavior.
+
+At the 2026-09-01 build, both referenced GitHub commit URLs returned HTTP 404.
+The artifacts therefore are not publicly inspectable, and this Implementation
+Status evidence is **not ready for Datatracker submission**.  The references
+and this statement require revalidation after the commits become publicly
+available.
 
 # Security Considerations
 
@@ -744,14 +865,23 @@ remain proposed until IANA completes the applicable actions.
 
 IANA is requested to add this entry to the "security.txt Fields" registry:
 
-| Registration item | Value |
-| --- | --- |
-| Field Name | CVD-Policy |
-| Description | Link to a machine-readable coordinated vulnerability disclosure policy |
-| Multiple Appearances | No |
-| Status | current |
-| Change Controller | IETF |
-| Reference | This document, {{discovery-using-securitytxt}} |
+Field Name:
+: CVD-Policy
+
+Description:
+: Link to a machine-readable coordinated vulnerability disclosure policy
+
+Multiple Appearances:
+: No
+
+Status:
+: current
+
+Change Controller:
+: IETF
+
+Reference:
+: This document, {{discovery-using-securitytxt}}
 
 ## Media Type
 
@@ -766,17 +896,26 @@ Subtype name:
 : cvd-policy+json
 
 Required parameters:
-: none
+: N/A
 
 Optional parameters:
-: none
+: N/A
 
 Encoding considerations:
 : binary; representations are UTF-8 JSON as required by this document and
   {{RFC8259}}
 
 Security considerations:
-: See {{security-considerations}}.
+: Policy representations are untrusted JSON and can influence decisions about
+  active security testing.  Implementations need duplicate-aware parsing,
+  strict schema and semantic validation, bounded resource use, expiry checks,
+  exact Authority and Policy-URI binding, fail-closed rule processing, and
+  rejection of unknown critical behavior.  Automatic retrieval introduces
+  SSRF, redirect, credential-disclosure, DNS-rebinding, and stale-cache risks;
+  clients are required to use HTTPS, avoid ambient credentials, and accept only
+  complete `200 OK` representations; they are advised to enforce finite limits
+  and filter unsafe network destinations.  No result establishes ownership, legal authorization,
+  safe harbor, or operational safety.  See {{security-considerations}}.
 
 Interoperability considerations:
 : Interoperability requirements are specified throughout this document,
@@ -790,16 +929,19 @@ Applications that use this media type:
 : CVD policy publishers, validators, discovery clients, and policy evaluators.
 
 Fragment identifier considerations:
-: No fragment-identifier semantics are defined.  A Policy URI carried by
-  `CVD-Policy` cannot contain a fragment.
+: The syntax and semantics of fragment identifiers for this `+json` media type
+  follow `application/json` as specified by {{RFC6839}}.  At the time of this
+  registration, `application/json` defines no fragment identifier syntax; if
+  such syntax is defined in the future, it applies to this media type unless a
+  later specification states otherwise.  Independently, a Policy URI carried
+  by `CVD-Policy` cannot contain a fragment.
 
 Additional information:
 : Deprecated alias names: none.  Magic number(s): none.  File extension(s):
   none.  Macintosh file type code(s): none.
 
 Person and email address to contact for further information:
-: Ben Luca Behring and Marco Berg; **TBD: email addresses to be supplied
-  before submission**.
+: Ben Luca Behring, behring@skalvar.de; Marco Berg, berg@skalvar.de.
 
 Intended usage:
 : COMMON
@@ -808,32 +950,16 @@ Restrictions on usage:
 : none
 
 Author:
-: Ben Luca Behring and Marco Berg; **TBD: affiliations to be supplied before
-  submission**.
+: IETF
 
 Change controller:
 : IETF
 
+Provisional registration:
+: no
+
 This document does not request registration of a well-known URI suffix.  It also
 does not create an Activity or extension registry in Draft 00.
-
-# Implementation Status
-
-This section is informative and reflects publicly inspectable artifacts as of
-2026-08-31.  Listing an implementation is not an IETF recommendation,
-certification, or statement of interoperability.
-
-The CVD Policy specification repository at commit
-`55bd9f115c38c3704174fa9c0cb58b27afddf3da` contains the Version 1 source,
-Draft 2020-12 schema, examples, and conformance corpus {{CVD-POLICY-SPEC}}.  Its
-traceability data maps all 61 normative requirement IDs to executable checks.
-
-The TypeScript reference implementation at commit
-`dd216d99553784e307f88d4da77c1fc24b90359b` exposes an isolated
-`@cvd-policy/core/v1` entry point {{CVD-POLICY-CORE}}.  The package root,
-command-line tool, and website have not been fully migrated to Version 1.  The
-implementation assesses supplied retrieval evidence but does not itself perform
-network retrieval or OpenPGP signature verification.
 
 # Examples
 
@@ -845,7 +971,7 @@ outcomes are tied to named conformance-corpus vectors.
 
 <!-- policy-example: minimal-report-only -->
 
-```json
+~~~ json
 {
   "cvd_policy": 1,
   "last_updated": "2026-08-29T08:00:00Z",
@@ -883,7 +1009,7 @@ outcomes are tied to named conformance-corpus vectors.
     "proof_of_exploitation": "not_requested"
   }
 }
-```
+~~~
 
 This policy accepts reports but contains no Testing Permission.
 
@@ -891,7 +1017,7 @@ This policy accepts reports but contains no Testing Permission.
 
 <!-- policy-example: limited-web-testing -->
 
-```json
+~~~ json
 {
   "cvd_policy": 1,
   "last_updated": "2026-08-29T08:00:00Z",
@@ -972,7 +1098,7 @@ This policy accepts reports but contains no Testing Permission.
   "critical_extensions": [],
   "extensions": {}
 }
-```
+~~~
 
 For the plan in corpus vector `conditions-rate-exceeded`, a planned rate of 3
 requests per second exceeds the limit of 2.  The normative result is
@@ -986,13 +1112,13 @@ The minimal policy in {{minimal-report-only-policy}} can be hosted by a provider
 Discovery Host retains Authority because its own assessed `security.txt`
 contains the reference:
 
-```text
+~~~ text
 Contact: mailto:security@example.com
 Policy: https://example.com/security-policy
 CVD-Policy: https://policies.provider.example/example.json
 Expires: 2027-02-28T08:00:00Z
 Canonical: https://example.com/.well-known/security.txt
-```
+~~~
 
 The provider host does not gain Authority over `example.com`.
 
@@ -1000,7 +1126,7 @@ The provider host does not gain Authority over `example.com`.
 
 <!-- policy-example: shared-policy-multiple-hosts -->
 
-```json
+~~~ json
 {
   "cvd_policy": 1,
   "last_updated": "2026-08-29T08:00:00Z",
@@ -1050,7 +1176,7 @@ The provider host does not gain Authority over `example.com`.
     "proof_of_exploitation": "not_requested"
   }
 }
-```
+~~~
 
 `example.com` and `api.example.com` each publish their own `security.txt` and
 both point to `https://policies.provider.example/shared.json`.  Separate
@@ -1061,7 +1187,7 @@ Authority evidence is required for each exact Discovery Host.  The
 
 <!-- policy-example: scope-out-wins -->
 
-```json
+~~~ json
 {
   "cvd_policy": 1,
   "last_updated": "2026-08-29T08:00:00Z",
@@ -1152,7 +1278,7 @@ Authority evidence is required for each exact Discovery Host.  The
   "critical_extensions": [],
   "extensions": {}
 }
-```
+~~~
 
 For `https://example.com/`, both entries match.  The `out` entry wins regardless
 of array order, producing the normative status `not-covered` as specified by

@@ -12,7 +12,7 @@ import {
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const draftDir = path.join(root, "draft");
-const sourcePath = path.join(draftDir, "draft-behringberg-cvd-policy.md");
+const sourcePath = path.join(draftDir, "draft-behring-cvd-policy.md");
 const mappingPath = path.join(draftDir, "REQUIREMENTS-MAPPING.md");
 const parseJson = (text, label) => {
   try {
@@ -59,8 +59,8 @@ for (const match of source.matchAll(/<!-- requirements: ([^;]+); disposition: ([
 }
 
 const expectedIds = Object.keys(requirements).sort();
-assert.deepEqual([...mapped.keys()].sort(), expectedIds, "Draft must map exactly the 61 baseline requirements");
-assert.equal(expectedIds.length, 61, "Frozen V1 baseline must contain 61 requirements");
+assert.deepEqual([...mapped.keys()].sort(), expectedIds, "Draft must map every V1 requirement exactly once");
+assert.equal(expectedIds.length, 71, "The 61-requirement baseline plus 10 reviewed requirements must be present");
 
 const frontmatter = source.slice(0, source.indexOf("\n--- abstract"));
 const externalReferences = new Set([...frontmatter.matchAll(/^  ([A-Z][A-Z0-9-]+):/gm)].map((match) => match[1]));
@@ -70,15 +70,21 @@ for (const match of source.matchAll(/\{\{([^}]+)\}\}/g)) {
 }
 
 assert.match(source, /^title: Machine-Readable Coordinated Vulnerability Disclosure Policies$/m);
-assert.match(source, /^docname: draft-behringberg-cvd-policy-00$/m);
+assert.match(source, /^docname: draft-behring-cvd-policy-00$/m);
+assert.match(source, /^date: 2026-09-01$/m);
 assert.match(source, /^category: std$/m);
-assert.match(source, /^author: \[\{ ins: B\. L\. Behring, name: Ben Luca Behring \}, \{ ins: M\. Berg, name: Marco Berg \}\]$/m);
-assert(!/^\s+(email|org|organization|street|city|country):/m.test(source), "Unprovided author metadata must remain omitted");
-assert.deepEqual(
-  [...source.matchAll(/\*\*TBD: ([^*]+)\*\*/g)].map((match) => match[1].replace(/\s+/g, " ").trim()).sort(),
-  ["affiliations to be supplied before submission", "email addresses to be supplied before submission"],
-  "Only the declared affiliation and email placeholders are permitted",
-);
+for (const value of [
+  "ins: B. L. Behring",
+  "name: Ben Luca Behring",
+  "email: behring@skalvar.de",
+  "ins: M. Berg",
+  "name: Marco Berg",
+  "email: berg@skalvar.de",
+]) assert(source.includes(value), `Missing author metadata: ${value}`);
+assert.equal((source.match(/org: Skalvar Technologies/g) ?? []).length, 2);
+assert.equal((source.match(/country: Germany/g) ?? []).length, 2);
+assert(!/TBD/i.test(source), "Draft must not contain TBD placeholders");
+assert(!/^```/m.test(source), "Draft must use Kramdown-RFC tilde fences");
 
 for (const heading of [
   "Introduction",
@@ -102,6 +108,12 @@ for (const heading of [
 ]) {
   assert(headings.some((item) => item.title === heading), `Missing required section: ${heading}`);
 }
+assert.equal(
+  headings.findIndex(({ title }) => title === "Security Considerations"),
+  headings.findIndex(({ title }) => title === "Implementation Status") + 1,
+  "Implementation Status must immediately precede Security Considerations",
+);
+assert.match(source, /both referenced GitHub commit URLs returned HTTP 404/);
 
 for (const pattern of [
   /`testing\.default`/,
@@ -115,7 +127,7 @@ for (const pattern of [
 }
 
 const examples = new Map();
-for (const match of source.matchAll(/<!-- policy-example: ([a-z0-9-]+) -->\s*```json\n([\s\S]*?)\n```/g)) {
+for (const match of source.matchAll(/<!-- policy-example: ([a-z0-9-]+) -->\s*~~~ json\n([\s\S]*?)\n~~~/g)) {
   assert(!examples.has(match[1]), `Duplicate policy example marker: ${match[1]}`);
   const policy = parseJsonText(match[2]);
   assert(validate(policy), `${match[1]} fails the V1 schema: ${ajv.errorsText(validate.errors)}`);
@@ -155,7 +167,7 @@ const mapping = [
   "| --- | --- | --- |",
   ...expectedIds.map((id) => {
     const heading = mapped.get(id);
-    return `| \`${id}\` | [${heading.title}](draft-behringberg-cvd-policy.md#${heading.anchor}) | ${requirements[id].map((item) => `\`${item}\``).join("<br>")} |`;
+    return `| \`${id}\` | [${heading.title}](draft-behring-cvd-policy.md#${heading.anchor}) | ${requirements[id].map((item) => `\`${item}\``).join("<br>")} |`;
   }),
   "",
 ].join("\n");
@@ -164,6 +176,27 @@ if (process.argv.includes("--write-mapping")) {
   await writeFile(mappingPath, mapping);
 } else {
   assert.equal(await readFile(mappingPath, "utf8"), mapping, "REQUIREMENTS-MAPPING.md is stale; regenerate it with --write-mapping");
+}
+
+if (process.argv.includes("--check-rendered")) {
+  const buildDir = path.join(draftDir, "build");
+  const basename = "draft-behring-cvd-policy-00";
+  const [xml, text, html] = await Promise.all(
+    ["xml", "txt", "html"].map((extension) =>
+      readFile(path.join(buildDir, `${basename}.${extension}`), "utf8")),
+  );
+  assert.match(xml, /<rfc\b[^>]*\bversion="3"/i, "RFCXML must declare version 3");
+  assert(!/<(?:spanx|texttable)\b/i.test(xml), "RFCXML v3 must not contain spanx or texttable");
+  const jsonBlocks = [...xml.matchAll(/<(?:sourcecode|artwork)\b[^>]*type="json"[^>]*>([\s\S]*?)<\/(?:sourcecode|artwork)>/gi)];
+  assert.equal(jsonBlocks.length, 4, "RFCXML must contain four JSON source blocks");
+  for (const block of jsonBlocks) {
+    assert(block[1].includes("\n") && block[1].includes('"cvd_policy"'), "RFCXML JSON example collapsed");
+  }
+  assert.match(xml, /<(?:sourcecode|artwork)\b[^>]*type="text"[^>]*>[\s\S]*?CVD-Policy:[\s\S]*?<\/(?:sourcecode|artwork)>/i);
+  assert.match(html, /<pre\b[\s\S]*?cvd_policy[\s\S]*?<\/pre>/i, "HTML JSON example collapsed");
+  assert.match(html, /<pre\b[\s\S]*?CVD-Policy:[\s\S]*?<\/pre>/i, "HTML security.txt example collapsed");
+  assert((text.match(/^\s+"cvd_policy": 1,/gm) ?? []).length >= 4, "TXT JSON examples are not multiline and indented");
+  assert.match(text, /^\s+Contact: mailto:security@example\.com$/m, "TXT security.txt example collapsed");
 }
 
 console.log(`Draft checks passed: ${expectedIds.length} requirements, ${examples.size} policy examples, 2 evaluation vectors.`);

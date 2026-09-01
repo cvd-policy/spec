@@ -1,17 +1,14 @@
 # Internet-Draft source
 
-`draft-behringberg-cvd-policy.md` is the single canonical source for
-`draft-behringberg-cvd-policy-00`. The build converts it to RFCXML v3 and renders
+`draft-behring-cvd-policy.md` is the single canonical source for
+`draft-behring-cvd-policy-00`. The build converts it to RFCXML v3 and renders
 text and HTML under `build/`. The generated files are committed for review,
 but this Markdown file remains the only canonical source.
 
-Authors currently identified:
+Authors:
 
-- Ben Luca Behring (lead author)
-- Marco Berg
-
-Affiliations and email addresses are intentionally left as explicit metadata
-placeholders until the authors provide them. Do not invent these values.
+- Ben Luca Behring — Skalvar Technologies — behring@skalvar.de — Germany
+- Marco Berg — Skalvar Technologies — berg@skalvar.de — Germany
 
 ## Build
 
@@ -32,9 +29,9 @@ make clean
 Outputs:
 
 ```text
-build/draft-behringberg-cvd-policy-00.xml
-build/draft-behringberg-cvd-policy-00.txt
-build/draft-behringberg-cvd-policy-00.html
+build/draft-behring-cvd-policy-00.xml
+build/draft-behring-cvd-policy-00.txt
+build/draft-behring-cvd-policy-00.html
 ```
 
 `REQUIREMENTS-MAPPING.md` maps every V1 requirement ID to a stable Draft
@@ -46,11 +43,11 @@ node scripts/check-draft.mjs --write-mapping
 
 The checker validates every embedded policy example against
 `../schema/cvd-policy-1.schema.json`, verifies the cited evaluation vectors,
-checks all 61 requirement IDs and anchors, limits unresolved placeholders to
-the declared author metadata, and rejects unqualified legacy 0.x semantics.
-`make check-core` independently archives and tests Web commit
-`dd216d99553784e307f88d4da77c1fc24b90359b`; it never reads or changes the Web
-worktree.
+checks all 71 requirement IDs and anchors, rejects placeholders and legacy 0.x
+semantics, and verifies that JSON and `security.txt` examples remain multiline
+in RFCXML v3, text, and HTML. `make check-core` independently archives and tests
+Web commit `acc609efc4adc33683cc6c71acd57a8a8e06169b`; it never reads or changes
+the Web worktree.
 
 No target in this directory publishes, uploads, submits, tags, or pushes the
 Draft.
