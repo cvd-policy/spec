@@ -1,5 +1,5 @@
 {
-  "cvd_policy": 0.2,
+  "cvd_policy": 1,
   "last_updated": "2026-08-29T08:00:00Z",
   "expires": "2027-02-28T08:00:00Z",
   "organization": {
@@ -9,7 +9,8 @@
   "contact": {
     "channels": [
       "mailto:security@example.com",
-      "https://example.com/security/contact"
+      "https://example.com/security/contact",
+      "/security"
     ],
     "preferred_languages": [
       "en",

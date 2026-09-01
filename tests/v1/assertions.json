@@ -55,14 +55,44 @@
   {
     "id": "evaluation-order",
     "type": "spec_contains",
-    "value": "An evaluator MUST perform these steps in order",
+    "value": "an evaluator MUST perform these steps in order",
     "requirements": ["EVAL-003"]
   },
   {
     "id": "machine-readable-errors",
     "type": "spec_contains",
-    "value": "MUST return stable machine-readable codes and JSON Pointer paths",
+    "value": "MUST be machine-readable and identify affected locations",
     "requirements": ["ERR-001"]
+  },
+  {
+    "id": "version-dispatch",
+    "type": "spec_contains",
+    "value": "A missing or non-integer `cvd_policy` member MUST produce `invalid-policy`",
+    "requirements": ["DOC-017"]
+  },
+  {
+    "id": "identifier-comparison",
+    "type": "spec_contains",
+    "value": "IDs and ID references are compared as exact case-sensitive strings",
+    "requirements": ["DOC-018"]
+  },
+  {
+    "id": "object-member-table",
+    "type": "spec_contains",
+    "value": "Core object members are exactly as follows",
+    "requirements": ["DOC-019"]
+  },
+  {
+    "id": "retrieval-method-and-credentials",
+    "type": "spec_contains",
+    "value": "MUST retrieve a Policy URI with HTTPS `GET` as defined by RFC 9110",
+    "requirements": ["FETCH-002"]
+  },
+  {
+    "id": "input-failure-boundary",
+    "type": "spec_contains",
+    "value": "Only failures that validate evaluation-call input",
+    "requirements": ["ERR-002"]
   },
   {
     "id": "security-fail-closed",

@@ -15,6 +15,10 @@
     "evaluation:authority-parent-mismatch",
     "evaluation:authority-subdomain-mismatch"
   ],
+  "AUTH-005": [
+    "evaluation:policy-representation-uri-mismatch",
+    "evaluation:policy-retrieval-redirect"
+  ],
   "COND-001": [
     "policy-invalid:unknown-condition.json"
   ],
@@ -58,6 +62,7 @@
     "security-txt:contact-missing",
     "security-txt:expired",
     "security-txt:expires-duplicate",
+    "security-txt:expires-invalid",
     "security-txt:expires-missing",
     "security-txt:valid-exact"
   ],
@@ -71,6 +76,10 @@
   ],
   "DISC-007": [
     "assertion:signed-file-no-rewrite"
+  ],
+  "DISC-008": [
+    "security-txt:canonical-mismatch-no-redirect",
+    "security-txt:same-host-redirect-canonical-mismatch"
   ],
   "DOC-001": [
     "policy-invalid:version-0.2.json",
@@ -137,10 +146,14 @@
   ],
   "DOC-013": [
     "policy-invalid:contact-duplicate.json",
-    "policy-invalid:contact-empty.json"
+    "policy-invalid:contact-empty.json",
+    "policy-invalid:contact-mixed-invalid.json",
+    "policy-invalid:contact-relative.json",
+    "policy-invalid:http-web-contact.json"
   ],
   "DOC-014": [
-    "policy-invalid:http-web-contact.json"
+    "policy-invalid:contact-https-fragment.json",
+    "policy-invalid:contact-https-userinfo.json"
   ],
   "DOC-015": [
     "policy-invalid:language-invalid.json"
@@ -148,8 +161,33 @@
   "DOC-016": [
     "policy-valid:limited-web-testing.json"
   ],
+  "DOC-017": [
+    "assertion:version-dispatch",
+    "policy-invalid:version-0.2.json",
+    "policy-invalid:version-missing.json",
+    "policy-invalid:version-string.json",
+    "policy-invalid:version-unknown-integer.json"
+  ],
+  "DOC-018": [
+    "assertion:identifier-comparison",
+    "policy-invalid:product-identifier-relative.json",
+    "policy-invalid:scope-id-syntax.json",
+    "policy-invalid:target-reference-case-mismatch.json"
+  ],
+  "DOC-019": [
+    "assertion:object-member-table"
+  ],
   "ERR-001": [
-    "assertion:machine-readable-errors"
+    "assertion:machine-readable-errors",
+    "evaluation:target-product-identifier",
+    "evaluation:target-relative",
+    "evaluation:target-unsupported-scheme",
+    "evaluation:target-userinfo"
+  ],
+  "ERR-002": [
+    "assertion:input-failure-boundary",
+    "evaluation:target-invalid-percent",
+    "evaluation:target-relative"
   ],
   "EVAL-001": [
     "assertion:result-not-boolean"
@@ -159,12 +197,20 @@
   ],
   "EVAL-003": [
     "assertion:evaluation-order",
-    "evaluation:posture-report-only-no-matching-rule"
+    "evaluation:posture-report-only-no-matching-rule",
+    "evaluation:target-product-identifier",
+    "evaluation:target-relative",
+    "evaluation:target-unsupported-scheme",
+    "evaluation:target-userinfo"
   ],
   "EVAL-004": [
     "evaluation:multiple-permits-one-satisfied",
     "evaluation:permitted",
     "policy-valid:limited-web-testing.json"
+  ],
+  "EVAL-005": [
+    "evaluation:multiple-permits-one-satisfied",
+    "evaluation:multiple-permits-one-satisfied-reversed"
   ],
   "EXT-001": [
     "policy-invalid:critical-extension-duplicate.json",
@@ -182,7 +228,17 @@
     "assertion:critical-permission-extensions"
   ],
   "FETCH-001": [
-    "assertion:media-type-policy"
+    "assertion:media-type-policy",
+    "evaluation:policy-retrieval-application-json-compat",
+    "evaluation:policy-retrieval-application-json-rejected"
+  ],
+  "FETCH-002": [
+    "assertion:retrieval-method-and-credentials",
+    "evaluation:policy-retrieval-204",
+    "evaluation:policy-retrieval-206",
+    "evaluation:policy-retrieval-application-json-compat",
+    "evaluation:policy-retrieval-application-json-rejected",
+    "evaluation:policy-retrieval-redirect"
   ],
   "PRIV-001": [
     "assertion:privacy-no-transmission"
@@ -227,14 +283,29 @@
   ],
   "SCOP-008": [
     "evaluation:multiple-permits-one-satisfied",
+    "evaluation:multiple-permits-one-satisfied-reversed",
     "evaluation:scope-out-wins",
     "evaluation:scope-out-wins-reversed",
     "policy-invalid:explicit-order.json"
   ],
   "SCOP-009": [
+    "evaluation:target-product-identifier",
+    "policy-invalid:product-identifier-relative.json",
     "policy-invalid:target-reference-product.json",
     "policy-valid:minimal-report-only.json",
     "policy-valid:product-reporting.json"
+  ],
+  "SCOP-010": [
+    "evaluation:path-empty-is-root",
+    "evaluation:path-encoded-slash-distinct",
+    "evaluation:path-percent-hex-normalized",
+    "evaluation:path-percent-not-decoded",
+    "evaluation:path-repeated-slashes-distinct",
+    "evaluation:path-repeated-slashes-preserved",
+    "evaluation:path-scope-dot-segments",
+    "evaluation:path-target-dot-segments",
+    "evaluation:target-invalid-percent",
+    "policy-invalid:scope-path-percent-invalid.json"
   ],
   "SEC-001": [
     "assertion:security-fail-closed"
@@ -262,6 +333,7 @@
     "evaluation:rule-prohibited-global"
   ],
   "TEST-006": [
+    "policy-invalid:target-reference-case-mismatch.json",
     "policy-invalid:target-reference-out.json",
     "policy-invalid:target-reference-product.json",
     "policy-invalid:target-reference-unknown.json"
@@ -269,5 +341,8 @@
   "TEST-007": [
     "evaluation:rule-prohibited",
     "evaluation:rule-prohibited-global"
+  ],
+  "TEST-008": [
+    "policy-invalid:prohibited-with-conditions.json"
   ]
 }

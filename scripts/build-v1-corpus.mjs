@@ -12,26 +12,42 @@ for (const dir of [invalidDir, rawDir, securityDir, evaluationDir]) {
   mkdirSync(dir, { recursive: true });
 }
 
-const read = (path) => JSON.parse(readFileSync(join(root, path), "utf8"));
+const read = (path) => {
+  try {
+    return JSON.parse(readFileSync(join(root, path), "utf8"));
+  } catch (error) {
+    throw new Error(`Cannot parse ${path}`, { cause: error });
+  }
+};
 const writeJson = (path, value) =>
   writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`);
-const clone = (value) => JSON.parse(JSON.stringify(value));
+const clone = structuredClone;
 const base = read("examples/v1/limited-web-testing.json");
 
 const expected = {};
-function invalid(name, code, schema, requirements, mutate) {
+function invalid(name, diagnostic, schema, requirements, mutate) {
   const doc = clone(base);
   mutate(doc);
   const file = `${name}.json`;
   writeJson(join(invalidDir, file), doc);
-  expected[file] = { code, schema, requirements };
+  expected[file] = {
+    status: diagnostic === "policy_version_unsupported" ? "unsupported-policy" : "invalid-policy",
+    layer: schema ? "schema" : "semantic",
+    requirements,
+  };
 }
 
-invalid("version-string", "policy_version_unsupported", true, ["DOC-001"], (d) => {
+invalid("version-string", "policy_schema_invalid", true, ["DOC-001", "DOC-017"], (d) => {
   d.cvd_policy = "1";
 });
-invalid("version-0.2", "policy_version_unsupported", true, ["DOC-001"], (d) => {
-  d.cvd_policy = "0.2";
+invalid("version-0.2", "policy_schema_invalid", true, ["DOC-001", "DOC-017"], (d) => {
+  d.cvd_policy = 0.2;
+});
+invalid("version-unknown-integer", "policy_version_unsupported", true, ["DOC-017"], (d) => {
+  d.cvd_policy = 2;
+});
+invalid("version-missing", "policy_schema_invalid", true, ["DOC-017"], (d) => {
+  delete d.cvd_policy;
 });
 invalid("required-missing", "policy_schema_invalid", true, ["DOC-008"], (d) => {
   delete d.reporting;
@@ -41,6 +57,9 @@ invalid("unknown-top-level", "policy_schema_invalid", true, ["DOC-007"], (d) => 
 });
 invalid("unknown-condition", "policy_schema_invalid", true, ["COND-001"], (d) => {
   d.testing.rules[0].conditions.window = "night";
+});
+invalid("prohibited-with-conditions", "policy_schema_invalid", true, ["TEST-008"], (d) => {
+  d.testing.rules[0].state = "prohibited";
 });
 invalid("timestamp-invalid", "policy_schema_invalid", true, ["DOC-003"], (d) => {
   d.expires = "2027-02-30T08:00:00Z";
@@ -60,8 +79,20 @@ invalid("contact-duplicate", "policy_schema_invalid", true, ["DOC-013"], (d) => 
 invalid("language-invalid", "policy_language_tag_invalid", false, ["DOC-015"], (d) => {
   d.contact.preferred_languages = ["en-123456789"];
 });
-invalid("http-web-contact", "policy_schema_invalid", true, ["DOC-014"], (d) => {
+invalid("http-web-contact", "policy_schema_invalid", true, ["DOC-013"], (d) => {
   d.contact.channels = ["http://example.com/contact"];
+});
+invalid("contact-relative", "policy_schema_invalid", true, ["DOC-013"], (d) => {
+  d.contact.channels = ["/security"];
+});
+invalid("contact-mixed-invalid", "policy_schema_invalid", true, ["DOC-013"], (d) => {
+  d.contact.channels.push("/security");
+});
+invalid("contact-https-userinfo", "policy_uri_invalid", false, ["DOC-014"], (d) => {
+  d.contact.channels = ["https://user@example.com/security"];
+});
+invalid("contact-https-fragment", "policy_schema_invalid", true, ["DOC-014"], (d) => {
+  d.contact.channels = ["https://example.com/security#contact"];
 });
 invalid("organization-userinfo", "policy_uri_invalid", false, ["DOC-012"], (d) => {
   d.organization.uri = "https://user@example.com/";
@@ -92,6 +123,18 @@ invalid("scope-ip-subdomains", "policy_scope_invalid", false, ["SCOP-004"], (d) 
 });
 invalid("scope-id-duplicate", "policy_scope_id_duplicate", false, ["SCOP-001"], (d) => {
   d.reporting_scope.products = [{ id: "main-web", state: "in", name: "Product" }];
+});
+invalid("scope-id-syntax", "policy_schema_invalid", true, ["DOC-018"], (d) => {
+  d.reporting_scope.web[0].id = "main web";
+});
+invalid("scope-path-percent-invalid", "policy_schema_invalid", true, ["SCOP-010"], (d) => {
+  d.reporting_scope.web[0].path_prefix = "/api%2";
+});
+invalid("product-identifier-relative", "policy_schema_invalid", true, ["DOC-018", "SCOP-009"], (d) => {
+  d.reporting_scope.products = [{ id: "product", state: "in", name: "Product", identifiers: ["products/example"] }];
+});
+invalid("target-reference-case-mismatch", "policy_target_reference_invalid", false, ["DOC-018", "TEST-006"], (d) => {
+  d.testing.rules[0].target_ids = ["MAIN-WEB"];
 });
 invalid("rule-id-duplicate", "policy_scope_id_duplicate", false, ["SCOP-001"], (d) => {
   d.testing.rules.push({ ...clone(d.testing.rules[0]), activity: "fuzzing" });
@@ -158,7 +201,8 @@ for (const [file, text] of Object.entries(rawCases)) {
 }
 writeJson(join(root, "tests", "v1", "raw-expected.json"),
   Object.fromEntries(Object.keys(rawCases).map((file) => [file, {
-    code: file.startsWith("duplicate-") ? "policy_duplicate_member" : "policy_parse_error",
+    status: "invalid-policy",
+    layer: "parse",
     requirements: ["DOC-003", "DOC-004", "DOC-005"],
   }])));
 
@@ -188,13 +232,14 @@ const securityCases = [
     ["contact-missing", "CVD-Policy: https://example.com/policy.json\nExpires: 2027-02-28T08:00:00Z\n", "security_txt_contact_missing", "DISC-004"],
     ["contact-invalid", "Contact: not-a-uri\nCVD-Policy: https://example.com/policy.json\nExpires: 2027-02-28T08:00:00Z\n", "security_txt_contact_invalid", "DISC-004"],
     ["expires-missing", "Contact: mailto:security@example.com\nCVD-Policy: https://example.com/policy.json\n", "security_txt_expires_missing", "DISC-004"],
-    ["expires-duplicate", "Contact: mailto:security@example.com\nCVD-Policy: https://example.com/policy.json\nExpires: 2027-02-28T08:00:00Z\nExpires: 2027-03-01T08:00:00Z\n", "security_txt_expires_duplicate", "DISC-004"],
-  ].map(([id, text, code, requirement]) => ({
+    ["expires-duplicate", "Contact: mailto:security@example.com\nCVD-Policy: https://example.com/policy.json\nExpires: 2027-02-28T08:00:00Z\nExpires: 2027-03-01T08:00:00Z\n", "DISC-004"],
+    ["expires-invalid", "Contact: mailto:security@example.com\nCVD-Policy: https://example.com/policy.json\nExpires: not-a-timestamp\n", "DISC-004"],
+  ].map(([id, text, ...metadata]) => ({
     id,
     text,
     context: { requestedUri: "https://example.com/.well-known/security.txt", finalUri: "https://example.com/.well-known/security.txt", redirectChain: [], retrievedAt: "2026-08-29T10:00:00Z" },
-    expected: { established: false, code },
-    requirements: [requirement],
+    expected: { established: false },
+    requirements: [metadata.at(-1)],
   })),
   {
     id: "same-host-redirect",
@@ -202,6 +247,20 @@ const securityCases = [
     context: { requestedUri: "https://example.com/.well-known/security.txt", finalUri: "https://example.com/security.txt", redirectChain: ["https://example.com/security.txt"], retrievedAt: "2026-08-29T10:00:00Z" },
     expected: { established: true, discoveryHost: "example.com", cvdPolicyUri: "https://example.com/policy.json" },
     requirements: ["DISC-005", "AUTH-002"],
+  },
+  {
+    id: "canonical-mismatch-no-redirect",
+    text: "Contact: mailto:security@example.com\nCVD-Policy: https://example.com/policy.json\nExpires: 2027-02-28T08:00:00Z\nCanonical: https://example.com/security.txt\n",
+    context: { requestedUri: "https://example.com/.well-known/security.txt", finalUri: "https://example.com/.well-known/security.txt", redirectChain: [], retrievedAt: "2026-08-29T10:00:00Z" },
+    expected: { established: false },
+    requirements: ["DISC-008"],
+  },
+  {
+    id: "same-host-redirect-canonical-mismatch",
+    text: "Contact: mailto:security@example.com\nCVD-Policy: https://example.com/policy.json\nExpires: 2027-02-28T08:00:00Z\nCanonical: https://example.com/security.txt\n",
+    context: { requestedUri: "https://example.com/.well-known/security.txt", finalUri: "https://example.com/security.txt", redirectChain: ["https://example.com/security.txt"], retrievedAt: "2026-08-29T10:00:00Z" },
+    expected: { established: false },
+    requirements: ["DISC-008"],
   },
   {
     id: "cross-host-redirect-canonical",
@@ -214,7 +273,7 @@ const securityCases = [
     id: "cross-host-redirect-mismatch",
     text: "Contact: mailto:security@example.com\nCVD-Policy: https://provider.example/policy.json\nExpires: 2027-02-28T08:00:00Z\nCanonical: https://security.provider.example/file.txt\n",
     context: { requestedUri: "https://example.com/.well-known/security.txt", finalUri: "https://security.provider.example/file.txt", redirectChain: ["https://security.provider.example/file.txt"], retrievedAt: "2026-08-29T10:00:00Z" },
-    expected: { established: false, code: "security_txt_canonical_mismatch" },
+    expected: { established: false },
     requirements: ["DISC-006"],
   },
 ];
@@ -227,25 +286,50 @@ const evidence = {
   cvdPolicyUri: "https://example.com/cvd-policy.json",
   securityTxtExpires: "2027-02-28T08:00:00Z",
 };
+const policyRetrieval = {
+  requestedUri: evidence.cvdPolicyUri,
+  finalUri: evidence.cvdPolicyUri,
+  redirectChain: [],
+  statusCode: 200,
+  mediaType: "application/cvd-policy+json",
+};
 const defaultQuery = {
   activity: "automated_scanning",
   target: "https://example.com/",
   plan: { requestsPerSecond: 1, concurrentRequests: 1, userAgent: "tool security-research/1" },
+  policyRetrieval,
 };
+const prohibitedBaseRule = clone(base.testing.rules[0]);
+delete prohibitedBaseRule.conditions;
 const evaluationCases = [
   ["permitted", {}, defaultQuery, evidence, "publisher-stated-permitted", "testing_rule_permitted", ["EVAL-004"]],
   ["authority-missing", {}, defaultQuery, null, "authority-not-established", "authority_evidence_missing", ["AUTH-001"]],
   ["authority-subdomain-mismatch", {}, { ...defaultQuery, target: "https://api.example.com/" }, evidence, "authority-not-established", "authority_host_mismatch", ["AUTH-003", "AUTH-004"]],
   ["authority-parent-mismatch", {}, { ...defaultQuery, target: "https://com/" }, evidence, "authority-not-established", "authority_host_mismatch", ["AUTH-004"]],
+  ["policy-representation-uri-mismatch", {}, { ...defaultQuery, policyRetrieval: { ...policyRetrieval, requestedUri: "https://attacker.example/policy.json", finalUri: "https://attacker.example/policy.json" } }, evidence, "authority-not-established", "policy_retrieval_invalid", ["AUTH-005"]],
+  ["policy-retrieval-redirect", {}, { ...defaultQuery, policyRetrieval: { ...policyRetrieval, finalUri: "https://cdn.example/policy.json", redirectChain: ["https://cdn.example/policy.json"] } }, evidence, "publisher-stated-permitted", "testing_rule_permitted", ["AUTH-005", "FETCH-002"]],
+  ["policy-retrieval-204", {}, { ...defaultQuery, policyRetrieval: { ...policyRetrieval, statusCode: 204 } }, evidence, "authority-not-established", "policy_retrieval_invalid", ["FETCH-002"]],
+  ["policy-retrieval-206", {}, { ...defaultQuery, policyRetrieval: { ...policyRetrieval, statusCode: 206 } }, evidence, "authority-not-established", "policy_retrieval_invalid", ["FETCH-002"]],
+  ["policy-retrieval-application-json-rejected", {}, { ...defaultQuery, policyRetrieval: { ...policyRetrieval, mediaType: "application/json" } }, evidence, "authority-not-established", "policy_retrieval_invalid", ["FETCH-001", "FETCH-002"]],
+  ["policy-retrieval-application-json-compat", {}, { ...defaultQuery, policyRetrieval: { ...policyRetrieval, mediaType: "application/json" } }, evidence, "publisher-stated-permitted", "testing_rule_permitted", ["FETCH-001", "FETCH-002"], { allowApplicationJson: true }],
   ["scope-path-boundary", { "/reporting_scope/web/0/path_prefix": "/api" }, { ...defaultQuery, target: "https://example.com/apix" }, evidence, "not-covered", "scope_target_not_covered", ["SCOP-006"]],
   ["scope-query-fragment-ignored", { "/reporting_scope/web/0/path_prefix": "/api" }, { ...defaultQuery, target: "https://example.com/api?q=1#x" }, evidence, "publisher-stated-permitted", "testing_rule_permitted", ["SCOP-006"]],
+  ["path-empty-is-root", {}, { ...defaultQuery, target: "https://example.com" }, evidence, "publisher-stated-permitted", "testing_rule_permitted", ["SCOP-010"]],
+  ["path-target-dot-segments", { "/reporting_scope/web/0/path_prefix": "/api" }, { ...defaultQuery, target: "https://example.com/a/../api" }, evidence, "publisher-stated-permitted", "testing_rule_permitted", ["SCOP-010"]],
+  ["path-scope-dot-segments", { "/reporting_scope/web/0/path_prefix": "/a/../api" }, { ...defaultQuery, target: "https://example.com/api" }, evidence, "publisher-stated-permitted", "testing_rule_permitted", ["SCOP-010"]],
+  ["path-repeated-slashes-preserved", { "/reporting_scope/web/0/path_prefix": "/api//v1" }, { ...defaultQuery, target: "https://example.com/api//v1" }, evidence, "publisher-stated-permitted", "testing_rule_permitted", ["SCOP-010"]],
+  ["path-repeated-slashes-distinct", { "/reporting_scope/web/0/path_prefix": "/api//v1" }, { ...defaultQuery, target: "https://example.com/api/v1" }, evidence, "not-covered", "scope_target_not_covered", ["SCOP-010"]],
+  ["path-percent-hex-normalized", { "/reporting_scope/web/0/path_prefix": "/%7Euser" }, { ...defaultQuery, target: "https://example.com/%7euser" }, evidence, "publisher-stated-permitted", "testing_rule_permitted", ["SCOP-010"]],
+  ["path-percent-not-decoded", { "/reporting_scope/web/0/path_prefix": "/~user" }, { ...defaultQuery, target: "https://example.com/%7Euser" }, evidence, "not-covered", "scope_target_not_covered", ["SCOP-010"]],
+  ["path-encoded-slash-distinct", { "/reporting_scope/web/0/path_prefix": "/api%2Fv1" }, { ...defaultQuery, target: "https://example.com/api/v1" }, evidence, "not-covered", "scope_target_not_covered", ["SCOP-010"]],
   ["scope-out-wins", { "/reporting_scope/web": [base.reporting_scope.web[0], { id: "excluded", state: "out", host: "example.com", schemes: ["https"], path_prefix: "/", include_subdomains: false }] }, defaultQuery, evidence, "not-covered", "scope_target_excluded", ["SCOP-007", "SCOP-008"]],
   ["scope-out-wins-reversed", { "/reporting_scope/web": [{ id: "excluded", state: "out", host: "example.com", schemes: ["https"], path_prefix: "/", include_subdomains: false }, base.reporting_scope.web[0]] }, defaultQuery, evidence, "not-covered", "scope_target_excluded", ["SCOP-007", "SCOP-008"]],
-  ["posture-report-only", { "/research/posture": "report_only", "/testing/rules/0/state": "prohibited" }, defaultQuery, evidence, "publisher-stated-prohibited", "testing_rule_prohibited", ["TEST-002"]],
-  ["posture-report-only-no-matching-rule", { "/research/posture": "report_only", "/testing/rules/0/state": "prohibited", "/testing/rules/0/activity": "manual_testing" }, defaultQuery, evidence, "publisher-stated-prohibited", "testing_rule_prohibited", ["EVAL-003"]],
+  ["posture-report-only", { "/research/posture": "report_only", "/testing/rules": [{ ...prohibitedBaseRule, state: "prohibited" }] }, defaultQuery, evidence, "publisher-stated-prohibited", "testing_rule_prohibited", ["TEST-002"]],
+  ["posture-report-only-no-matching-rule", { "/research/posture": "report_only", "/testing/rules": [{ ...prohibitedBaseRule, state: "prohibited", activity: "manual_testing" }] }, defaultQuery, evidence, "publisher-stated-prohibited", "testing_rule_prohibited", ["EVAL-003"]],
   ["rule-prohibited", { "/testing/rules": [base.testing.rules[0], { id: "deny", activity: "automated_scanning", state: "prohibited", target_ids: ["main-web"] }] }, defaultQuery, evidence, "publisher-stated-prohibited", "testing_rule_prohibited", ["TEST-007"]],
   ["rule-prohibited-global", { "/testing/rules": [base.testing.rules[0], { id: "deny-all", activity: "automated_scanning", state: "prohibited" }] }, defaultQuery, evidence, "publisher-stated-prohibited", "testing_rule_prohibited", ["TEST-005", "TEST-007"]],
-  ["multiple-permits-one-satisfied", { "/testing/rules": [{ ...base.testing.rules[0], conditions: { ...base.testing.rules[0].conditions, max_requests_per_second: 0.5 } }, { ...base.testing.rules[0], id: "second-permit", conditions: { ...base.testing.rules[0].conditions, max_requests_per_second: 2 } }] }, defaultQuery, evidence, "publisher-stated-permitted", "testing_rule_permitted", ["SCOP-008", "EVAL-004"]],
+  ["multiple-permits-one-satisfied", { "/testing/rules": [{ ...base.testing.rules[0], id: "z-permit", conditions: { ...base.testing.rules[0].conditions, max_requests_per_second: 2 } }, { ...base.testing.rules[0], id: "a-permit", conditions: { ...base.testing.rules[0].conditions, max_requests_per_second: 2 } }] }, defaultQuery, evidence, "publisher-stated-permitted", "testing_rule_permitted", ["SCOP-008", "EVAL-004", "EVAL-005"]],
+  ["multiple-permits-one-satisfied-reversed", { "/testing/rules": [{ ...base.testing.rules[0], id: "a-permit", conditions: { ...base.testing.rules[0].conditions, max_requests_per_second: 2 } }, { ...base.testing.rules[0], id: "z-permit", conditions: { ...base.testing.rules[0].conditions, max_requests_per_second: 2 } }] }, defaultQuery, evidence, "publisher-stated-permitted", "testing_rule_permitted", ["SCOP-008", "EVAL-005"]],
   ["multiple-permits-none-satisfied", { "/testing/rules": [{ ...base.testing.rules[0], conditions: { ...base.testing.rules[0].conditions, max_requests_per_second: 0.25 } }, { ...base.testing.rules[0], id: "second-permit", conditions: { ...base.testing.rules[0].conditions, max_requests_per_second: 0.5 } }] }, defaultQuery, evidence, "conditions-not-satisfied", "conditions_exceeded", ["COND-004"]],
   ["rule-missing", {}, { ...defaultQuery, activity: "manual_testing" }, evidence, "not-covered", "testing_rule_missing", ["TEST-001"]],
   ["conditions-rate-missing", {}, { ...defaultQuery, plan: { concurrentRequests: 1, userAgent: "security-research" } }, evidence, "conditions-not-satisfied", "conditions_missing", ["COND-004"]],
@@ -269,6 +353,35 @@ const evaluationCases = [
   ["ipv6", { "/reporting_scope/web/0/host": "2001:db8::1" }, { ...defaultQuery, target: "https://[2001:db8::1]/" }, { ...evidence, discoveryHost: "2001:db8::1", securityTxtUri: "https://[2001:db8::1]/.well-known/security.txt" }, "publisher-stated-permitted", "testing_rule_permitted", ["SCOP-004"]],
   ["open-without-matching-rule", { "/research/posture": "open" }, { ...defaultQuery, activity: "manual_testing" }, evidence, "not-covered", "testing_rule_missing", ["TEST-001"]],
 ];
-writeJson(join(evaluationDir, "cases.json"), evaluationCases.map(([id, set, query, authority, status, reasonCode, requirements]) => ({ id, base: "limited-web-testing.json", set, query, authority, now: "2026-08-29T10:00:00Z", expected: { status, reasonCode }, requirements })));
+const invalidTargetCases = [
+  ["target-relative", "/admin", ["EVAL-003", "ERR-001", "ERR-002"]],
+  ["target-invalid-percent", "https://example.com/api%2", ["SCOP-010", "ERR-002"]],
+  ["target-unsupported-scheme", "ftp://example.com/", ["EVAL-003", "ERR-001"]],
+  ["target-userinfo", "https://user@example.com/", ["EVAL-003", "ERR-001"]],
+  ["target-product-identifier", "pkg:npm/example", ["EVAL-003", "ERR-001", "SCOP-009"]],
+].map(([id, target, requirements]) => ({
+  id,
+  base: "limited-web-testing.json",
+  set: {},
+  query: { ...defaultQuery, target },
+  authority: evidence,
+  now: "2026-08-29T10:00:00Z",
+  expected: { inputValid: false },
+  requirements,
+}));
+writeJson(join(evaluationDir, "cases.json"), [
+  ...evaluationCases.map(([id, set, query, authority, status, _diagnostic, requirements, options]) => ({
+    id,
+    base: "limited-web-testing.json",
+    set,
+    query,
+    authority,
+    now: "2026-08-29T10:00:00Z",
+    expected: { status },
+    requirements,
+    ...(options ? { options } : {}),
+  })),
+  ...invalidTargetCases,
+]);
 
-console.log(`V1 corpus written: ${Object.keys(expected).length} invalid policies, ${Object.keys(rawCases).length} raw cases, ${securityCases.length} security.txt cases, ${evaluationCases.length} evaluation cases.`);
+console.log(`V1 corpus written: ${Object.keys(expected).length} invalid policies, ${Object.keys(rawCases).length} raw cases, ${securityCases.length} security.txt cases, ${evaluationCases.length + invalidTargetCases.length} evaluation cases.`);
