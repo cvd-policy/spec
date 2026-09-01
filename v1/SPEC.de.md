@@ -2,7 +2,7 @@
 
 **Status:** Experimenteller Pre-Standard-Kandidat  
 **Formatversion:** `1`  
-**Datum:** 2026-08-29  
+**Datum:** 2026-09-01
 **Lizenz:** CC0-1.0  
 **Maßgebliche Fassung:** [English](SPEC.md)
 
@@ -25,6 +25,8 @@ Jede normative Anforderung besitzt eine stabile Kennung in eckigen Klammern. `v1
 ## 2. Status und Nichtziele
 
 [DOC-001] Ein Version-1-Dokument muss die JSON-Zahl `1` in `cvd_policy` enthalten; Strings und 0.x-Werte sind nicht Version 1.
+
+[DOC-017] Ein fehlender oder nicht ganzzahliger `cvd_policy`-Member muss `invalid-policy` ergeben. Eine unbekannte ganzzahlige Version muss `unsupported-policy` ergeben.
 
 [DOC-002] Implementierungen müssen Paketversionen und Dokumentformatversion getrennt behandeln.
 
@@ -89,6 +91,8 @@ extensions
 
 [DOC-008] Fehlende optionale Member dürfen keine Testing Permission erzeugen. Insbesondere bedeutet fehlendes `testing`, dass keine Testing Permission vorliegt.
 
+[DOC-019] Die Core-Objekte enthalten ausschließlich die in der englischen normativen Member-Tabelle aufgeführten erforderlichen und optionalen Member. Insbesondere besitzt `reporting` die erforderlichen Member `requested_fields` und `proof_of_exploitation`; `response_targets` darf nur `acknowledgement_days`, `initial_assessment_days` und `update_interval_days` enthalten; `disclosure` erfordert `approach` und erlaubt `default_days` sowie `statement`. Als nichtleer definierte Arrays müssen mindestens einen Eintrag enthalten; `reporting.requested_fields`, `contact.preferred_languages`, `contact.encryption` und `critical_extensions` dürfen leer sein.
+
 ### 4.1 Zeit
 
 `last_updated` und `expires` sind RFC-3339-Date-Time-Strings.
@@ -143,7 +147,7 @@ Kanalreihenfolge drückt Präferenz aus. Sprachreihenfolge nicht.
 
 - `open`: Forschung ist grundsätzlich willkommen; nur passende ausdrückliche Regeln sagen Testing Permission aus;
 - `limited`: Forschung ist nur unter ausdrücklichen Regeln willkommen;
-- `report_only`: Berichte werden angenommen, aber Testing Permission wird nicht erklärt;
+- `report_only`: Berichte werden angenommen; aktive Tests sind unter dieser Policy nicht gestattet;
 - `prohibited`: der Publisher erklärt aktive Tests als untersagt.
 
 [TEST-001] `open` darf ohne passende `permitted`-Regel keine Permission implizieren.
@@ -157,6 +161,8 @@ Kanalreihenfolge drückt Präferenz aus. Sprachreihenfolge nicht.
 `reporting_scope` beschreibt berichtbare Assets und Produkte. Er sagt für sich keine Testing Permission aus.
 
 [SCOP-001] Jede Scope- und Testing-Regel-ID muss dokumentweit eindeutig sein.
+
+[DOC-018] Jede Scope- und Regel-ID muss 1 bis 128 ASCII-Zeichen lang sein, mit ASCII-Buchstabe oder Ziffer beginnen und danach nur ASCII-Buchstaben, Ziffern, `.`, `_` oder `-` enthalten. IDs und Referenzen werden als exakte case-sensitive Strings verglichen.
 
 #### 4.5.1 Web-Einträge
 
@@ -184,7 +190,9 @@ Ohne `ports` gilt nur der Standardport des passenden Schemes: 80 für HTTP und 4
 
 [SCOP-006] `path_prefix` muss mit `/` beginnen und darf keine Query- oder Fragmentsyntax enthalten.
 
-Pfadmatching verwendet den normalisierten URL-Pfad ohne Query oder Fragment, beachtet Groß-/Kleinschreibung und dekodiert reservierte Zeichen nicht. `/` passt auf alle Pfade. Ein mit `/` endendes Präfix passt auf Pfade, die damit beginnen. Jedes andere Präfix passt exakt oder mit anschließendem `/`. Daher passt `/api` auf `/api`, `/api/` und `/api/v1`, aber nicht `/apix`.
+[SCOP-010] Scope-`path_prefix` und Target-Pfad müssen identisch normalisiert werden: leerer Pfad wird `/`; RFC-3986-Dot-Segmente werden entfernt; wiederholte Slashes bleiben erhalten; Hex-Ziffern in Prozenttriplets werden großgeschrieben; Prozentkodierung wird für Matching nicht dekodiert. Ungültige Prozentkodierung ist abzulehnen; encoded slash und `/` bleiben verschieden.
+
+Pfadmatching verwendet den normalisierten URL-Pfad ohne Query oder Fragment und beachtet Groß-/Kleinschreibung. `/` passt auf alle Pfade. Ein mit `/` endendes Präfix passt auf Pfade, die damit beginnen. Jedes andere Präfix passt exakt oder mit anschließendem `/`. Daher passt `/api` auf `/api`, `/api/` und `/api/v1`, aber nicht `/apix`.
 
 `include_subdomains: true` passt auf echte DNS-Subdomains an Labelgrenzen und auf den genannten Host. Dadurch entsteht keine Authority; jeder Target-Host benötigt eigene Discovery Evidence.
 
@@ -205,7 +213,7 @@ Pfadmatching verwendet den normalisierten URL-Pfad ohne Query oder Fragment, bea
 
 [SCOP-009] Produkt-Einträge müssen ausschließlich als Reporting-Metadaten behandelt werden und dürfen keine automatische Testing Permission erzeugen.
 
-Produktidentifikatoren sind absolute URI-artige Kennungen. Versionsbereichssyntax liegt außerhalb von Version 1.
+Produktidentifikatoren müssen absolute RFC-3986-URIs sein und werden ohne scheme-spezifische Äquivalenz als exakte case-sensitive Strings verglichen. Versionsbereichssyntax liegt außerhalb von Version 1.
 
 ### 4.6 Testing-Regeln
 
@@ -216,7 +224,7 @@ Core-Aktivitäten:
 - `fuzzing`: automatisierte Übermittlung erzeugter oder mutierter Eingaben;
 - `credential_testing`: Prüfung nur mit eigenen oder ausdrücklich bereitgestellten Testkonten; Credential Stuffing, Password Spraying und fremde Zugangsdaten sind ausgeschlossen.
 
-[TEST-003] Eine Extension-Aktivität muss eine absolute URI sein; ein unbekannter unqualifizierter Wert wie `automated_scaning` ist ungültig.
+[TEST-003] Eine Extension-Aktivität muss eine absolute URI sein; ein unbekannter unqualifizierter Wert wie `automated_scaning` ist ungültig. Aktivitäts-Identifier einschließlich Extension-URIs werden als exakte case-sensitive Strings verglichen.
 
 Regeln verwenden `state: permitted` oder `state: prohibited`. Version 1 definiert weder `allowed` noch `testing.default` oder `explicit_order`.
 
@@ -227,6 +235,8 @@ Regeln verwenden `state: permitted` oder `state: prohibited`. Version 1 definier
 [TEST-006] Jede `target_id` muss einen existierenden `in`-Web-Eintrag referenzieren; Produkt- und `out`-Referenzen sind ungültig.
 
 [TEST-007] Eine passende `prohibited`-Regel muss jede passende `permitted`-Regel überschreiben.
+
+[TEST-008] Eine `prohibited`-Regel darf keine `conditions` enthalten; ein anwendbares Verbot ist bedingungslos.
 
 Keine passende Regel bedeutet keine Testing Permission.
 
@@ -273,13 +283,13 @@ disclosure_preference
 
 ### 4.8 Response Targets und Disclosure
 
-Response-Target-Werte sind positive ganze Kalendertage. Sie sind veröffentlichte Ziele, keine technischen oder rechtlichen Garantien, und beeinflussen die Testing-Auswertung nicht.
+`response_targets` darf nur positive ganze `acknowledgement_days`, `initial_assessment_days` und `update_interval_days` enthalten. Acknowledgement und Initial Assessment beginnen beim Eingang des initialen Berichts; jedes Update-Intervall beginnt mit dem vorherigen substanziellen Update. Diese Werte sind keine technischen oder rechtlichen Garantien und beeinflussen die Testing-Auswertung nicht.
 
-`disclosure.approach` ist `coordinated`, `case_by_case` oder `no_preference`. `default_days` ist eine Koordinationspräferenz, keine automatische Offenlegungsfreigabe. `statement` ist erklärend.
+`disclosure.approach` ist `coordinated`, `case_by_case` oder `no_preference`. Positive `default_days` beginnen beim Eingang des initialen Berichts und sind eine Koordinationspräferenz, keine automatische Offenlegungsfreigabe. `statement` ist erklärend.
 
 ### 4.9 Erweiterungen
 
-Extension-IDs sind absolute URIs. Extension-Daten stehen nur als Werte unter `extensions`; `critical_extensions` ist eine Liste eindeutiger IDs.
+Extension-IDs sind absolute RFC-3986-URIs und werden als exakte case-sensitive Strings verglichen. Extension-Daten stehen nur als Werte unter `extensions`; `critical_extensions` ist eine Liste eindeutiger IDs.
 
 [EXT-001] Jede ID in `critical_extensions` muss einen gleichnamigen Member in `extensions` besitzen.
 
@@ -324,9 +334,11 @@ interface SecurityTxtRetrievalContext {
 
 [DISC-005] Kontext-URIs und jeder Redirect-Hop müssen HTTPS verwenden; Redirect-Verarbeitung muss den ursprünglichen Discovery Host erhalten.
 
-Weicht der finale Redirect-Host vom angeforderten Host ab, muss mindestens ein gültiges `Canonical` exakt der ursprünglich angeforderten security.txt-URI entsprechen. Same-Host-Redirects benötigen dies nicht zusätzlich.
+Weicht der finale Redirect-Host vom angeforderten Host ab, muss mindestens ein gültiges `Canonical` exakt der ursprünglich angeforderten security.txt-URI entsprechen.
 
 [DISC-006] Ein Cross-Host-Redirect ohne diesen exakten ursprünglichen `Canonical`-Wert darf keine Authority begründen. Eine detaillierte Canonical-Mismatch-Diagnose ist informativ und implementierungsspezifisch.
+
+[DISC-008] Sobald mindestens ein `Canonical` vorhanden ist, muss vor Authority mindestens ein Wert exakt der ursprünglich angeforderten security.txt-URI entsprechen. Dies gilt ohne Redirect und bei Same-Host-Redirects.
 
 OpenPGP-Cleartext-Signaturen werden an ihrem RFC-9116-Frame erkannt. Core-Software muss sie nicht verifizieren.
 
@@ -352,15 +364,19 @@ interface AuthorityEvidence {
 
 [AUTH-004] Parent-Domains, Subdomains, CNAME-Ziele, gemeinsame Adressen, Zertifikate, Organisationsbehauptungen, Scope-Wildcards, Policy-Ort, Dateinamen und Redirects dürfen Authority weder erzeugen noch übertragen.
 
+[AUTH-005] Authority Evidence muss an ihre beworbene `cvdPolicyUri` gebunden sein. Die ausgewertete Repräsentation muss von genau dieser URI oder der finalen URI ihrer aufgezeichneten reinen HTTPS-Redirect-Kette stammen. Beliebiges Policy-JSON darf nicht mit Authority Evidence einer anderen Policy-URI kombiniert werden.
+
 Ein anderer Port desselben exakten Hosts kann bei passendem Scope erfasst sein. Zwei Discovery Hosts können unabhängig auf dieselbe zentrale Policy zeigen; jede Auswertung nutzt die Evidence des eigenen Hosts.
 
 ## 7. Abruf der Policy-Repräsentation
 
 Der vorgeschlagene, unregistrierte Medientyp ist `application/cvd-policy+json`.
 
-[FETCH-001] In der Pre-Standard-Phase müssen Netzwerkclients `application/cvd-policy+json` akzeptieren, dürfen `application/json` mit Hinweis akzeptieren und müssen HTML, Plain Text und andere unerwartete Repräsentationen für automatische Policy-Auswertung ablehnen.
+[FETCH-001] Netzwerkclients müssen `application/cvd-policy+json` akzeptieren. Ein separat aktivierter Kompatibilitätsmodus darf `application/json` mit Hinweis akzeptieren, aber keine weiteren Medientypen. HTML, Plain Text und andere unerwartete Repräsentationen sind abzulehnen.
 
-Lokale Dateien besitzen keinen HTTP-Medientyp. Netzwerkabruf, Redirect-Limits, Timeouts, Größenlimits, Adressfilterung und Credential-Isolation gehören in Clients oder Adapter, nicht in den deterministischen Core.
+[FETCH-002] Ein Netzwerkclient muss die Policy-URI per HTTPS `GET` gemäß RFC 9110 abrufen, in `Accept` `application/cvd-policy+json` bevorzugen und nur bei aktivem Kompatibilitätsmodus `application/json` aufführen. Nur `200 OK` ist eine vollständige Policy-Repräsentation; insbesondere `204` und `206` sind es nicht. Jeder Redirect-Hop muss HTTPS verwenden. Ambient Credentials, Cookies, `Authorization` und `Proxy-Authorization` dürfen weder automatisch gesendet noch über Redirects weitergereicht werden.
+
+Lokale Dateien besitzen keinen HTTP-Medientyp. Endliche Redirect-, Zeit- und Größenlimits, Adressfilterung und Credential-Isolation gehören in Clients oder Adapter. Der deterministische Core prüft übergebene Retrieval Evidence und führt keine Netzwerkrequests aus.
 
 ## 8. Auswertung
 
@@ -402,7 +418,9 @@ unsupported-policy
 
 `publisher-stated-permitted` bedeutet nur, dass die über belegte Discovery veröffentlichte Policy eine passende Erlaubnisaussage enthält, deren maschinenprüfbare Bedingungen erfüllt sind. Es ist keine Rechtsberatung, kein Eigentumsnachweis, keine Autorisierung durch Software und kein garantierter Safe Harbor.
 
-Ein statustragendes Ergebnis kann sortierte passende Regel- und Target-IDs, Validierungsprobleme, implementierungsspezifische Diagnosen und gegebenenfalls Constraints der ausgewählten erfüllten Regel enthalten. Detaillierte Diagnose-Identifier sind nicht Teil des normativen Interoperabilitätsvertrags. Bei mehreren erfüllten Regeln liefert die lexikografisch kleinste Regel-ID die `constraints`; dies ist nur deterministische Ausgabeauswahl, keine Priorität.
+Ein statustragendes Ergebnis kann sortierte passende Regel- und Target-IDs, Validierungsprobleme und implementierungsspezifische Diagnosen enthalten. Detaillierte Diagnose-Identifier sind nicht Teil des normativen Interoperabilitätsvertrags.
+
+[EVAL-005] Sobald mindestens eine anwendbare `permitted`-Regel vollständig erfüllt ist, muss das Ergebnis `publisher-stated-permitted` sein. Alle erfüllten Regel-IDs dürfen informativ ausgegeben werden. Draft 00 definiert weder lexikografische Regelauswahl noch ein aggregiertes Constraint-Objekt; jede erfüllte Regel behält ihre eigenen Bedingungen.
 
 ### 8.2 Verbindliche Reihenfolge
 
@@ -414,14 +432,14 @@ Ein statustragendes Ergebnis kann sortierte passende Regel- und Target-IDs, Vali
 4. semantische Validierung;
 5. Ablaufprüfung;
 6. Prüfung unbekannter kritischer Extensions;
-7. Authority-Evidence-Prüfung;
+7. Authority-Evidence- und Policy-Retrieval-Bindungsprüfung;
 8. exakter Target-/Discovery-Hostvergleich;
 9. Reporting-Scope-Matching;
 10. `out`-Ausschluss;
 11. Research-Posture-Prüfung;
 12. Sammlung passender Regeln;
 13. Verbotspräzedenz;
-14. Bedingungsprüfung erlaubender Regeln;
+14. Bedingungsprüfung aller erlaubenden Regeln;
 15. stabile Konstruktion eines statustragenden Ergebnisses.
 
 ### 8.3 Statuspräzedenz
@@ -440,7 +458,9 @@ Das erste anwendbare Ergebnis in Auswertungsreihenfolge gewinnt:
 
 ## 9. Maschinenlesbare Fehler und informative Diagnosen
 
-[ERR-001] Eingabevalidierungs- und Policy-Verarbeitungsfehler müssen maschinenlesbar und strukturell von statustragenden Evaluation-Ergebnissen unterscheidbar sein sowie, soweit verfügbar, betroffene Stellen identifizieren. Lokalisierte Prosa darf nicht der einzige API-Vertrag sein. Implementierungen müssen nicht dieselben detaillierten Diagnose-Identifier verwenden.
+[ERR-001] Eingabevalidierungs- und Policy-Verarbeitungsfehler müssen maschinenlesbar sein und, soweit verfügbar, betroffene Stellen identifizieren. Lokalisierte Prosa darf nicht der einzige API-Vertrag sein. Implementierungen müssen nicht dieselben detaillierten Diagnose-Identifier verwenden.
+
+[ERR-002] Nur Fehler der Evaluation-Call-Eingabevalidierung, etwa eine ungültige Target-URL, liegen strukturell außerhalb statustragender Ergebnisse. Policy-Parsing, Version Dispatch, Schema-, Semantik-, Referenz- und Ablauffehler bleiben normale statustragende Ergebnisse; `invalid-policy` ist insbesondere ein normativer Evaluation-Status.
 
 Die folgenden Identifier sind informative Diagnosen der Referenzimplementierung. Sie bilden kein normatives Register; Konformität verlangt nicht, dass andere Implementierungen sie emittieren:
 

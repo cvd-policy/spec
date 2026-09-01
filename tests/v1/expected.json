@@ -1,16 +1,32 @@
 {
   "version-string.json": {
-    "status": "unsupported-policy",
+    "status": "invalid-policy",
     "layer": "schema",
     "requirements": [
-      "DOC-001"
+      "DOC-001",
+      "DOC-017"
     ]
   },
   "version-0.2.json": {
+    "status": "invalid-policy",
+    "layer": "schema",
+    "requirements": [
+      "DOC-001",
+      "DOC-017"
+    ]
+  },
+  "version-unknown-integer.json": {
     "status": "unsupported-policy",
     "layer": "schema",
     "requirements": [
-      "DOC-001"
+      "DOC-017"
+    ]
+  },
+  "version-missing.json": {
+    "status": "invalid-policy",
+    "layer": "schema",
+    "requirements": [
+      "DOC-017"
     ]
   },
   "required-missing.json": {
@@ -32,6 +48,13 @@
     "layer": "schema",
     "requirements": [
       "COND-001"
+    ]
+  },
+  "prohibited-with-conditions.json": {
+    "status": "invalid-policy",
+    "layer": "schema",
+    "requirements": [
+      "TEST-008"
     ]
   },
   "timestamp-invalid.json": {
@@ -172,6 +195,36 @@
     "layer": "semantic",
     "requirements": [
       "SCOP-001"
+    ]
+  },
+  "scope-id-syntax.json": {
+    "status": "invalid-policy",
+    "layer": "schema",
+    "requirements": [
+      "DOC-018"
+    ]
+  },
+  "scope-path-percent-invalid.json": {
+    "status": "invalid-policy",
+    "layer": "schema",
+    "requirements": [
+      "SCOP-010"
+    ]
+  },
+  "product-identifier-relative.json": {
+    "status": "invalid-policy",
+    "layer": "schema",
+    "requirements": [
+      "DOC-018",
+      "SCOP-009"
+    ]
+  },
+  "target-reference-case-mismatch.json": {
+    "status": "invalid-policy",
+    "layer": "semantic",
+    "requirements": [
+      "DOC-018",
+      "TEST-006"
     ]
   },
   "rule-id-duplicate.json": {

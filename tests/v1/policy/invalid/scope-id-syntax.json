@@ -1,5 +1,5 @@
 {
-  "cvd_policy": 0.2,
+  "cvd_policy": 1,
   "last_updated": "2026-08-29T08:00:00Z",
   "expires": "2027-02-28T08:00:00Z",
   "organization": {
@@ -26,7 +26,7 @@
   "reporting_scope": {
     "web": [
       {
-        "id": "main-web",
+        "id": "main web",
         "state": "in",
         "host": "example.com",
         "schemes": [

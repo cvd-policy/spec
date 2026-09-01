@@ -10,6 +10,13 @@
         "requestsPerSecond": 1,
         "concurrentRequests": 1,
         "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -38,6 +45,13 @@
         "requestsPerSecond": 1,
         "concurrentRequests": 1,
         "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": null,
@@ -60,6 +74,13 @@
         "requestsPerSecond": 1,
         "concurrentRequests": 1,
         "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -89,6 +110,13 @@
         "requestsPerSecond": 1,
         "concurrentRequests": 1,
         "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -107,6 +135,224 @@
     ]
   },
   {
+    "id": "policy-representation-uri-mismatch",
+    "base": "limited-web-testing.json",
+    "set": {},
+    "query": {
+      "activity": "automated_scanning",
+      "target": "https://example.com/",
+      "plan": {
+        "requestsPerSecond": 1,
+        "concurrentRequests": 1,
+        "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://attacker.example/policy.json",
+        "finalUri": "https://attacker.example/policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
+      }
+    },
+    "authority": {
+      "established": true,
+      "discoveryHost": "example.com",
+      "securityTxtUri": "https://example.com/.well-known/security.txt",
+      "cvdPolicyUri": "https://example.com/cvd-policy.json",
+      "securityTxtExpires": "2027-02-28T08:00:00Z"
+    },
+    "now": "2026-08-29T10:00:00Z",
+    "expected": {
+      "status": "authority-not-established"
+    },
+    "requirements": [
+      "AUTH-005"
+    ]
+  },
+  {
+    "id": "policy-retrieval-redirect",
+    "base": "limited-web-testing.json",
+    "set": {},
+    "query": {
+      "activity": "automated_scanning",
+      "target": "https://example.com/",
+      "plan": {
+        "requestsPerSecond": 1,
+        "concurrentRequests": 1,
+        "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://cdn.example/policy.json",
+        "redirectChain": [
+          "https://cdn.example/policy.json"
+        ],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
+      }
+    },
+    "authority": {
+      "established": true,
+      "discoveryHost": "example.com",
+      "securityTxtUri": "https://example.com/.well-known/security.txt",
+      "cvdPolicyUri": "https://example.com/cvd-policy.json",
+      "securityTxtExpires": "2027-02-28T08:00:00Z"
+    },
+    "now": "2026-08-29T10:00:00Z",
+    "expected": {
+      "status": "publisher-stated-permitted"
+    },
+    "requirements": [
+      "AUTH-005",
+      "FETCH-002"
+    ]
+  },
+  {
+    "id": "policy-retrieval-204",
+    "base": "limited-web-testing.json",
+    "set": {},
+    "query": {
+      "activity": "automated_scanning",
+      "target": "https://example.com/",
+      "plan": {
+        "requestsPerSecond": 1,
+        "concurrentRequests": 1,
+        "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 204,
+        "mediaType": "application/cvd-policy+json"
+      }
+    },
+    "authority": {
+      "established": true,
+      "discoveryHost": "example.com",
+      "securityTxtUri": "https://example.com/.well-known/security.txt",
+      "cvdPolicyUri": "https://example.com/cvd-policy.json",
+      "securityTxtExpires": "2027-02-28T08:00:00Z"
+    },
+    "now": "2026-08-29T10:00:00Z",
+    "expected": {
+      "status": "authority-not-established"
+    },
+    "requirements": [
+      "FETCH-002"
+    ]
+  },
+  {
+    "id": "policy-retrieval-206",
+    "base": "limited-web-testing.json",
+    "set": {},
+    "query": {
+      "activity": "automated_scanning",
+      "target": "https://example.com/",
+      "plan": {
+        "requestsPerSecond": 1,
+        "concurrentRequests": 1,
+        "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 206,
+        "mediaType": "application/cvd-policy+json"
+      }
+    },
+    "authority": {
+      "established": true,
+      "discoveryHost": "example.com",
+      "securityTxtUri": "https://example.com/.well-known/security.txt",
+      "cvdPolicyUri": "https://example.com/cvd-policy.json",
+      "securityTxtExpires": "2027-02-28T08:00:00Z"
+    },
+    "now": "2026-08-29T10:00:00Z",
+    "expected": {
+      "status": "authority-not-established"
+    },
+    "requirements": [
+      "FETCH-002"
+    ]
+  },
+  {
+    "id": "policy-retrieval-application-json-rejected",
+    "base": "limited-web-testing.json",
+    "set": {},
+    "query": {
+      "activity": "automated_scanning",
+      "target": "https://example.com/",
+      "plan": {
+        "requestsPerSecond": 1,
+        "concurrentRequests": 1,
+        "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/json"
+      }
+    },
+    "authority": {
+      "established": true,
+      "discoveryHost": "example.com",
+      "securityTxtUri": "https://example.com/.well-known/security.txt",
+      "cvdPolicyUri": "https://example.com/cvd-policy.json",
+      "securityTxtExpires": "2027-02-28T08:00:00Z"
+    },
+    "now": "2026-08-29T10:00:00Z",
+    "expected": {
+      "status": "authority-not-established"
+    },
+    "requirements": [
+      "FETCH-001",
+      "FETCH-002"
+    ]
+  },
+  {
+    "id": "policy-retrieval-application-json-compat",
+    "base": "limited-web-testing.json",
+    "set": {},
+    "query": {
+      "activity": "automated_scanning",
+      "target": "https://example.com/",
+      "plan": {
+        "requestsPerSecond": 1,
+        "concurrentRequests": 1,
+        "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/json"
+      }
+    },
+    "authority": {
+      "established": true,
+      "discoveryHost": "example.com",
+      "securityTxtUri": "https://example.com/.well-known/security.txt",
+      "cvdPolicyUri": "https://example.com/cvd-policy.json",
+      "securityTxtExpires": "2027-02-28T08:00:00Z"
+    },
+    "now": "2026-08-29T10:00:00Z",
+    "expected": {
+      "status": "publisher-stated-permitted"
+    },
+    "requirements": [
+      "FETCH-001",
+      "FETCH-002"
+    ],
+    "options": {
+      "allowApplicationJson": true
+    }
+  },
+  {
     "id": "scope-path-boundary",
     "base": "limited-web-testing.json",
     "set": {
@@ -119,6 +365,13 @@
         "requestsPerSecond": 1,
         "concurrentRequests": 1,
         "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -149,6 +402,13 @@
         "requestsPerSecond": 1,
         "concurrentRequests": 1,
         "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -164,6 +424,300 @@
     },
     "requirements": [
       "SCOP-006"
+    ]
+  },
+  {
+    "id": "path-empty-is-root",
+    "base": "limited-web-testing.json",
+    "set": {},
+    "query": {
+      "activity": "automated_scanning",
+      "target": "https://example.com",
+      "plan": {
+        "requestsPerSecond": 1,
+        "concurrentRequests": 1,
+        "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
+      }
+    },
+    "authority": {
+      "established": true,
+      "discoveryHost": "example.com",
+      "securityTxtUri": "https://example.com/.well-known/security.txt",
+      "cvdPolicyUri": "https://example.com/cvd-policy.json",
+      "securityTxtExpires": "2027-02-28T08:00:00Z"
+    },
+    "now": "2026-08-29T10:00:00Z",
+    "expected": {
+      "status": "publisher-stated-permitted"
+    },
+    "requirements": [
+      "SCOP-010"
+    ]
+  },
+  {
+    "id": "path-target-dot-segments",
+    "base": "limited-web-testing.json",
+    "set": {
+      "/reporting_scope/web/0/path_prefix": "/api"
+    },
+    "query": {
+      "activity": "automated_scanning",
+      "target": "https://example.com/a/../api",
+      "plan": {
+        "requestsPerSecond": 1,
+        "concurrentRequests": 1,
+        "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
+      }
+    },
+    "authority": {
+      "established": true,
+      "discoveryHost": "example.com",
+      "securityTxtUri": "https://example.com/.well-known/security.txt",
+      "cvdPolicyUri": "https://example.com/cvd-policy.json",
+      "securityTxtExpires": "2027-02-28T08:00:00Z"
+    },
+    "now": "2026-08-29T10:00:00Z",
+    "expected": {
+      "status": "publisher-stated-permitted"
+    },
+    "requirements": [
+      "SCOP-010"
+    ]
+  },
+  {
+    "id": "path-scope-dot-segments",
+    "base": "limited-web-testing.json",
+    "set": {
+      "/reporting_scope/web/0/path_prefix": "/a/../api"
+    },
+    "query": {
+      "activity": "automated_scanning",
+      "target": "https://example.com/api",
+      "plan": {
+        "requestsPerSecond": 1,
+        "concurrentRequests": 1,
+        "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
+      }
+    },
+    "authority": {
+      "established": true,
+      "discoveryHost": "example.com",
+      "securityTxtUri": "https://example.com/.well-known/security.txt",
+      "cvdPolicyUri": "https://example.com/cvd-policy.json",
+      "securityTxtExpires": "2027-02-28T08:00:00Z"
+    },
+    "now": "2026-08-29T10:00:00Z",
+    "expected": {
+      "status": "publisher-stated-permitted"
+    },
+    "requirements": [
+      "SCOP-010"
+    ]
+  },
+  {
+    "id": "path-repeated-slashes-preserved",
+    "base": "limited-web-testing.json",
+    "set": {
+      "/reporting_scope/web/0/path_prefix": "/api//v1"
+    },
+    "query": {
+      "activity": "automated_scanning",
+      "target": "https://example.com/api//v1",
+      "plan": {
+        "requestsPerSecond": 1,
+        "concurrentRequests": 1,
+        "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
+      }
+    },
+    "authority": {
+      "established": true,
+      "discoveryHost": "example.com",
+      "securityTxtUri": "https://example.com/.well-known/security.txt",
+      "cvdPolicyUri": "https://example.com/cvd-policy.json",
+      "securityTxtExpires": "2027-02-28T08:00:00Z"
+    },
+    "now": "2026-08-29T10:00:00Z",
+    "expected": {
+      "status": "publisher-stated-permitted"
+    },
+    "requirements": [
+      "SCOP-010"
+    ]
+  },
+  {
+    "id": "path-repeated-slashes-distinct",
+    "base": "limited-web-testing.json",
+    "set": {
+      "/reporting_scope/web/0/path_prefix": "/api//v1"
+    },
+    "query": {
+      "activity": "automated_scanning",
+      "target": "https://example.com/api/v1",
+      "plan": {
+        "requestsPerSecond": 1,
+        "concurrentRequests": 1,
+        "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
+      }
+    },
+    "authority": {
+      "established": true,
+      "discoveryHost": "example.com",
+      "securityTxtUri": "https://example.com/.well-known/security.txt",
+      "cvdPolicyUri": "https://example.com/cvd-policy.json",
+      "securityTxtExpires": "2027-02-28T08:00:00Z"
+    },
+    "now": "2026-08-29T10:00:00Z",
+    "expected": {
+      "status": "not-covered"
+    },
+    "requirements": [
+      "SCOP-010"
+    ]
+  },
+  {
+    "id": "path-percent-hex-normalized",
+    "base": "limited-web-testing.json",
+    "set": {
+      "/reporting_scope/web/0/path_prefix": "/%7Euser"
+    },
+    "query": {
+      "activity": "automated_scanning",
+      "target": "https://example.com/%7euser",
+      "plan": {
+        "requestsPerSecond": 1,
+        "concurrentRequests": 1,
+        "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
+      }
+    },
+    "authority": {
+      "established": true,
+      "discoveryHost": "example.com",
+      "securityTxtUri": "https://example.com/.well-known/security.txt",
+      "cvdPolicyUri": "https://example.com/cvd-policy.json",
+      "securityTxtExpires": "2027-02-28T08:00:00Z"
+    },
+    "now": "2026-08-29T10:00:00Z",
+    "expected": {
+      "status": "publisher-stated-permitted"
+    },
+    "requirements": [
+      "SCOP-010"
+    ]
+  },
+  {
+    "id": "path-percent-not-decoded",
+    "base": "limited-web-testing.json",
+    "set": {
+      "/reporting_scope/web/0/path_prefix": "/~user"
+    },
+    "query": {
+      "activity": "automated_scanning",
+      "target": "https://example.com/%7Euser",
+      "plan": {
+        "requestsPerSecond": 1,
+        "concurrentRequests": 1,
+        "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
+      }
+    },
+    "authority": {
+      "established": true,
+      "discoveryHost": "example.com",
+      "securityTxtUri": "https://example.com/.well-known/security.txt",
+      "cvdPolicyUri": "https://example.com/cvd-policy.json",
+      "securityTxtExpires": "2027-02-28T08:00:00Z"
+    },
+    "now": "2026-08-29T10:00:00Z",
+    "expected": {
+      "status": "not-covered"
+    },
+    "requirements": [
+      "SCOP-010"
+    ]
+  },
+  {
+    "id": "path-encoded-slash-distinct",
+    "base": "limited-web-testing.json",
+    "set": {
+      "/reporting_scope/web/0/path_prefix": "/api%2Fv1"
+    },
+    "query": {
+      "activity": "automated_scanning",
+      "target": "https://example.com/api/v1",
+      "plan": {
+        "requestsPerSecond": 1,
+        "concurrentRequests": 1,
+        "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
+      }
+    },
+    "authority": {
+      "established": true,
+      "discoveryHost": "example.com",
+      "securityTxtUri": "https://example.com/.well-known/security.txt",
+      "cvdPolicyUri": "https://example.com/cvd-policy.json",
+      "securityTxtExpires": "2027-02-28T08:00:00Z"
+    },
+    "now": "2026-08-29T10:00:00Z",
+    "expected": {
+      "status": "not-covered"
+    },
+    "requirements": [
+      "SCOP-010"
     ]
   },
   {
@@ -203,6 +757,13 @@
         "requestsPerSecond": 1,
         "concurrentRequests": 1,
         "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -258,6 +819,13 @@
         "requestsPerSecond": 1,
         "concurrentRequests": 1,
         "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -281,7 +849,16 @@
     "base": "limited-web-testing.json",
     "set": {
       "/research/posture": "report_only",
-      "/testing/rules/0/state": "prohibited"
+      "/testing/rules": [
+        {
+          "id": "automated-scan-main",
+          "activity": "automated_scanning",
+          "state": "prohibited",
+          "target_ids": [
+            "main-web"
+          ]
+        }
+      ]
     },
     "query": {
       "activity": "automated_scanning",
@@ -290,6 +867,13 @@
         "requestsPerSecond": 1,
         "concurrentRequests": 1,
         "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -312,8 +896,16 @@
     "base": "limited-web-testing.json",
     "set": {
       "/research/posture": "report_only",
-      "/testing/rules/0/state": "prohibited",
-      "/testing/rules/0/activity": "manual_testing"
+      "/testing/rules": [
+        {
+          "id": "automated-scan-main",
+          "activity": "manual_testing",
+          "state": "prohibited",
+          "target_ids": [
+            "main-web"
+          ]
+        }
+      ]
     },
     "query": {
       "activity": "automated_scanning",
@@ -322,6 +914,13 @@
         "requestsPerSecond": 1,
         "concurrentRequests": 1,
         "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -374,6 +973,13 @@
         "requestsPerSecond": 1,
         "concurrentRequests": 1,
         "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -423,6 +1029,13 @@
         "requestsPerSecond": 1,
         "concurrentRequests": 1,
         "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -447,20 +1060,20 @@
     "set": {
       "/testing/rules": [
         {
-          "id": "automated-scan-main",
+          "id": "z-permit",
           "activity": "automated_scanning",
           "state": "permitted",
           "target_ids": [
             "main-web"
           ],
           "conditions": {
-            "max_requests_per_second": 0.5,
+            "max_requests_per_second": 2,
             "max_concurrent_requests": 2,
             "required_user_agent_token": "security-research"
           }
         },
         {
-          "id": "second-permit",
+          "id": "a-permit",
           "activity": "automated_scanning",
           "state": "permitted",
           "target_ids": [
@@ -481,6 +1094,13 @@
         "requestsPerSecond": 1,
         "concurrentRequests": 1,
         "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -496,7 +1116,73 @@
     },
     "requirements": [
       "SCOP-008",
-      "EVAL-004"
+      "EVAL-004",
+      "EVAL-005"
+    ]
+  },
+  {
+    "id": "multiple-permits-one-satisfied-reversed",
+    "base": "limited-web-testing.json",
+    "set": {
+      "/testing/rules": [
+        {
+          "id": "a-permit",
+          "activity": "automated_scanning",
+          "state": "permitted",
+          "target_ids": [
+            "main-web"
+          ],
+          "conditions": {
+            "max_requests_per_second": 2,
+            "max_concurrent_requests": 2,
+            "required_user_agent_token": "security-research"
+          }
+        },
+        {
+          "id": "z-permit",
+          "activity": "automated_scanning",
+          "state": "permitted",
+          "target_ids": [
+            "main-web"
+          ],
+          "conditions": {
+            "max_requests_per_second": 2,
+            "max_concurrent_requests": 2,
+            "required_user_agent_token": "security-research"
+          }
+        }
+      ]
+    },
+    "query": {
+      "activity": "automated_scanning",
+      "target": "https://example.com/",
+      "plan": {
+        "requestsPerSecond": 1,
+        "concurrentRequests": 1,
+        "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
+      }
+    },
+    "authority": {
+      "established": true,
+      "discoveryHost": "example.com",
+      "securityTxtUri": "https://example.com/.well-known/security.txt",
+      "cvdPolicyUri": "https://example.com/cvd-policy.json",
+      "securityTxtExpires": "2027-02-28T08:00:00Z"
+    },
+    "now": "2026-08-29T10:00:00Z",
+    "expected": {
+      "status": "publisher-stated-permitted"
+    },
+    "requirements": [
+      "SCOP-008",
+      "EVAL-005"
     ]
   },
   {
@@ -539,6 +1225,13 @@
         "requestsPerSecond": 1,
         "concurrentRequests": 1,
         "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -567,6 +1260,13 @@
         "requestsPerSecond": 1,
         "concurrentRequests": 1,
         "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -594,6 +1294,13 @@
       "plan": {
         "concurrentRequests": 1,
         "userAgent": "security-research"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -622,6 +1329,13 @@
         "requestsPerSecond": 3,
         "concurrentRequests": 1,
         "userAgent": "security-research"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -649,6 +1363,13 @@
       "plan": {
         "requestsPerSecond": 1,
         "userAgent": "security-research"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -677,6 +1398,13 @@
         "requestsPerSecond": 1,
         "concurrentRequests": 3,
         "userAgent": "security-research"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -704,6 +1432,13 @@
       "plan": {
         "requestsPerSecond": 1,
         "concurrentRequests": 1
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -732,6 +1467,13 @@
         "requestsPerSecond": 1,
         "concurrentRequests": 1,
         "userAgent": "ordinary-tool"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -763,6 +1505,13 @@
         "requestsPerSecond": 1,
         "concurrentRequests": 1,
         "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -796,6 +1545,13 @@
         "concurrentRequests": 1,
         "userAgent": "tool security-research/1",
         "usesOnlyTestAccounts": true
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -826,6 +1582,13 @@
         "requestsPerSecond": 1,
         "concurrentRequests": 1,
         "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -861,6 +1624,13 @@
         "requestsPerSecond": 1,
         "concurrentRequests": 1,
         "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -893,6 +1663,13 @@
         "requestsPerSecond": 1,
         "concurrentRequests": 1,
         "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -923,6 +1700,13 @@
         "requestsPerSecond": 1,
         "concurrentRequests": 1,
         "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -954,6 +1738,13 @@
         "requestsPerSecond": 1,
         "concurrentRequests": 1,
         "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       },
       "understoodExtensions": [
         "https://example.org/activity/custom"
@@ -989,6 +1780,13 @@
         "requestsPerSecond": 1,
         "concurrentRequests": 1,
         "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -1017,6 +1815,13 @@
         "requestsPerSecond": 1,
         "concurrentRequests": 1,
         "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -1047,6 +1852,13 @@
         "requestsPerSecond": 1,
         "concurrentRequests": 1,
         "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -1077,6 +1889,13 @@
         "requestsPerSecond": 1,
         "concurrentRequests": 1,
         "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -1107,6 +1926,13 @@
         "requestsPerSecond": 1,
         "concurrentRequests": 1,
         "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -1137,6 +1963,13 @@
         "requestsPerSecond": 1,
         "concurrentRequests": 1,
         "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -1167,6 +2000,13 @@
         "requestsPerSecond": 1,
         "concurrentRequests": 1,
         "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -1195,6 +2035,13 @@
         "requestsPerSecond": 1,
         "concurrentRequests": 1,
         "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -1210,7 +2057,44 @@
     },
     "requirements": [
       "EVAL-003",
-      "ERR-001"
+      "ERR-001",
+      "ERR-002"
+    ]
+  },
+  {
+    "id": "target-invalid-percent",
+    "base": "limited-web-testing.json",
+    "set": {},
+    "query": {
+      "activity": "automated_scanning",
+      "target": "https://example.com/api%2",
+      "plan": {
+        "requestsPerSecond": 1,
+        "concurrentRequests": 1,
+        "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
+      }
+    },
+    "authority": {
+      "established": true,
+      "discoveryHost": "example.com",
+      "securityTxtUri": "https://example.com/.well-known/security.txt",
+      "cvdPolicyUri": "https://example.com/cvd-policy.json",
+      "securityTxtExpires": "2027-02-28T08:00:00Z"
+    },
+    "now": "2026-08-29T10:00:00Z",
+    "expected": {
+      "inputValid": false
+    },
+    "requirements": [
+      "SCOP-010",
+      "ERR-002"
     ]
   },
   {
@@ -1224,6 +2108,13 @@
         "requestsPerSecond": 1,
         "concurrentRequests": 1,
         "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -1253,6 +2144,13 @@
         "requestsPerSecond": 1,
         "concurrentRequests": 1,
         "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {
@@ -1282,6 +2180,13 @@
         "requestsPerSecond": 1,
         "concurrentRequests": 1,
         "userAgent": "tool security-research/1"
+      },
+      "policyRetrieval": {
+        "requestedUri": "https://example.com/cvd-policy.json",
+        "finalUri": "https://example.com/cvd-policy.json",
+        "redirectChain": [],
+        "statusCode": 200,
+        "mediaType": "application/cvd-policy+json"
       }
     },
     "authority": {

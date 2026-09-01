@@ -1,5 +1,5 @@
 {
-  "cvd_policy": 0.2,
+  "cvd_policy": 1,
   "last_updated": "2026-08-29T08:00:00Z",
   "expires": "2027-02-28T08:00:00Z",
   "organization": {
@@ -47,7 +47,7 @@
         "activity": "automated_scanning",
         "state": "permitted",
         "target_ids": [
-          "main-web"
+          "MAIN-WEB"
         ],
         "conditions": {
           "max_requests_per_second": 2,

@@ -156,6 +156,35 @@ export function normalizeHost(value) {
   }
 }
 
+export function normalizePath(value) {
+  if (value === "") return "/";
+  if (typeof value !== "string" || !value.startsWith("/") || /%(?![0-9A-Fa-f]{2})/.test(value)) {
+    throw new TypeError("invalid path");
+  }
+  let input = value.replace(/%[0-9A-Fa-f]{2}/g, (escape) => escape.toUpperCase());
+  let output = "";
+  while (input) {
+    if (input.startsWith("../")) input = input.slice(3);
+    else if (input.startsWith("./")) input = input.slice(2);
+    else if (input.startsWith("/./")) input = input.slice(2);
+    else if (input === "/.") input = "/";
+    else if (input.startsWith("/../")) {
+      input = input.slice(3);
+      output = output.replace(/\/?[^/]*$/, "");
+    } else if (input === "/..") {
+      input = "/";
+      output = output.replace(/\/?[^/]*$/, "");
+    } else if (input === "." || input === "..") input = "";
+    else {
+      const nextSlash = input.indexOf("/", 1);
+      const end = nextSlash < 0 ? input.length : nextSlash;
+      output += input.slice(0, end);
+      input = input.slice(end);
+    }
+  }
+  return output || "/";
+}
+
 export function semanticIssues(doc, now = new Date("2026-08-29T10:00:00Z")) {
   const issues = [];
   const add = (code, path) => issues.push({ code, path });
@@ -196,6 +225,7 @@ export function semanticIssues(doc, now = new Date("2026-08-29T10:00:00Z")) {
     webById.set(entry.id, entry);
     try {
       const normalized = normalizeHost(entry.host);
+      normalizePath(entry.path_prefix);
       if (normalized.ip && entry.include_subdomains) add("policy_scope_invalid", `/reporting_scope/web/${index}/include_subdomains`);
     } catch {
       add("policy_scope_invalid", `/reporting_scope/web/${index}/host`);

@@ -2,7 +2,7 @@
 
 **Status:** Experimental pre-standard candidate  
 **Format version:** `1`  
-**Date:** 2026-08-29  
+**Date:** 2026-09-01
 **License:** CC0-1.0  
 **Translation:** [Deutsch (informative)](SPEC.de.md)
 
@@ -25,6 +25,8 @@ Each normative requirement has a stable identifier in square brackets. `v1/requi
 ## 2. Status and non-goals
 
 [DOC-001] A Version 1 document MUST contain the JSON number `1` in `cvd_policy`; strings and 0.x values are not Version 1.
+
+[DOC-017] A missing or non-integer `cvd_policy` member MUST produce `invalid-policy`. An unknown integer version MUST produce `unsupported-policy`.
 
 [DOC-002] Implementations MUST keep package versions separate from the document format version.
 
@@ -89,6 +91,27 @@ extensions
 
 [DOC-008] Missing optional members MUST NOT create testing permission. In particular, missing `testing` means no testing permission.
 
+[DOC-019] Core object members are exactly as follows; every unlisted member is forbidden by [DOC-007]:
+
+| Object | Required members | Optional members |
+| --- | --- | --- |
+| policy | `cvd_policy`, `last_updated`, `expires`, `organization`, `contact`, `research`, `reporting_scope`, `reporting` | `testing`, `response_targets`, `disclosure`, `critical_extensions`, `extensions` |
+| `organization` | `name` | `uri` |
+| `contact` | `channels` | `preferred_languages`, `encryption` |
+| `research` | `posture` | `statement` |
+| `reporting_scope` | at least one of `web`, `products` | the other listed member |
+| web scope entry | `id`, `state`, `host`, `schemes`, `path_prefix`, `include_subdomains` | `ports` |
+| product scope entry | `id`, `state`, `name` | `identifiers` |
+| `testing` | `rules` | none |
+| testing rule | `id`, `activity`, `state` | `target_ids`, `conditions`, subject to [TEST-004] and [TEST-008] |
+| `conditions` | at least one defined condition member | the other defined condition members |
+| `reporting` | `requested_fields`, `proof_of_exploitation` | none |
+| `response_targets` | at least one defined response-target member | the other defined response-target members |
+| `disclosure` | `approach` | `default_days`, `statement` |
+| `extensions` | none | absolute-URI member names with extension-defined values |
+
+Arrays declared non-empty elsewhere MUST contain at least one item. `reporting.requested_fields`, `contact.preferred_languages`, `contact.encryption`, and `critical_extensions` MAY be empty; all other optional arrays, when present, MUST be non-empty.
+
 ### 4.1 Time
 
 `last_updated` and `expires` are RFC 3339 date-time strings.
@@ -143,7 +166,7 @@ Channel order expresses preference. Language order does not.
 
 - `open`: research is generally welcomed, but only matching explicit rules state testing permission;
 - `limited`: research is welcomed only under explicit rules;
-- `report_only`: reports are accepted but testing permission is not stated;
+- `report_only`: reports are accepted and active testing under this policy is not permitted;
 - `prohibited`: the publisher states that active testing is prohibited.
 
 [TEST-001] `open` MUST NOT imply permission without a matching `permitted` testing rule.
@@ -157,6 +180,8 @@ Channel order expresses preference. Language order does not.
 `reporting_scope` describes reportable assets and products. It does not itself state testing permission.
 
 [SCOP-001] Every scope and testing-rule `id` MUST be unique across the document.
+
+[DOC-018] Every scope and rule ID MUST be 1 through 128 ASCII characters, start with an ASCII letter or digit, and otherwise contain only ASCII letters, digits, `.`, `_`, or `-`. IDs and ID references are compared as exact case-sensitive strings.
 
 #### 4.5.1 Web entries
 
@@ -184,7 +209,9 @@ If `ports` is absent, only the default port for the matched scheme applies: 80 f
 
 [SCOP-006] `path_prefix` MUST begin with `/` and MUST NOT contain query or fragment syntax.
 
-Path matching uses the normalized URL pathname without query or fragment. It is case-sensitive and does not percent-decode reserved characters. `/` matches every path. A prefix ending in `/` matches paths beginning with that prefix. Any other prefix matches the exact path or that prefix followed by `/`. Thus `/api` matches `/api`, `/api/`, and `/api/v1`, but not `/apix`.
+[SCOP-010] Scope `path_prefix` and Target paths MUST use the same normalization: an empty path becomes `/`; RFC 3986 dot-segments are removed; repeated slashes are preserved; hexadecimal digits in percent-encoded triplets are converted to uppercase; and no percent-encoded octet is decoded for matching. A percent sign not followed by exactly two hexadecimal digits is invalid. An encoded slash therefore remains distinct from `/`.
+
+Path matching uses the normalized URL pathname without query or fragment. It is case-sensitive. `/` matches every path. A prefix ending in `/` matches paths beginning with that prefix. Any other prefix matches the exact path or that prefix followed by `/`. Thus `/api` matches `/api`, `/api/`, and `/api/v1`, but not `/apix`.
 
 `include_subdomains: true` matches proper DNS subdomains on label boundaries as well as the named host. It does not establish authority for those hosts; each target host still needs its own discovery evidence.
 
@@ -205,7 +232,7 @@ Path matching uses the normalized URL pathname without query or fragment. It is 
 
 [SCOP-009] Product entries MUST be treated only as reporting metadata and MUST NOT produce automatic testing permission.
 
-Product identifiers are absolute URI-like identifiers. Version-range syntax is outside Version 1.
+Product identifiers MUST be absolute RFC 3986 URIs, compared as exact case-sensitive strings without scheme-specific equivalence processing. Version-range syntax is outside Version 1.
 
 ### 4.6 Testing rules
 
@@ -216,7 +243,7 @@ Core activities are:
 - `fuzzing`: automated transmission of generated or mutated inputs;
 - `credential_testing`: testing only with researcher-controlled or explicitly provided test accounts; credential stuffing, password spraying, and third-party credentials are excluded.
 
-[TEST-003] An extension activity identifier MUST be an absolute URI; an unknown unqualified token such as `automated_scaning` is invalid.
+[TEST-003] An extension activity identifier MUST be an absolute URI; an unknown unqualified token such as `automated_scaning` is invalid. Activity identifiers, including extension URI identifiers, are compared as exact case-sensitive strings.
 
 Rules use `state: permitted` or `state: prohibited`. Version 1 does not define `allowed`, `testing.default`, or `explicit_order`.
 
@@ -227,6 +254,8 @@ Rules use `state: permitted` or `state: prohibited`. Version 1 does not define `
 [TEST-006] Every `target_id` MUST reference an existing web entry whose state is `in`; product and `out` references are invalid.
 
 [TEST-007] A matching `prohibited` rule MUST override every matching `permitted` rule.
+
+[TEST-008] A `prohibited` rule MUST NOT contain `conditions`; a prohibition is unconditional once the rule applies.
 
 No matching rule means no testing permission.
 
@@ -273,13 +302,13 @@ disclosure_preference
 
 ### 4.8 Response targets and disclosure
 
-Response target values are positive whole calendar days. They are published targets, not technical or legal guarantees, and do not affect testing evaluation.
+`response_targets` may contain only positive-integer `acknowledgement_days`, `initial_assessment_days`, and `update_interval_days`. Acknowledgement and initial-assessment periods start when the publisher receives the initial report; each update interval starts when the preceding substantive update is sent. They are published targets, not technical or legal guarantees, and do not affect testing evaluation.
 
-`disclosure.approach` is `coordinated`, `case_by_case`, or `no_preference`. Optional `default_days` is a coordination preference, not automatic permission to disclose. Optional `statement` is explanatory.
+`disclosure.approach` is `coordinated`, `case_by_case`, or `no_preference`. Optional positive-integer `default_days` starts when the publisher receives the initial report and is a coordination preference, not automatic permission to disclose. Optional `statement` is explanatory.
 
 ### 4.9 Extensions
 
-Extension identifiers are absolute URIs. Extension data is stored only as values in `extensions`; `critical_extensions` is an array of unique extension identifiers.
+Extension identifiers are absolute RFC 3986 URIs and are compared as exact case-sensitive strings. Extension data is stored only as values in `extensions`; `critical_extensions` is an array of unique extension identifiers.
 
 [EXT-001] Every identifier in `critical_extensions` MUST have a same-named member in `extensions`.
 
@@ -324,9 +353,11 @@ interface SecurityTxtRetrievalContext {
 
 [DISC-005] Retrieval context URIs and every redirect hop MUST use HTTPS and redirect processing MUST preserve the original discovery host.
 
-For a redirect whose final host differs from the requested host, at least one valid `Canonical` field in the resulting file has to equal the originally requested security.txt URI. Same-host redirects do not add that requirement.
+For a redirect whose final host differs from the requested host, at least one valid `Canonical` field in the resulting file has to equal the originally requested security.txt URI.
 
 [DISC-006] A cross-host security.txt redirect without that exact original `Canonical` value MUST NOT establish authority. Any detailed canonical-mismatch diagnostic is informative and implementation-specific.
+
+[DISC-008] Whenever one or more `Canonical` fields are present, at least one value MUST exactly equal the originally requested security.txt URI before authority is established. This applies without redirects and to same-host redirects.
 
 OpenPGP cleartext signatures are recognized by their RFC 9116 framing. This specification does not require core software to verify them.
 
@@ -354,15 +385,19 @@ interface AuthorityEvidence {
 
 [AUTH-004] Parent domains, subdomains, CNAME targets, shared addresses, shared certificates, organization claims, scope wildcards, policy location, filenames, and redirects MUST NOT create or transfer authority.
 
+[AUTH-005] Authority evidence MUST be bound to its advertised `cvdPolicyUri`. The evaluated policy representation MUST have been retrieved from that exact URI or from the final URI of its recorded all-HTTPS redirect chain. An evaluator MUST NOT combine arbitrary policy JSON with authority evidence for another Policy URI.
+
 A different port on the same exact host can be covered when reporting scope explicitly matches it. Two discovery hosts can independently point to one centrally hosted policy, but each evaluation uses evidence from that host's own discovery.
 
 ## 7. Policy representation retrieval
 
 The proposed, unregistered media type is `application/cvd-policy+json`.
 
-[FETCH-001] During the pre-standard period, network clients MUST accept `application/cvd-policy+json`, MAY accept `application/json` with a notice, and MUST reject HTML, plain text, and other unexpected representations for automatic policy evaluation.
+[FETCH-001] Network clients MUST accept `application/cvd-policy+json`. A separately enabled compatibility mode MAY accept `application/json` with a notice; this mode MUST NOT broaden acceptance to other media types. HTML, plain text, and other unexpected representations MUST be rejected for automatic evaluation.
 
-Local files have no HTTP media type. Network fetching, redirect limits, timeouts, response-size limits, address filtering, and credential isolation belong in clients or adapters, not the deterministic core.
+[FETCH-002] A network client MUST retrieve a Policy URI with HTTPS `GET` as defined by RFC 9110, send an `Accept` field preferring `application/cvd-policy+json` (and listing `application/json` only when compatibility mode is enabled), and accept only a `200 OK` response as a complete policy representation. `204 No Content`, `206 Partial Content`, and every other status are not complete policy representations. Every redirect hop MUST use HTTPS. A client MUST NOT automatically send ambient credentials, cookies, `Authorization`, or `Proxy-Authorization`, and MUST NOT forward such fields across redirects.
+
+Local files have no HTTP media type. Finite redirect limits, timeouts, response-size limits, address filtering, and credential isolation belong in clients or adapters. Deterministic core evaluation validates supplied retrieval evidence and does not perform network requests.
 
 ## 8. Evaluation
 
@@ -404,7 +439,9 @@ unsupported-policy
 
 `publisher-stated-permitted` means only that the policy published through established discovery contains a matching permission statement whose machine-checkable conditions are satisfied. It is not legal advice, proof of ownership, authorization by this software, or guaranteed safe harbor.
 
-A status-bearing result can contain sorted matching rule and target IDs, validation issues, implementation-specific diagnostics, and the constraints of the selected satisfied rule when applicable. Detailed diagnostic identifiers are not part of the normative interoperability contract. If multiple permitted rules are satisfied, the lexicographically smallest rule ID supplies `constraints`; this is deterministic output selection, not semantic priority.
+A status-bearing result can contain sorted matching rule and target IDs, validation issues, and implementation-specific diagnostics. Detailed diagnostic identifiers are not part of the normative interoperability contract.
+
+[EVAL-005] If one or more applicable `permitted` rules are fully satisfied, the result MUST be `publisher-stated-permitted`. Implementations MAY report all satisfied rule IDs informatively. Draft 00 defines neither lexicographic rule selection nor one aggregated constraint object; callers retain each satisfied rule's own conditions.
 
 ### 8.2 Required order
 
@@ -416,14 +453,14 @@ A status-bearing result can contain sorted matching rule and target IDs, validat
 4. semantic validation;
 5. policy expiry check;
 6. unknown critical-extension check;
-7. authority-evidence check;
+7. authority-evidence and policy-retrieval binding check;
 8. exact target/discovery-host check;
 9. reporting-scope matching;
 10. `out` exclusion;
 11. research-posture check;
 12. matching-rule collection;
 13. prohibition precedence;
-14. permitted-rule condition evaluation;
+14. all permitted-rule condition evaluation;
 15. stable status-bearing result construction.
 
 ### 8.3 Status precedence
@@ -442,7 +479,9 @@ The first applicable outcome in evaluation order wins:
 
 ## 9. Machine-readable errors and informative diagnostics
 
-[ERR-001] Input-validation and policy-processing failures MUST be machine-readable, structurally distinguishable from status-bearing evaluation results, and identify affected locations when available. Localized prose MUST NOT be the only API contract. Implementations are not required to use identical detailed diagnostic identifiers.
+[ERR-001] Input-validation and policy-processing failures MUST be machine-readable and identify affected locations when available. Localized prose MUST NOT be the only API contract. Implementations are not required to use identical detailed diagnostic identifiers.
+
+[ERR-002] Only failures that validate evaluation-call input, such as an invalid Target URL, are structurally outside status-bearing evaluation results. Policy parsing, version dispatch, schema, semantic, reference, and expiry failures remain normal status-bearing results; in particular, `invalid-policy` is a normative evaluation status.
 
 The following identifiers are informative diagnostics used by the reference implementation. They are not a normative registry and conformance does not require another implementation to emit them:
 

@@ -3,7 +3,7 @@ import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
-import { applyPointerValues, DuplicateMemberError, parseJsonText, semanticIssues } from "./v1-validation.mjs";
+import { applyPointerValues, DuplicateMemberError, normalizePath, parseJsonText, semanticIssues } from "./v1-validation.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const readJson = (path) => {
@@ -113,6 +113,9 @@ const statuses = new Set([
 const targetIsValid = (target) => {
   try {
     const url = new URL(target);
+    const rawPath = target.match(/^[A-Za-z][A-Za-z0-9+.-]*:\/\/[^/?#]*([^?#]*)/)?.[1];
+    if (rawPath === undefined) return false;
+    normalizePath(rawPath);
     return (url.protocol === "http:" || url.protocol === "https:") && !url.username && !url.password;
   } catch {
     return false;

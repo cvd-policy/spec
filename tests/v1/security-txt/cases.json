@@ -252,6 +252,40 @@
     ]
   },
   {
+    "id": "canonical-mismatch-no-redirect",
+    "text": "Contact: mailto:security@example.com\nCVD-Policy: https://example.com/policy.json\nExpires: 2027-02-28T08:00:00Z\nCanonical: https://example.com/security.txt\n",
+    "context": {
+      "requestedUri": "https://example.com/.well-known/security.txt",
+      "finalUri": "https://example.com/.well-known/security.txt",
+      "redirectChain": [],
+      "retrievedAt": "2026-08-29T10:00:00Z"
+    },
+    "expected": {
+      "established": false
+    },
+    "requirements": [
+      "DISC-008"
+    ]
+  },
+  {
+    "id": "same-host-redirect-canonical-mismatch",
+    "text": "Contact: mailto:security@example.com\nCVD-Policy: https://example.com/policy.json\nExpires: 2027-02-28T08:00:00Z\nCanonical: https://example.com/security.txt\n",
+    "context": {
+      "requestedUri": "https://example.com/.well-known/security.txt",
+      "finalUri": "https://example.com/security.txt",
+      "redirectChain": [
+        "https://example.com/security.txt"
+      ],
+      "retrievedAt": "2026-08-29T10:00:00Z"
+    },
+    "expected": {
+      "established": false
+    },
+    "requirements": [
+      "DISC-008"
+    ]
+  },
+  {
     "id": "cross-host-redirect-canonical",
     "text": "Contact: mailto:security@example.com\nCVD-Policy: https://provider.example/policy.json\nExpires: 2027-02-28T08:00:00Z\nCanonical: https://example.com/.well-known/security.txt\n",
     "context": {

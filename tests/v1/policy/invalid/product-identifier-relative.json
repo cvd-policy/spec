@@ -1,5 +1,5 @@
 {
-  "cvd_policy": 0.2,
+  "cvd_policy": 1,
   "last_updated": "2026-08-29T08:00:00Z",
   "expires": "2027-02-28T08:00:00Z",
   "organization": {
@@ -37,6 +37,16 @@
         ],
         "path_prefix": "/",
         "include_subdomains": false
+      }
+    ],
+    "products": [
+      {
+        "id": "product",
+        "state": "in",
+        "name": "Product",
+        "identifiers": [
+          "products/example"
+        ]
       }
     ]
   },
