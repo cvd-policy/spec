@@ -4,7 +4,11 @@ Normative text, JSON Schema, examples and test corpus. Published versions:
 **0.1** and **0.2**. Both stay valid — a released version never changes.
 
 `v1/` is a separate **pre-standard candidate**, not a replacement or migration
-of the published 0.x line. It has no package-version relationship to npm 1.x.
+of the published 0.x line. It experimentally implements the individual
+Internet-Draft
+[`draft-behring-cvd-policy-00`](https://datatracker.ietf.org/doc/html/draft-behring-cvd-policy-00);
+the proposed field name and media type may still change. It has no
+package-version relationship to npm 1.x.
 
 **Licence: CC0-1.0.** Copy it, quote it, host it, change it. No attribution
 required.

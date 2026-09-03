@@ -6,7 +6,7 @@ Status: **READY FOR DATATRACKER SUBMISSION**
 
 The technical Draft, Spec, schema, corpus, and isolated Core implementation pass their checks. Both pinned implementation references returned HTTP 200 and were publicly inspectable on 2026-09-01.
 
-The two review branches were pushed solely to make the cited commits inspectable. No Datatracker submission, upload, tag, release, or npm publication was performed.
+At the time of this readiness review, the two review branches were pushed solely to make the cited commits inspectable; no Datatracker submission, upload, tag, release, or npm publication had yet been performed.
 
 ## Review inputs and outputs
 
@@ -65,4 +65,6 @@ Artifact SHA-256 values:
 - Remote Spec branch `human-review/datatracker-spec` contains the reviewed Spec commit.
 - Remote Core branch `human-review/datatracker-core` points exactly to the reviewed Core commit.
 
-The exact references and all checks must be revalidated immediately before submission. Datatracker submission requires separate explicit authorization.
+At the time of this readiness review, the exact references and all checks still
+had to be revalidated and Datatracker submission required separate explicit
+authorization.
