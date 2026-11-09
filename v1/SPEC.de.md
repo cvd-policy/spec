@@ -299,6 +299,51 @@ Extension-IDs sind absolute RFC-3986-URIs und werden als exakte case-sensitive S
 
 [EXT-004] Eine Extension, die Permission, Verbot oder Bedingungen verändert, muss als kritisch markiert sein.
 
+#### CSAF Vulnerability Report-Deklaration
+
+Diese optionale, nichtkritische Deklaration benennt vorhandene Kontaktkanäle, an denen ein Publisher nach eigener Aussage Berichte gemäß dem CSAF Vulnerability Report Profile annimmt. Sie definiert weder Berichtsübermittlung noch eine Submission-API oder CSAF-Berichtsvalidierung. Core-Implementierungen müssen sie nicht verarbeiten.
+
+Die Extension-ID lautet `https://github.com/cvd-policy/spec/extensions/csaf-vulnerability-report-v1`. Die unterstützte Spezifikations-URI ist `https://docs.oasis-open.org/csaf/csaf/v2.1/csd04/csaf-v2.1-csd04.html`. Sie bindet die Deklaration an Profile 9, Vulnerability Report, Abschnitt 4.9 von CSAF Version 2.1 Committee Specification Draft 04 (21. Oktober 2026, Arbeitsfassung). Implementierungen vergleichen die URI nach JSON-Dekodierung exakt und case-sensitive. Der zugehörige CSAF-Bericht hat `document.csaf_version` `2.1` und `document.category` `csaf_vulnerability_report`.
+
+Der Extensionwert enthält ausschließlich ein nichtleeres `channels`-Array. Jedes Element enthält ausschließlich die String-Member `uri` und `specification`. Eine URI muss nach JSON-Dekodierung exakt einem Wert in `contact.channels` entsprechen, `mailto` oder `https` verwenden und darf höchstens einmal vorkommen. Es gibt keine URI-Normalisierung oder Redirect-Auflösung. `tel` ist unzulässig. Die Reihenfolge des Extension-Arrays ist bedeutungslos; bei der Auswahl gilt die Reihenfolge von `contact.channels`. Jede Spezifikation ist eine absolute RFC-3986-URI. Eine andere syntaktisch gültige URI ist unsupported, nicht strukturell ungültig. Extension-ID und Spezifikation werden nicht abgerufen.
+
+[CSR-001] Der einzige unterstützte Wert von `specification` MUSS exakt der oben angegebene CSAF-2.1-CSD04-URI entsprechen.
+
+[CSR-002] Das Extension-Objekt MUSS ausschließlich das erforderliche nichtleere `channels`-Array mit Objekten besitzen, die exakt die erforderlichen String-Member `uri` und `specification` enthalten.
+
+[CSR-003] Jede `uri` MUSS nach JSON-Dekodierung exakt einem Kontaktkanal entsprechen, `mailto` oder `https` verwenden und höchstens einmal vorkommen; URI-Normalisierung und Redirect-Auflösung sind ausgeschlossen.
+
+[CSR-004] Die Reihenfolge der Extension-Kanäle ist bedeutungslos; bei einer Auswahl MÜSSEN Clients die Präferenzreihenfolge aus `contact.channels` einhalten.
+
+[CSR-005] Jede `specification` MUSS eine absolute RFC-3986-URI sein; eine syntaktisch gültige URI außerhalb der exakten unterstützten Bindung ist unsupported.
+
+[CSR-006] Die Bewertung DARF weder die Extension-ID noch die `specification`-URI abrufen.
+
+Die Bewertung ist von Core-Validierung und Testing Permission getrennt. Doppelte Member-Namen bleiben globale Policyfehler. Nach erfolgreichem Textparsing, Versionswahl sowie Core-Struktur- und Semantikprüfung gilt folgende Reihenfolge:
+
+1. Fehlende Extension-Daten ergeben `not-advertised`.
+2. Struktur-, URI-, Eindeutigkeits- oder Kontaktreferenzfehler ergeben `invalid`. Diese Fehler werden vor einer Einstufung unsupported geprüft.
+3. Eine kritische Deklaration oder eine syntaktisch gültige nicht unterstützte Spezifikation ergibt `unsupported`.
+4. Sonst lautet das Ergebnis für alle Kanäle `advertised`.
+
+Die Ergebnisse sind atomar. Für `not-advertised`, `invalid` und `unsupported` sind keine Kanäle verwendbar; Teilerfolge sind unzulässig. Diese Zustände behaupten nicht, dass CSAF-Berichte abgelehnt werden.
+
+[CSR-007] Die Bewertung MUSS die genannte Reihenfolge und Atomarität einhalten.
+
+[CSR-008] Diese Extension DARF NICHT in `critical_extensions` stehen. Ist sie dort enthalten, MUSS eine sie erkennende Implementierung die Verwendung in Permission-Schritt 6 als unsupported kritisches Verhalten behandeln, sofern kein früherer Schritt das Ergebnis bestimmt.
+
+[CSR-009] Fehler einer nichtkritischen Deklaration DÜRFEN Core-Gültigkeit oder Testing Permission NICHT ändern. Die Deklarationsbewertung bleibt von Core-Struktur- und Semantikvalidierung getrennt; globale Regeln zu doppelten Schlüsseln und Core-Membern gelten weiter.
+
+[CSR-010] Vor Verwendung eines `advertised`-Ergebnisses als aktuelle Aussage eines Discovery Hosts MUSS ein Client gültige Authority und gebundenen Policy-Abruf, Aktualität von Policy und `security.txt` sowie unterstütztes kritisches Verhalten prüfen. Target, Aktivität oder positive Testing Permission sind dafür nicht erforderlich. Auch eine `report_only`-Policy kann CSAF-Annahme deklarieren.
+
+[CSR-011] Ein Publisher MUSS nur Kanäle aufführen, an denen er Berichte gemäß dem gebundenen CSAF-Profil annimmt. Die Deklaration ist seine Aussage über dieses Angebot. Ein Client DARF eine gültige Deklaration NICHT als Nachweis darstellen, dass ein Kanal getestet wurde, ein Bericht CSAF-konform ist oder ein Finding angenommen oder bestätigt wurde.
+
+[CSR-012] Die Deklaration spezifiziert weder Berichtsübermittlung, Request-Methode, Intake-API, Authentisierung, Anhänge, Bestätigungen noch Fallverwaltung. Insbesondere DARF ein Client NICHT ableiten, dass ein deklarierter HTTPS-Kontakt ein POST-Endpunkt ist oder dass das Lesen der Deklaration eine Berichtsübermittlung autorisiert.
+
+[CSR-013] Die Deklaration DARF CSAF nicht für alle Berichte verlangen oder die Ablehnung menschenlesbarer Berichte begründen. Core-Reporting-Präferenzen bleiben unverändert; CSAF-Anforderungen bestimmen nur CSAF-Konformität.
+
+[CSR-014] Ein Client DARF aus Policy-Organisation oder Scope keine CSAF-Publisher-Identität, Betroffenheit oder Schwachstelle ableiten. Reporting Scope belegt keine Verwundbarkeit. Das `CSAF`-Feld in `security.txt` dient der Discovery von Provider-Metadaten für Verteilung, nicht der Berichtsannahme oder einem Intake-Endpunkt; Policy-Extensions sind von CSAF-Extensions getrennt.
+
 ## 5. Discovery über security.txt
 
 Vorgeschlagenes Feld:

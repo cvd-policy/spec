@@ -105,5 +105,89 @@
     "type": "spec_contains",
     "value": "MUST NOT transmit policy text",
     "requirements": ["PRIV-001"]
+  },
+  {
+    "id": "csaf-specification-binding",
+    "type": "spec_contains",
+    "value": "The one supported value of `specification` MUST be the exact CSAF 2.1 CSD04 URI above.",
+    "requirements": ["CSR-001"]
+  },
+  {
+    "id": "csaf-declaration-shape",
+    "type": "spec_contains",
+    "value": "The extension object MUST contain only the required non-empty `channels` array",
+    "requirements": ["CSR-002"]
+  },
+  {
+    "id": "csaf-exact-contact-references",
+    "type": "spec_contains",
+    "value": "Each `uri` MUST exactly match a contact channel after JSON decoding",
+    "requirements": ["CSR-003"]
+  },
+  {
+    "id": "csaf-contact-preference-order",
+    "type": "spec_contains",
+    "value": "clients selecting channels MUST preserve the preference order of `contact.channels`",
+    "requirements": ["CSR-004"]
+  },
+  {
+    "id": "csaf-absolute-uri-support",
+    "type": "spec_contains",
+    "value": "Each `specification` MUST be an absolute RFC 3986 URI",
+    "requirements": ["CSR-005"]
+  },
+  {
+    "id": "csaf-no-uri-fetch",
+    "type": "spec_contains",
+    "value": "Assessment MUST NOT fetch the extension identifier or `specification` URI.",
+    "requirements": ["CSR-006"]
+  },
+  {
+    "id": "csaf-assessment-priority-and-atomicity",
+    "type": "spec_contains",
+    "value": "Assessment MUST use the order and atomicity above.",
+    "requirements": ["CSR-007"]
+  },
+  {
+    "id": "csaf-critical-use-rejected",
+    "type": "spec_contains",
+    "value": "treat its use as unsupported critical behavior at permission-evaluation step 6",
+    "requirements": ["CSR-008"]
+  },
+  {
+    "id": "csaf-metadata-permission-separation",
+    "type": "spec_contains",
+    "value": "Errors in a non-critical declaration MUST NOT alter core validity or Testing Permission.",
+    "requirements": ["CSR-009"]
+  },
+  {
+    "id": "csaf-current-host-gates",
+    "type": "spec_contains",
+    "value": "Before using an advertised result as a current Discovery Host statement",
+    "requirements": ["CSR-010"]
+  },
+  {
+    "id": "csaf-no-processing-claim",
+    "type": "spec_contains",
+    "value": "A client MUST NOT present a valid declaration as proof that a channel was tested",
+    "requirements": ["CSR-011"]
+  },
+  {
+    "id": "csaf-no-intake-protocol",
+    "type": "spec_contains",
+    "value": "a client MUST NOT infer that a declared HTTPS contact URI is a POST endpoint",
+    "requirements": ["CSR-012"]
+  },
+  {
+    "id": "csaf-human-reports-remain-accepted",
+    "type": "spec_contains",
+    "value": "The declaration MUST NOT require CSAF for every report",
+    "requirements": ["CSR-013"]
+  },
+  {
+    "id": "csaf-no-inferred-identities-or-impact",
+    "type": "spec_contains",
+    "value": "A client MUST NOT infer CSAF publisher identity, affected status, or vulnerability",
+    "requirements": ["CSR-014"]
   }
 ]

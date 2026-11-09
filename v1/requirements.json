@@ -43,6 +43,102 @@
     "evaluation:credential-test-accounts-unconfirmed",
     "evaluation:multiple-permits-none-satisfied"
   ],
+  "CSR-001": [
+    "assertion:csaf-specification-binding",
+    "shared:latest-specification-not-pinned",
+    "shared:specification-case-not-normalized",
+    "shared:unknown-specification",
+    "shared:valid-mailto"
+  ],
+  "CSR-002": [
+    "assertion:csaf-declaration-shape",
+    "shared:channels-wrong-type",
+    "shared:empty-channels",
+    "shared:extension-null",
+    "shared:extra-channel-member",
+    "shared:extra-extension-member",
+    "shared:missing-specification",
+    "shared:uri-wrong-type"
+  ],
+  "CSR-003": [
+    "assertion:csaf-exact-contact-references",
+    "shared:contact-case-not-normalized",
+    "shared:contact-slash-not-normalized",
+    "shared:duplicate-channel",
+    "shared:escaped-uri-matches-after-json-decoding",
+    "shared:tel-is-not-a-csaf-channel",
+    "shared:unlisted-contact",
+    "shared:valid-mailto"
+  ],
+  "CSR-004": [
+    "assertion:csaf-contact-preference-order",
+    "shared:contact-order-prevails"
+  ],
+  "CSR-005": [
+    "assertion:csaf-absolute-uri-support",
+    "csaf-reporting-extra:absolute-uri-double-at-in-userinfo-is-invalid",
+    "csaf-reporting-extra:absolute-uri-empty-authority-and-path",
+    "csaf-reporting-extra:absolute-uri-empty-authority-with-path",
+    "csaf-reporting-extra:absolute-uri-empty-path",
+    "csaf-reporting-extra:absolute-uri-empty-path-with-query",
+    "csaf-reporting-extra:absolute-uri-empty-port-is-valid",
+    "csaf-reporting-extra:absolute-uri-fragment-is-invalid",
+    "csaf-reporting-extra:absolute-uri-ip-literal-authority",
+    "csaf-reporting-extra:absolute-uri-nonnumeric-port-is-invalid",
+    "csaf-reporting-extra:absolute-uri-port-above-65535-is-valid",
+    "csaf-reporting-extra:absolute-uri-rootless-path",
+    "csaf-reporting-extra:brackets-in-path-are-invalid-ipv6-looking",
+    "csaf-reporting-extra:brackets-in-path-are-invalid-ipvfuture-looking",
+    "csaf-reporting-extra:brackets-in-path-are-invalid-userinfo-looking",
+    "csaf-reporting-extra:https-uri-fragment-is-invalid",
+    "csaf-reporting-extra:percent-encoded-number-sign-is-not-a-fragment",
+    "csaf-reporting-extra:raw-double-quote-is-invalid",
+    "shared:relative-specification",
+    "shared:specification-with-space",
+    "shared:unknown-specification",
+    "supplementary:all-rfc3986-uri-edge-cases"
+  ],
+  "CSR-006": [
+    "assertion:csaf-no-uri-fetch",
+    "csaf-reporting:no-fetch"
+  ],
+  "CSR-007": [
+    "assertion:csaf-assessment-priority-and-atomicity",
+    "shared:invalid-wins-over-unsupported",
+    "shared:mixed-known-and-unknown-is-atomic",
+    "shared:mixed-valid-and-invalid-is-atomic"
+  ],
+  "CSR-008": [
+    "assertion:csaf-critical-use-rejected",
+    "shared:critical-invalid-metadata-keeps-domains-separate",
+    "shared:critical-use-remains-unsupported",
+    "shared:expiry-before-critical-permission-step"
+  ],
+  "CSR-009": [
+    "assertion:csaf-metadata-permission-separation",
+    "shared:critical-invalid-metadata-keeps-domains-separate",
+    "shared:duplicate-json-member-is-global-error"
+  ],
+  "CSR-010": [
+    "assertion:csaf-current-host-gates",
+    "shared:expired-policy-keeps-local-metadata-separate",
+    "shared:expired-security-txt-blocks-host-use",
+    "shared:no-authority-is-not-a-current-host-statement",
+    "shared:report-only-still-advertises",
+    "shared:testing-target-does-not-gate-reporting-capability"
+  ],
+  "CSR-011": [
+    "assertion:csaf-no-processing-claim"
+  ],
+  "CSR-012": [
+    "assertion:csaf-no-intake-protocol"
+  ],
+  "CSR-013": [
+    "assertion:csaf-human-reports-remain-accepted"
+  ],
+  "CSR-014": [
+    "assertion:csaf-no-inferred-identities-or-impact"
+  ],
   "DISC-001": [
     "security-txt:fragment-uri",
     "security-txt:http-uri",

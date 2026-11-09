@@ -25,6 +25,12 @@ export function expectedRequirements() {
       for (const requirement of entry.requirements) add(mapping, requirement, `${prefix}:${entry.id}`);
     }
   }
+  for (const [requirement, tests] of Object.entries(read("tests/v1/csaf-reporting/requirements.json"))) {
+    for (const test of tests) add(mapping, requirement, test);
+  }
+  for (const entry of read("tests/v1/csaf-reporting/extra-cases.json").cases) {
+    for (const requirement of entry.requirements) add(mapping, requirement, `csaf-reporting-extra:${entry.id}`);
+  }
   return Object.fromEntries(Object.entries(mapping).sort().map(([id, tests]) => [id, [...new Set(tests)].sort()]));
 }
 

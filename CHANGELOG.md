@@ -2,12 +2,19 @@
 
 ## Unreleased — Version 1 pre-standard candidate
 
+- Advances the individual Internet-Draft source to revision -01, adding an
+  optional declaration of CSAF 2.1 CSD04 Profile 9 reporting channels. This
+  records local declaration implementation checks, but does not claim CSAF
+  report processing or independent interoperability.
+- Keeps the JSON format version at 1 and leaves published 0.x formats, legacy
+  examples, package versions, and the report-0.1 profile unchanged.
 - Adds an isolated V1 specification, schema, examples, corpus, security.txt and
   evaluation vectors, plus a complete normative requirement-to-test map.
-- Adds the individual Draft 00 authoring source, version-pinned
-  RFCXML/text/HTML build, 71-ID traceability map, and submission-readiness
-  report. The Draft does not change V1 semantics.
-- Leaves published 0.1 and 0.2 artifacts unchanged. Adding Draft 00 creates no
+- Adds the individual Draft -01 authoring source, version-pinned
+  RFCXML/text/HTML build, requirement traceability map, and review-readiness
+  report. Existing V1 core semantics remain unchanged; -01 adds the separate
+  optional CSAF declaration contract.
+- Leaves published 0.1 and 0.2 artifacts unchanged. Adding Draft -01 creates no
   repository release or tag and does not migrate existing documents.
 
 ## Errata

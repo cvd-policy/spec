@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 import { applyPointerValues, DuplicateMemberError, normalizePath, parseJsonText, semanticIssues } from "./v1-validation.mjs";
+import { validateCsafReportingCorpus } from "./validate-csaf-reporting-corpus.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const readJson = (path) => {
@@ -161,4 +162,5 @@ if (failures) {
   console.error(`\n${failures} V1 corpus mismatch(es).`);
   process.exit(1);
 }
+validateCsafReportingCorpus(root);
 console.log(`\nV1 corpus complete: ${validFiles.length} valid documents, ${invalidFiles.length} invalid documents, ${rawFiles.length} raw cases, ${securityCases.length} security.txt vectors, ${evaluationCases.length} evaluation vectors.`);

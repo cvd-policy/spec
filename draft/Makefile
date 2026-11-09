@@ -1,4 +1,4 @@
-DRAFT := draft-behring-cvd-policy-00
+DRAFT := draft-behring-cvd-policy-01
 SOURCE := draft-behring-cvd-policy.md
 BUILD := build
 XML := $(BUILD)/$(DRAFT).xml
@@ -16,6 +16,9 @@ TOOLS_STAMP := $(GEM_HOME)/.installed-$(KRAMDOWN_RFC_VERSION)
 
 all: $(XML)
 	cd "$(BUILD)" && uvx --from "xml2rfc==$(XML2RFC_VERSION)" xml2rfc --v3 --strict --text --html "$(DRAFT).xml"
+	# xml2rfc 3.34.0 emits trailing horizontal whitespace in generated HTML.
+	sed 's/[[:blank:]]*$$//' "$(HTML)" > "$(HTML).tmp"
+	mv "$(HTML).tmp" "$(HTML)"
 	test -s "$(TXT)" -a -s "$(HTML)"
 
 $(XML): $(SOURCE) | tools $(BUILD)

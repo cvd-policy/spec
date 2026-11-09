@@ -318,6 +318,51 @@ Extension identifiers are absolute RFC 3986 URIs and are compared as exact case-
 
 [EXT-004] An extension that changes permission, prohibition, or conditions MUST be listed as critical.
 
+#### CSAF Vulnerability Report declaration
+
+This optional, non-critical declaration identifies existing contact channels at which a publisher states that it accepts reports conforming to the CSAF Vulnerability Report Profile. It does not define report transmission, a submission API, or CSAF report validation. Core policy implementations are not required to process it.
+
+The extension identifier is `https://github.com/cvd-policy/spec/extensions/csaf-vulnerability-report-v1`. The supported specification URI is `https://docs.oasis-open.org/csaf/csaf/v2.1/csd04/csaf-v2.1-csd04.html`, binding the declaration to Profile 9, Vulnerability Report, Section 4.9 of CSAF Version 2.1 Committee Specification Draft 04 (21 October 2026, work in progress). Implementations compare the specification as an exact case-sensitive string after JSON decoding. The corresponding CSAF report has `document.csaf_version` `2.1` and `document.category` `csaf_vulnerability_report`.
+
+The extension value contains only a non-empty `channels` array. Each item contains only string members `uri` and `specification`. A URI exactly matches one `contact.channels` value after JSON decoding, uses `mailto` or `https`, and occurs at most once. Matching does not normalize URIs or resolve redirects. `tel` is not allowed. The extension array order has no meaning; selection preserves `contact.channels` order. Each specification is an absolute RFC 3986 URI. A syntactically valid URI other than the supported value is unsupported, not structurally invalid. The identifier and specification are not fetched.
+
+[CSR-001] The one supported value of `specification` MUST be the exact CSAF 2.1 CSD04 URI above.
+
+[CSR-002] The extension object MUST contain only the required non-empty `channels` array of objects with exactly the required string members `uri` and `specification`.
+
+[CSR-003] Each `uri` MUST exactly match a contact channel after JSON decoding, use `mailto` or `https`, and occur at most once; no URI normalization or redirect resolution is performed.
+
+[CSR-004] Extension channel order has no meaning; clients selecting channels MUST preserve the preference order of `contact.channels`.
+
+[CSR-005] Each `specification` MUST be an absolute RFC 3986 URI; a valid URI other than the exact supported binding is unsupported.
+
+[CSR-006] Assessment MUST NOT fetch the extension identifier or `specification` URI.
+
+Assessment is separate from core validation and Testing Permission. Duplicate member names remain global policy errors. After successful text parsing, version selection, core structural validation, and core semantic validation, the assessment order is:
+
+1. Missing extension data yields `not-advertised`.
+2. Any declaration structure, URI, uniqueness, or contact-reference error yields `invalid`. Check these errors before unsupported specifications.
+3. A critical declaration or a syntactically valid unsupported specification yields `unsupported`.
+4. Otherwise the result is `advertised` for all listed channels.
+
+Results are atomic. No channels are usable for `not-advertised`, `invalid`, or `unsupported`, and partial success is forbidden. These states do not assert rejection of CSAF reports.
+
+[CSR-007] Assessment MUST use the order and atomicity above.
+
+[CSR-008] This extension MUST NOT appear in `critical_extensions`; if it does, a recognizing implementation MUST treat its use as unsupported critical behavior at permission-evaluation step 6, unless an earlier step determines the result.
+
+[CSR-009] Errors in a non-critical declaration MUST NOT alter core validity or Testing Permission. Declaration assessment remains separate from core structural and semantic validation, without relaxing duplicate-key or core-member rules.
+
+[CSR-010] Before using an advertised result as a current Discovery Host statement, a client MUST verify valid Authority and bound policy retrieval, freshness of the policy and `security.txt`, and supported critical behavior. This requires no Target, activity, or positive Testing Permission. A `report_only` policy can advertise CSAF support.
+
+[CSR-011] A publisher MUST list only channels at which it offers to receive reports conforming to the bound CSAF profile. The declaration is its statement of that offer. A client MUST NOT present a valid declaration as proof that a channel was tested, a report conforms to CSAF, or a finding was accepted or confirmed.
+
+[CSR-012] The declaration does not specify report transmission, a request method, an intake API, authentication, attachment handling, acknowledgements, or case management. In particular, a client MUST NOT infer that a declared HTTPS contact URI is a POST endpoint or that reading the declaration authorizes report transmission.
+
+[CSR-013] The declaration MUST NOT require CSAF for every report or justify rejecting human-readable reports. Core reporting preferences remain unchanged; CSAF requirements govern CSAF conformance only.
+
+[CSR-014] A client MUST NOT infer CSAF publisher identity, affected status, or vulnerability from policy organization or scope. Reporting Scope does not establish vulnerability. The `CSAF` field in `security.txt` is for discovery of provider metadata for distribution, not report reception or an intake endpoint; policy extensions are separate from CSAF extensions.
+
 ## 5. Discovery with security.txt
 
 The proposed field is:

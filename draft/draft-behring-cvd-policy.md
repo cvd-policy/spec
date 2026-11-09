@@ -1,8 +1,8 @@
 ---
 title: Machine-Readable Coordinated Vulnerability Disclosure Policies
 abbrev: Machine-Readable CVD Policies
-docname: draft-behring-cvd-policy-00
-date: 2026-09-01
+docname: draft-behring-cvd-policy-01
+date: 2026-11-08
 category: std
 ipr: trust200902
 area: Security
@@ -37,21 +37,35 @@ normative:
   RFC8259:
   RFC9110:
   RFC9116:
-
+  CSAF-2.1-CSD04:
+    title: Common Security Advisory Framework Version 2.1
+    author:
+      - ins: S. Hagen
+        name: Stefan Hagen
+        role: editor
+      - ins: T. Schmidt
+        name: Thomas Schmidt
+        role: editor
+    date: 2026-10-21
+    seriesinfo:
+      OASIS: Committee Specification Draft 04
+    refcontent: Work in Progress
+    target: https://docs.oasis-open.org/csaf/csaf/v2.1/csd04/csaf-v2.1-csd04.html
 informative:
   RFC7942:
   RFC8615:
+  RFC8792:
   JSON-SCHEMA-2020-12:
     title: JSON Schema Core, Draft 2020-12
     target: "https://json-schema.org/draft/2020-12/json-schema-core.html"
   CVD-POLICY-SPEC:
     title: CVD Policy Version 1 Specification, Schema, and Conformance Corpus
-    target: "https://github.com/cvd-policy/spec/commit/a7e359ac2bc2efbc89febc7c4a5cd42dec03eade"
-    date: 2026-09-01
+    target: "https://github.com/cvd-policy/spec/commit/e8b26c05482c2cee9872adcc8fa2fd18b2e53214"
+    date: 2026-09-03
   CVD-POLICY-CORE:
     title: TypeScript Reference Implementation for CVD Policy Version 1
-    target: "https://github.com/cvd-policy/web/commit/acc609efc4adc33683cc6c71acd57a8a8e06169b"
-    date: 2026-09-01
+    target: "https://github.com/cvd-policy/web/commit/0221629e2bb6702ccc24ddb84fcaf5dc7df87c8d"
+    date: 2026-09-29
 
 --- abstract
 
@@ -62,6 +76,10 @@ registration of the `application/cvd-policy+json` media type.  The format
 complements `security.txt` and human-readable policy documents.  A policy does
 not prove ownership and does not establish legal authorization to test, legal
 safe harbor, or the safety of an activity.
+
+An optional extension lets a publisher identify contact channels for reports
+conforming to the CSAF Vulnerability Report Profile. This declaration does not
+define report transport or change the policy's testing statements.
 
 --- middle
 
@@ -78,6 +96,12 @@ This document defines a strict JSON policy format, discovery by a proposed
 testing evaluation, and an extension model.  The format records statements made
 by a publisher.  It does not determine ownership, legal authorization, or legal
 safe harbor.
+
+A policy and a vulnerability report serve different purposes. The policy
+describes a publisher's standing instructions. A report describes a particular
+finding. This document uses the Common Security Advisory Framework (CSAF)
+{{CSAF-2.1-CSD04}} for the structured report-format declaration in
+{{csaf-reporting}}; it does not define a competing report schema.
 
 The proposed field and media type are not registered at the time this document
 is written.  The registrations requested by this document are specified in
@@ -138,7 +162,9 @@ The design goals are:
 - separation of Reporting Scope from Testing Permission;
 - fail-closed processing of conditions, prohibitions, and critical extensions;
 - support for one policy document referenced independently by multiple hosts;
-- useful reporting preferences without defining report transport; and
+- useful reporting preferences without defining report transport;
+- a precise declaration of CSAF report support for existing contact channels,
+  without requiring a report-processing implementation; and
 - machine-readable status and diagnostic values that do not claim legal effect.
 
 The following are outside the scope of this document:
@@ -530,6 +556,10 @@ availability impairment, or further exploitation.
 This document does not define report transmission, an intake endpoint, or an
 attachment protocol.
 
+The optional declaration in {{csaf-reporting}} identifies contact channels for
+a structured report format. It adds no members to the `reporting` object and
+does not change the meaning of its preferences.
+
 ## Response Targets
 
 `response_targets` is optional and contains one or more positive integer values:
@@ -566,6 +596,190 @@ that changes permission, prohibition, or conditions MUST be listed as critical.
 
 This revision creates no Activity or extension registry.  Such registries can
 be considered in future work if interoperable extensions are deployed.
+
+### CSAF Vulnerability Report Declaration {#csaf-reporting}
+
+A contact URI identifies a way to reach the publisher. It does not state
+whether that channel accepts a structured vulnerability report. This extension
+lets the publisher make that additional statement for specific contact
+channels.
+
+CSAF is the only structured vulnerability-report format for which this
+revision defines a declaration. The extension is optional. A CVD policy remains
+a policy document, and core policy implementations are not required to
+implement this extension or process CSAF reports.
+
+The extension identifier is
+`https://github.com/cvd-policy/spec/extensions/csaf-vulnerability-report-v1`.
+This URI is an identifier defined by this document. Its use does not require a
+resource to be published at that location.
+
+#### Specification Binding {#csaf-reporting-binding}
+
+This revision binds the declaration to Profile 9, Vulnerability Report, in
+Section 4.9 of {{CSAF-2.1-CSD04}}. That reference identifies CSAF Version 2.1,
+Committee Specification Draft 04, dated 21 October 2026. It is a work in
+progress, not an OASIS Standard.
+
+The one supported value of `specification` in this revision is
+`https://docs.oasis-open.org/csaf/csaf/v2.1/csd04/csaf-v2.1-csd04.html`.
+Implementations MUST compare it as an exact, case-sensitive string after JSON
+string decoding. They MUST NOT substitute a latest-version URL, infer support
+from a URI prefix, or silently treat another specification revision as this
+binding.
+
+<!-- requirements: CSR-001; disposition: normative -->
+
+The bound CSAF document has `document.csaf_version` equal to `2.1` and
+`document.category` equal to `csaf_vulnerability_report`. The policy's
+`specification` value pins the specification revision; it does not alter either
+CSAF field. Conformance of a report is governed by the referenced CSAF
+specification, including its applicable schema, mandatory tests, and profile
+requirements. Policy-declaration validation does not perform that report
+validation.
+
+The declaration introduces no new media type. The policy media type remains
+`application/cvd-policy+json`. CSAF reports are separate JSON documents. This
+declaration does not define report transport or media-type negotiation for that
+transport.
+
+#### Declaration Data {#csaf-reporting-data}
+
+The extension value MUST be an object containing only the required member
+`channels`. That member MUST be a non-empty array. Each array element MUST be an
+object containing only the required string members `uri` and `specification`.
+Missing or additional members and incorrect types make the declaration invalid.
+
+<!-- requirements: CSR-002; disposition: normative -->
+
+Each `uri` MUST exactly match one entry in `contact.channels` after JSON string
+decoding and MUST use the `mailto` or `https` scheme. Matching is case-sensitive
+and performs no URI normalization or redirect resolution. A `tel` channel
+cannot be listed in this declaration. Each distinct `uri` MUST occur at most
+once in the array.
+
+<!-- requirements: CSR-003; disposition: normative -->
+
+The declaration's array order has no meaning. The preference order continues
+to be the order in `contact.channels`. A client selecting among declared
+channels MUST preserve that preference order.
+
+<!-- requirements: CSR-004; disposition: normative -->
+
+Each `specification` MUST be an absolute URI as defined by {{RFC3986}}. A
+different, syntactically valid URI is an unsupported specification, not a
+structural error. The exact binding in {{csaf-reporting-binding}} is the only
+one supported by this revision.
+
+<!-- requirements: CSR-005; disposition: normative -->
+
+Implementations MUST treat the extension identifier and specification URI as
+identifiers. Assessing the declaration MUST NOT require or trigger a network
+request to either URI.
+
+<!-- requirements: CSR-006; disposition: normative -->
+
+#### Declaration Assessment {#csaf-reporting-assessment}
+
+Assessment of this extension is separate from Testing Permission evaluation.
+The result names below describe declaration assessment only; they are not
+additional policy members or Testing Permission statuses.
+
+The policy first has to pass the text, format-version, core structural, and
+core semantic checks in {{structural-and-semantic-validation}}. Those checks
+retain their precedence. In particular, duplicate JSON member names anywhere
+in the document remain a policy error, including duplicates inside this
+extension.
+
+For a policy that passes those checks, implementations that support this
+extension MUST assess it in the following order:
+
+1. If the exact extension identifier is absent from `extensions`, the result
+   is `not-advertised`.
+2. If any data rule in {{csaf-reporting-data}} fails, the result is `invalid`.
+   Check all structural and contact-reference rules before deciding whether a
+   specification is unsupported.
+3. If the identifier is listed in `critical_extensions`, or any entry names a
+   syntactically valid but unsupported specification URI, the result is
+   `unsupported`.
+4. Otherwise, the result is `advertised` for all listed channels.
+
+Assessment is atomic. An implementation MUST NOT return usable CSAF channel
+metadata for an `invalid`, `unsupported`, or `not-advertised` result, or retain
+a successful subset of an invalid or unsupported declaration. Such a result
+does not state that the publisher rejects CSAF reports.
+
+<!-- requirements: CSR-007; disposition: normative -->
+
+This extension MUST NOT be listed in `critical_extensions`. If it is listed
+there, an implementation that recognizes the identifier MUST treat that use as
+unsupported critical behavior at step 6 of {{testing-permission-evaluation}},
+producing `unsupported-policy` unless an earlier step has already determined
+the result. Recognition of this identifier does not permit the client to ignore
+its critical use.
+
+<!-- requirements: CSR-008; disposition: normative -->
+
+When this extension is non-critical, declaration errors or an unsupported
+specification MUST NOT change core policy validity, Reporting Scope,
+conditions, prohibitions, or the Testing Permission result. Implementations
+MUST keep these declaration errors separate from core structural and semantic
+errors. The general parsing and extension rules still apply; this does not
+excuse duplicate JSON names or invalid core members.
+
+<!-- requirements: CSR-009; disposition: normative -->
+
+Before using an `advertised` result as a current statement of a Discovery Host,
+a client MUST establish valid Authority and policy-retrieval evidence under
+{{policy-retrieval}} and {{authority-and-delegation}}, verify that the policy
+and its `security.txt` have not expired, and reject unsupported critical policy
+behavior. An offline declaration assessment alone does not establish those
+facts. This use does not require a Target, a testing activity, or a positive
+Testing Permission result. A `report_only` policy can advertise CSAF report
+support.
+
+<!-- requirements: CSR-010; disposition: normative -->
+
+#### Meaning and Limits {#csaf-reporting-meaning}
+
+A publisher MUST list only channels at which it offers to receive reports
+conforming to the bound CSAF profile. The declaration is the publisher's
+statement of that offer. A client MUST NOT present a valid declaration as proof
+that a channel was tested, that a particular report conforms to CSAF, or that a
+submitted finding was accepted or confirmed.
+
+<!-- requirements: CSR-011; disposition: normative -->
+
+The declaration does not specify report transmission, a request method, an
+intake API, authentication, attachment handling, acknowledgements, or case
+management. In particular, a client MUST NOT infer that a declared HTTPS
+contact URI is a POST endpoint or that reading this declaration authorizes
+report transmission. The privacy rule in {{privacy-considerations}} continues
+to apply.
+
+<!-- requirements: CSR-012; disposition: normative -->
+
+A client MUST NOT interpret this declaration as requiring every report to use
+CSAF or as an additional reason to reject a human-readable report. The reporting
+preferences in {{reporting-preferences}} retain their meaning. Mandatory CSAF
+fields determine whether a CSAF report conforms to that format; they do not
+become additional core policy reporting requirements.
+
+<!-- requirements: CSR-013; disposition: normative -->
+
+A client MUST NOT infer a CSAF publisher identity, a product's affected status,
+or a vulnerability from policy organization or scope data. Reporting Scope
+records where reports are welcomed; it does not establish that those assets
+are vulnerable. A policy publisher and the publisher of a CSAF report can be
+different parties.
+
+<!-- requirements: CSR-014; disposition: normative -->
+
+The `CSAF` field in `security.txt`, described in Section 7.1.8 of
+{{CSAF-2.1-CSD04}}, supports discovery of CSAF provider metadata for
+distribution. It is not this report-reception declaration and does not identify
+an intake endpoint. The extension mechanism in this policy format is also
+separate from the extension mechanism inside CSAF documents.
 
 # Structural and Semantic Validation
 
@@ -604,6 +818,10 @@ Semantic validation includes timestamp ordering, valid URIs and language tags,
 document-wide ID uniqueness, scope-host normalization, permitted-rule target
 references, posture conflicts, required conditions, and critical-extension data
 presence.
+
+The separate assessment in {{csaf-reporting-assessment}} does not add the CSAF
+declaration's data rules to core policy validation. In non-critical use, a
+declaration can be invalid or unsupported while the core policy remains valid.
 
 # Target Normalization and Scope Matching
 
@@ -689,7 +907,7 @@ following order and return at the first terminal outcome:
     satisfied, return `conditions-not-satisfied`.
 15. Return `publisher-stated-permitted` when one or more permitted rules are
     fully satisfied.  Implementations MAY report all satisfied rule IDs
-    informatively.  Draft 00 defines neither lexicographic rule selection nor
+    informatively.  Version 1 defines neither lexicographic rule selection nor
     one aggregated constraint object; each satisfied rule retains its own
     conditions.
 
@@ -713,7 +931,7 @@ harbor.
 
 # Processing Errors and Result Statuses
 
-The status is exactly one of:
+The Testing Permission status is exactly one of:
 
 - `publisher-stated-permitted`: every positive precondition is satisfied;
 - `publisher-stated-prohibited`: posture or an applicable rule prohibits the
@@ -744,6 +962,9 @@ implementation-specific.
 
 <!-- requirements: ERR-001 ERR-002; disposition: normative -->
 
+The declaration-assessment results in {{csaf-reporting-assessment}} belong to a
+separate result domain. They neither add to nor replace the statuses above.
+
 # Operational Considerations
 
 Publishers should choose expiry periods that force regular review; approximately
@@ -766,26 +987,26 @@ reporter.
 **RFC Editor: remove this entire section and the informative reference to RFC
 7942 before publication.**
 
-This section records known implementation status at the time of posting, as
-recommended by {{RFC7942}}.  Its purpose is to assist IETF review; listing an
-implementation does not imply IETF endorsement or independently verified
-interoperability.
+This section records known implementation evidence as recommended by
+{{RFC7942}}. Source availability and local tests do not establish independent
+interoperability, deployed behavior, or IETF endorsement.
 
-The specification commit
-`a7e359ac2bc2efbc89febc7c4a5cd42dec03eade` contains the Version 1 source,
-Draft 2020-12 schema, examples, and a conformance corpus mapping all 71
-normative requirement IDs to executable checks {{CVD-POLICY-SPEC}}.  The
-TypeScript reference implementation commit
-`acc609efc4adc33683cc6c71acd57a8a8e06169b` exposes the isolated
-`@cvd-policy/core/v1` entry point and executes that corpus
-{{CVD-POLICY-CORE}}.  It validates supplied retrieval evidence but does not
-perform network retrieval or OpenPGP signature verification.  The package root,
-CLI, and website retain their published 0.x behavior.
+The specification repository at commit
+`e8b26c05482c2cee9872adcc8fa2fd18b2e53214` contains the experimental Version 1
+specification, schema, examples, and conformance corpus {{CVD-POLICY-SPEC}}.
+The reference implementation repository at commit
+`0221629e2bb6702ccc24ddb84fcaf5dc7df87c8d` contains the isolated
+`@cvd-policy/core/v1` entry point and Version 1 CLI and website paths
+{{CVD-POLICY-CORE}}. The legacy package interfaces remain separate. These
+repository snapshots were inspected on 8 November 2026 and describe the existing
+core policy implementation.
 
-At the 2026-09-01 build, both referenced GitHub commit URLs returned HTTP 200
-and the artifacts were publicly inspectable.  This Implementation Status
-evidence is ready for Datatracker submission.  The references require
-revalidation immediately before submission.
+The CSAF declaration in {{csaf-reporting}} is new in this revision. No
+implementation or independent interoperability evidence for that declaration
+is recorded here. The existing core corpus is not evidence that CSAF report
+processing or the new declaration is implemented. This section needs to be
+updated with specific implementation revisions and test evidence as that work
+becomes available.
 
 # Security Considerations
 
@@ -829,6 +1050,13 @@ No status in this document determines that an activity is legally authorized.
 the need to assess law, contracts, third-party rights, safety, or operational
 risk.
 
+The CSAF declaration is untrusted metadata. Its contact channels can be
+operated by a third party, and valid Authority does not verify their technical
+capability. The declaration adds no permission to test those channels.
+Treating specification identifiers as automatic fetch targets or contact links
+as implicit upload APIs would create additional network and data-disclosure
+risks; the restrictions in {{csaf-reporting}} prevent those inferences.
+
 # Privacy Considerations
 
 Implementations MUST NOT transmit policy text, `security.txt` text, Target
@@ -855,10 +1083,19 @@ alone cannot justify rejecting a report.  Contact information in policies can
 be personal data and should be processed with appropriate minimization and
 retention controls.
 
+A report-format declaration belongs in a public policy; the vulnerability
+report itself does not. Publishers should not place findings, evidence, exploit
+details, or reporter identities inside this extension. Discovering a contact
+channel does not itself transmit or publish a report.
+
 # IANA Considerations
 
 This document requests the following registrations.  The field and media type
 remain proposed until IANA completes the applicable actions.
+
+The CSAF declaration uses the URI identifier defined in {{csaf-reporting}} and
+requests no additional registration. It does not redefine the CSAF field in
+`security.txt`.
 
 ## security.txt Field
 
@@ -957,14 +1194,17 @@ Change controller:
 Provisional registration:
 : no
 
-This document does not request registration of a well-known URI suffix.  It also
-does not create an Activity or extension registry in Draft 00.
+This document does not request registration of a well-known URI suffix. It also
+does not create an Activity or extension registry in this revision.
 
 # Examples
 
-All policy examples in this section are complete documents.  The Draft build
-checks them with the Version 1 schema and semantic validator.  Evaluation
-outcomes are tied to named conformance-corpus vectors.
+All policy examples in this section are complete documents. The original
+Version 1 examples retain their core semantics, and named corpus vectors identify
+the stated evaluation cases. Long lines in the CSAF example use the
+single-backslash folding convention in {{RFC8792}}. Remove its two-line folding
+header and unfold continued lines before parsing that example as JSON. Folding
+changes presentation only.
 
 ## Minimal report-only Policy
 
@@ -1284,5 +1524,101 @@ of array order, producing the normative status `not-covered` as specified by
 corpus vector `scope-out-wins`.
 
 <!-- evaluation-vector: scope-out-wins -->
+
+## A report-only Policy with a CSAF Declaration {#csaf-reporting-example}
+
+The publisher advertises CSAF reports at its email channel. Its HTTPS contact
+remains an ordinary contact link; this policy does not claim that the link
+accepts CSAF uploads.
+
+<!-- policy-example: csaf-reporting -->
+
+~~~ json
+NOTE: '\' line wrapping per RFC 8792
+
+{
+  "cvd_policy": 1,
+  "last_updated": "2026-11-08T00:00:00Z",
+  "expires": "2027-05-07T00:00:00Z",
+  "organization": {
+    "name": "Example Organization"
+  },
+  "contact": {
+    "channels": [
+      "mailto:security@example.com",
+      "https://example.com/security/contact"
+    ]
+  },
+  "research": {
+    "posture": "report_only"
+  },
+  "reporting_scope": {
+    "web": [
+      {
+        "id": "main-web",
+        "state": "in",
+        "host": "example.com",
+        "schemes": [
+          "https"
+        ],
+        "path_prefix": "/",
+        "include_subdomains": false
+      }
+    ]
+  },
+  "reporting": {
+    "requested_fields": [
+      "affected_asset",
+      "description"
+    ],
+    "proof_of_exploitation": "not_requested"
+  },
+  "extensions": {
+    "https://github.com/cvd-policy/spec/extensions/\
+      csaf-vulnerability-report-v1": {
+      "channels": [
+        {
+          "uri": "mailto:security@example.com",
+          "specification": "https://docs.oasis-open.org/csaf/csaf/\
+      v2.1/csd04/csaf-v2.1-csd04.html"
+        }
+      ]
+    }
+  }
+}
+~~~
+
+The declaration-assessment result is `advertised` for
+`mailto:security@example.com`. A client still needs the Authority, retrieval,
+and freshness checks in {{csaf-reporting-assessment}} before using it as the
+current statement of a Discovery Host. The `report_only` posture continues to
+provide no Testing Permission.
+
+If the declaration names `mailto:other@example.com` instead, its result is
+`invalid` because that exact contact is absent. If it names an unrecognized but
+absolute specification URI instead, its result is `unsupported`. Neither
+non-critical change alters the core policy's Testing Permission result. Listing
+this extension as critical invokes `unsupported-policy` at the existing
+critical-extension step.
+
+# Changes from -00 {#changes-from-00}
+
+*RFC Editor: remove this appendix before publication.*
+
+- Add an optional, non-critical CSAF Vulnerability Report declaration for
+  explicitly named contact channels.
+- Pin the one supported report-format binding to CSAF 2.1 CSD04 and identify its
+  work-in-progress status.
+- Define declaration data, atomic assessment, unsupported critical use, and the
+  separation from core policy and Testing Permission results.
+- Clarify the distinction between policy discovery, a declared receiving
+  capability, report conformance, and actual channel behavior.
+- Add a complete policy example and clarify that human-readable reports remain
+  usable and that report transmission is outside scope.
+- Update the Implementation Status to distinguish inspected core
+  implementations from the new, unimplemented declaration.
+- Keep the JSON format version at integer 1 and preserve the existing core
+  object members, discovery rules, Authority model, scope matching, and ordered
+  Testing Permission algorithm.
 
 --- back

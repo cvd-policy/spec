@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-commit=acc609efc4adc33683cc6c71acd57a8a8e06169b
+commit=0221629e2bb6702ccc24ddb84fcaf5dc7df87c8d
 CDPATH=
 export CDPATH
 spec_repo=$(git -C "$(dirname -- "$0")/../.." rev-parse --show-toplevel)
